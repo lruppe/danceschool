@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)"
+    ],
+    "allow": [
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(./mvnw compile:*)",
+      "Edit(file_path:/home/lr245/IdeaProjects/danceschool/CLAUDE.md)",
+      "Bash(./mvnw clean:*)",
+      "Bash(./mvnw test:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
