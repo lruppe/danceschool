@@ -5,10 +5,29 @@
 - **Install:** `npm install`
 - **Dev server:** `ng serve` (or use Angular MCP `devserver.start`)
 - **Build:** `ng build`
-- **Test:** `ng test` (or use Angular MCP `test`)
+- **Test:** `ng test --browsers chromium --no-watch` (or use Angular MCP `test`)
+  - Requires `@vitest/browser-playwright` + `playwright` (already installed)
+  - Browser binary: `npx playwright install chromium` (already done)
 - **Lint:** `ng lint`
 
 All commands run from the `frontend/` directory.
+
+## Frontend Development Workflow
+
+Use MCP tools for the full develop → verify loop:
+
+1. **Start dev server:** Angular MCP `devserver.start` (workspace: `frontend/`)
+2. **Wait for build:** Angular MCP `devserver.wait_for_build` — also call this after every code change to confirm it compiled
+3. **Visual verify:** Playwright MCP `browser_navigate` to the dev server URL, then `browser_snapshot` (DOM/accessibility tree) or `browser_take_screenshot` (visual)
+4. **Iterate:** edit code → `devserver.wait_for_build` → snapshot/screenshot → repeat
+5. **Stop server:** Angular MCP `devserver.stop` when done
+
+### Playwright MCP
+
+- Requires Google Chrome installed in WSL (`/opt/google/chrome/chrome`)
+- If missing: `wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O /tmp/chrome.deb && sudo dpkg -i /tmp/chrome.deb && sudo apt --fix-broken install -y`
+- Use `browser_snapshot` over `browser_take_screenshot` when you need to interact with elements (click, fill, etc.)
+- Use `browser_take_screenshot` to visually verify layout and styling
 
 ## Architecture
 
