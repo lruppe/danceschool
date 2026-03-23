@@ -24,7 +24,8 @@
       "Read",
       "Glob",
       "Grep",
-      "mcp__github__*"
+      "mcp__github__*",
+      "WebSearch"
     ]
   }
 }

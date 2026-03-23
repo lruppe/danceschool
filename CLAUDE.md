@@ -9,7 +9,7 @@ danceschool/
 ├── frontend/          ← Angular 21 (SCSS, standalone components)
 ├── src/               ← Spring Boot backend (Java 21)
 ├── pom.xml            ← Maven (backend only)
-└── .mcp.json          ← Angular MCP server config
+└── .mcp.json          ← MCP server config (Angular CLI + Playwright browser)
 ```
 
 Frontend and backend are independent builds — no Maven integration. During development, run `ng serve` with a proxy to the backend API.
