@@ -27,7 +27,8 @@ Frontend and backend are independent builds — no Maven integration. During dev
 - **Git operations** (commit, push, pull, branch): use `git` CLI
 - **GitHub operations** (PRs, checks, issues): use GitHub MCP tools or `gh` CLI
 - **All changes go through PRs** — never commit directly to `main`
-- **Workflow:** pull main → create branch → commit → push → create PR → wait for CI to pass → squash merge → pull main
+- **Always work in a worktree** — start with `claude --worktree <name>` or create one at the beginning of a task
+- **Workflow:** pull main → create worktree → create branch → commit → push → create PR → `gh pr checks <number> --watch` → squash merge → pull main
 - **Merge strategy:** squash merge
 - **Auto-merge:** merge immediately after CI passes, no manual review needed
 
