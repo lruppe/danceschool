@@ -76,6 +76,19 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 
 All schema changes go through Liquibase. Add new changesets to files included from `db.changelog-master.yaml`. Never modify JPA entities without a corresponding migration.
 
+## CI/CD
+
+- **Branch protection** is enabled on `main` — all changes go through PRs
+- CI workflows in `.github/workflows/`: `ci.yml` (tests), `codeql.yml` (code scanning)
+- Deployment to Hostinger VPS planned but not yet configured
+
+## Git & GitHub
+
+- **GitHub repo:** `lruppe/danceschool`
+- **Auth:** `gh auth setup-git` provides credentials for all git and GitHub operations
+- **Git operations** (commit, push, pull, branch): use `git` CLI
+- **GitHub operations** (PRs, checks, issues): use GitHub MCP tools or `gh` CLI
+
 ## Working Rules
 
 - **Always update this file** with relevant learnings discovered during work (e.g., environment details, confirmed conventions, corrected assumptions). CLAUDE.md should stay accurate and evolve as the project does.
