@@ -5,14 +5,26 @@
       "Bash(git push -f*)"
     ],
     "allow": [
-      "Bash(git branch:*)",
-      "Bash(git push:*)",
-      "Bash(git commit:*)",
-      "Bash(./mvnw compile:*)",
-      "Edit(file_path:/home/lr245/IdeaProjects/danceschool/CLAUDE.md)",
-      "Bash(./mvnw clean:*)",
-      "Bash(./mvnw test:*)",
-      "Bash(git add:*)"
+      "Bash(git:*)",
+      "Bash(./mvnw:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(wc:*)",
+      "Bash(which:*)",
+      "Bash(echo:*)",
+      "Bash(pwd:*)",
+      "Bash(tree:*)",
+      "Edit",
+      "Write",
+      "Read",
+      "Glob",
+      "Grep",
+      "mcp__github__*"
     ]
   }
 }
