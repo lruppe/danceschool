@@ -88,6 +88,10 @@ All schema changes go through Liquibase. Add new changesets to files included fr
 - **Auth:** `gh auth setup-git` provides credentials for all git and GitHub operations
 - **Git operations** (commit, push, pull, branch): use `git` CLI
 - **GitHub operations** (PRs, checks, issues): use GitHub MCP tools or `gh` CLI
+- **All changes go through PRs** — never commit directly to `main`
+- **Workflow:** pull main → create branch → commit → push → create PR → wait for CI to pass → squash merge → pull main
+- **Merge strategy:** squash merge
+- **Auto-merge:** merge immediately after CI passes, no manual review needed
 
 ## Working Rules
 
