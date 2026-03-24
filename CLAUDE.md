@@ -7,8 +7,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 danceschool/
 ├── frontend/          ← Angular 21 (SCSS, standalone components)
-├── src/               ← Spring Boot backend (Java 21)
-├── pom.xml            ← Maven (backend only)
+├── backend/           ← Spring Boot backend (Java 21)
+│   ├── Dockerfile
+│   ├── pom.xml
+│   ├── mvnw
+│   ├── .mvn/
+│   └── src/
 └── .mcp.json          ← MCP server config (Angular CLI + Playwright browser)
 ```
 
@@ -18,7 +22,7 @@ Frontend and backend are independent builds — no Maven integration. During dev
 
 - **Branch protection** is enabled on `main` — all changes go through PRs
 - CI workflows in `.github/workflows/`: `ci.yml` (tests), `codeql.yml` (code scanning)
-- Deployment to Hostinger VPS planned but not yet configured
+- Frontend deployed on Render (static site), backend deployment TBD
 
 ## Git & GitHub
 
