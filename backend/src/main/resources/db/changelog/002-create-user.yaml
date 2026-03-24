@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-user
+      author: claude
+      changes:
+        - createTable:
+            tableName: app_user
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  name: avatar_url
+                  type: VARCHAR(1000)
+              - column:
+                  name: oauth_provider
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: oauth_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: app_user
+            columnNames: oauth_provider, oauth_id
+            constraintName: uk_user_oauth

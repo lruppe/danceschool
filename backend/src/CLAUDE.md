@@ -14,6 +14,8 @@ Spring Boot 3.5 application (Java 21) for managing a dance school. Uses Maven wr
 
 **Key stack:**
 - Spring Web (REST API), Spring Data JPA (persistence), Spring Validation
+- Spring Security + OAuth2 Client (Google, GitHub social login)
+- JWT authentication (jjwt library, HMAC-SHA256, HTTP-only cookie)
 - Liquibase for database migrations (`src/main/resources/db/changelog/db.changelog-master.yaml`)
 - H2 in-memory database (dev/test)
 - Lombok for boilerplate reduction (configured as annotation processor in maven-compiler-plugin)
@@ -69,6 +71,42 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 - No manual logging in slice code — the aspects cover entry, exit, duration, and errors
 - Use `@Slf4j` when adding loggers to new cross-cutting classes
 - No PII at INFO level (class/method names and durations only, full payloads at DEBUG)
+
+## Security Architecture
+
+### Authentication Flow
+- Backend acts as OAuth2 Client — handles the entire Google/GitHub login redirect flow
+- After OAuth2 success, backend mints its own JWT (HMAC-SHA256, 7-day expiry) containing `userId` and `email`
+- JWT is set as an `AUTH_TOKEN` HTTP-only, Secure, SameSite=None cookie
+- On subsequent requests, `JwtAuthFilter` reads the cookie, validates the JWT, and sets `SecurityContext`
+- Sessions are `IF_REQUIRED` (used briefly during OAuth2 redirect dance, not for ongoing auth)
+
+### Authorization Model
+- Roles are **scoped to a school**, not global — stored in `school_member` table
+- `SchoolMember` links a `User` to a `School` with a `MemberRole` (OWNER, USER)
+- A user with no memberships is in the "needs onboarding" state
+- `GET /api/auth/me` returns the user with their memberships — frontend uses this to route
+
+### Dev Login
+- `POST /api/dev/login` with `{"email": "..."}` — available only when `prod` profile is NOT active
+- Creates/finds a user and sets the same JWT cookie as OAuth2 would
+- Use for local development and Playwright E2E tests
+- CSRF is disabled for `/api/dev/**`
+
+### Configuration (via env vars)
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — Google OAuth2 credentials
+- `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` — GitHub OAuth credentials
+- `JWT_SECRET` — HMAC-SHA256 signing key (min 32 bytes)
+- `CORS_ALLOWED_ORIGINS` — comma-separated allowed origins (default: `http://localhost:4200`)
+- `FRONTEND_URL` — redirect target after OAuth2 login (default: `http://localhost:4200`)
+
+### Key classes in `shared/security/`
+- `SecurityConfig` — filter chain, CORS, CSRF, OAuth2, authorization rules
+- `JwtUtil` — sign/validate JWTs
+- `JwtAuthFilter` — reads JWT from cookie, sets SecurityContext
+- `JwtCookieUtil` — set/clear/read the AUTH_TOKEN cookie
+- `OAuth2LoginSuccessHandler` — creates user, mints JWT, redirects to frontend
+- `AuthenticatedUser` — principal record (userId, email) available via `@AuthenticationPrincipal`
 
 ## Database Migrations
 

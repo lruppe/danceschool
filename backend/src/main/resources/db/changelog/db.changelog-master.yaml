@@ -1,3 +1,7 @@
 databaseChangeLog:
   - include:
       file: db/changelog/001-create-school.yaml
+  - include:
+      file: db/changelog/002-create-user.yaml
+  - include:
+      file: db/changelog/003-create-school-member.yaml

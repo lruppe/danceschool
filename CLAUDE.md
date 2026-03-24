@@ -18,11 +18,19 @@ danceschool/
 
 Frontend and backend are independent builds — no Maven integration. During development, run `ng serve` with a proxy to the backend API.
 
+## Domain
+
+Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. See `docs/GLOSSARY.md` for ubiquitous language (DDD-style).
+
+- **Admin portal** (current Angular frontend): for school Owners and Teachers
+- **Student apps** (future): students browse schools, view classes, enroll
+
 ## CI/CD
 
 - **Branch protection** is enabled on `main` — all changes go through PRs
 - CI workflows in `.github/workflows/`: `ci.yml` (tests), `codeql.yml` (code scanning)
-- Frontend deployed on Render (static site), backend deployment TBD
+- **Frontend** deployed on Render (static site): https://danceschool-2g1m.onrender.com/
+- **Backend** deployed on Render (Docker): https://danceschool-api.onrender.com/ (API base: `/api`)
 
 ## Git & GitHub
 

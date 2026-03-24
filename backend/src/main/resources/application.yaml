@@ -1,6 +1,26 @@
 spring:
   application:
     name: danceschool
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:placeholder}
+            client-secret: ${GOOGLE_CLIENT_SECRET:placeholder}
+            scope: openid, profile, email
+          github:
+            client-id: ${GITHUB_CLIENT_ID:placeholder}
+            client-secret: ${GITHUB_CLIENT_SECRET:placeholder}
+            scope: read:user, user:email
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-secret-key-that-is-at-least-32-bytes-long-for-hmac-sha256}
+    expiration-days: 7
+  security:
+    cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+    frontend-url: ${FRONTEND_URL:http://localhost:4200}
 
 logging:
   level:
