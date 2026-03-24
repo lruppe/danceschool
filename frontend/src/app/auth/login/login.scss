@@ -1,0 +1,30 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--ds-page-inline-padding);
+}
+
+.login-card {
+  max-width: 400px;
+  width: 100%;
+  padding: var(--ds-card-padding);
+}
+
+.login-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-3);
+  margin-top: var(--ds-spacing-4);
+}
+
+.login-btn {
+  width: 100%;
+  justify-content: flex-start;
+  gap: var(--ds-spacing-2);
+}
+
+.dev-btn {
+  margin-top: var(--ds-spacing-2);
+}
