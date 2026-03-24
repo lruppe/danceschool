@@ -1,0 +1,25 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+.user-name {
+  font: var(--mat-sys-body-medium);
+  margin-right: var(--ds-spacing-2);
+}
+
+.dashboard-content {
+  padding: var(--ds-page-block-padding) var(--ds-page-inline-padding);
+  max-width: var(--ds-content-max-width);
+  margin: 0 auto;
+
+  h2 {
+    font: var(--mat-sys-headline-small);
+    color: var(--mat-sys-on-surface);
+    margin-bottom: var(--ds-spacing-4);
+  }
+
+  p {
+    font: var(--mat-sys-body-large);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
