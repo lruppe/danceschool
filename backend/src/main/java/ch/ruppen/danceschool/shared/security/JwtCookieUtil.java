@@ -16,26 +16,34 @@ public final class JwtCookieUtil {
     private JwtCookieUtil() {
     }
 
-    public static void setTokenCookie(HttpServletResponse response, String token, long maxAgeDays) {
-        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, token)
+    public static void setTokenCookie(HttpServletResponse response, String token, long maxAgeDays, boolean secure) {
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(COOKIE_NAME, token)
                 .httpOnly(true)
-                .secure(true)
                 .path("/")
-                .maxAge(Duration.ofDays(maxAgeDays))
-                .sameSite("None")
-                .build();
-        response.addHeader("Set-Cookie", cookie.toString());
+                .maxAge(Duration.ofDays(maxAgeDays));
+
+        if (secure) {
+            builder.secure(true).sameSite("None");
+        } else {
+            builder.sameSite("Lax");
+        }
+
+        response.addHeader("Set-Cookie", builder.build().toString());
     }
 
-    public static void clearTokenCookie(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, "")
+    public static void clearTokenCookie(HttpServletResponse response, boolean secure) {
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(COOKIE_NAME, "")
                 .httpOnly(true)
-                .secure(true)
                 .path("/")
-                .maxAge(0)
-                .sameSite("None")
-                .build();
-        response.addHeader("Set-Cookie", cookie.toString());
+                .maxAge(0);
+
+        if (secure) {
+            builder.secure(true).sameSite("None");
+        } else {
+            builder.sameSite("Lax");
+        }
+
+        response.addHeader("Set-Cookie", builder.build().toString());
     }
 
     public static Optional<String> extractToken(HttpServletRequest request) {

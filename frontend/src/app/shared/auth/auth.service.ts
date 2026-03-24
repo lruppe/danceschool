@@ -74,7 +74,7 @@ export class AuthService {
 
   devLogin(email: string): void {
     this.http.post(this.apiUrl('/api/dev/login'), { email }).subscribe({
-      next: () => this.checkAuth(),
+      next: () => this.router.navigate(['/auth/callback']),
     });
   }
 }

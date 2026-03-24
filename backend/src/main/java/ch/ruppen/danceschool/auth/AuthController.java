@@ -1,8 +1,8 @@
 package ch.ruppen.danceschool.auth;
 
+import ch.ruppen.danceschool.shared.security.AppSecurityProperties;
 import ch.ruppen.danceschool.shared.security.AuthenticatedUser;
 import ch.ruppen.danceschool.shared.security.JwtCookieUtil;
-import ch.ruppen.danceschool.user.AppUser;
 import ch.ruppen.danceschool.user.UserDto;
 import ch.ruppen.danceschool.user.UserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final UserService userService;
+    private final AppSecurityProperties securityProperties;
 
     @GetMapping("/me")
     public ResponseEntity<UserDto> me(@AuthenticationPrincipal AuthenticatedUser principal) {
@@ -31,7 +32,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletResponse response) {
-        JwtCookieUtil.clearTokenCookie(response);
+        JwtCookieUtil.clearTokenCookie(response, securityProperties.secureCookies());
         return ResponseEntity.ok().build();
     }
 }

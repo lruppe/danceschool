@@ -38,7 +38,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         AppUser user = userService.findOrCreateOAuthUser(provider, oauthId, email, name, avatarUrl);
 
         String token = jwtUtil.generateToken(user.getId(), user.getEmail());
-        JwtCookieUtil.setTokenCookie(response, token, jwtProperties.expirationDays());
+        JwtCookieUtil.setTokenCookie(response, token, jwtProperties.expirationDays(), securityProperties.secureCookies());
 
         response.sendRedirect(securityProperties.frontendUrl() + "/auth/callback");
     }
