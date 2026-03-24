@@ -1,0 +1,36 @@
+// Responsive breakpoint mixins — aligned with Material's internal breakpoints.
+
+$breakpoints: (
+  sm: 600px,
+  md: 960px,
+  lg: 1280px,
+  xl: 1440px,
+);
+
+/// Apply styles at viewport width >= $name breakpoint.
+/// Usage: @include bp-up(md) { ... }
+@mixin bp-up($name) {
+  $value: map-get($breakpoints, $name);
+  @media (min-width: $value) {
+    @content;
+  }
+}
+
+/// Apply styles at viewport width < $name breakpoint.
+/// Usage: @include bp-down(sm) { ... }
+@mixin bp-down($name) {
+  $value: map-get($breakpoints, $name);
+  @media (max-width: $value - 0.02px) {
+    @content;
+  }
+}
+
+/// Apply styles between two breakpoints.
+/// Usage: @include bp-between(sm, lg) { ... }
+@mixin bp-between($lower, $upper) {
+  $min: map-get($breakpoints, $lower);
+  $max: map-get($breakpoints, $upper);
+  @media (min-width: $min) and (max-width: $max - 0.02px) {
+    @content;
+  }
+}
