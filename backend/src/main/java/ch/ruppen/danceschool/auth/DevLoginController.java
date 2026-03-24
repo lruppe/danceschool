@@ -1,5 +1,6 @@
 package ch.ruppen.danceschool.auth;
 
+import ch.ruppen.danceschool.shared.security.AppSecurityProperties;
 import ch.ruppen.danceschool.shared.security.JwtCookieUtil;
 import ch.ruppen.danceschool.shared.security.JwtProperties;
 import ch.ruppen.danceschool.shared.security.JwtUtil;
@@ -23,13 +24,14 @@ public class DevLoginController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final JwtProperties jwtProperties;
+    private final AppSecurityProperties securityProperties;
 
     @PostMapping("/login")
     public ResponseEntity<Void> devLogin(@RequestBody DevLoginRequest request, HttpServletResponse response) {
         AppUser user = userService.findOrCreateOAuthUser("dev", request.email(), request.email(), "Dev User", null);
 
         String token = jwtUtil.generateToken(user.getId(), user.getEmail());
-        JwtCookieUtil.setTokenCookie(response, token, jwtProperties.expirationDays());
+        JwtCookieUtil.setTokenCookie(response, token, jwtProperties.expirationDays(), securityProperties.secureCookies());
 
         return ResponseEntity.ok().build();
     }

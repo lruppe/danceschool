@@ -77,7 +77,7 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 ### Authentication Flow
 - Backend acts as OAuth2 Client — handles the entire Google/GitHub login redirect flow
 - After OAuth2 success, backend mints its own JWT (HMAC-SHA256, 7-day expiry) containing `userId` and `email`
-- JWT is set as an `AUTH_TOKEN` HTTP-only, Secure, SameSite=None cookie
+- JWT is set as an `AUTH_TOKEN` HTTP-only cookie (Secure+SameSite=None in prod, Lax in dev — controlled by `SECURE_COOKIES` env var)
 - On subsequent requests, `JwtAuthFilter` reads the cookie, validates the JWT, and sets `SecurityContext`
 - Sessions are `IF_REQUIRED` (used briefly during OAuth2 redirect dance, not for ongoing auth)
 
@@ -99,6 +99,12 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 - `JWT_SECRET` — HMAC-SHA256 signing key (min 32 bytes)
 - `CORS_ALLOWED_ORIGINS` — comma-separated allowed origins (default: `http://localhost:4200`)
 - `FRONTEND_URL` — redirect target after OAuth2 login (default: `http://localhost:4200`)
+- `SECURE_COOKIES` — set `true` in prod for Secure+SameSite=None cookies (default: `false` for dev)
+
+### CSRF
+- Uses `CookieCsrfTokenRepository.withHttpOnlyFalse()` — Angular reads the `XSRF-TOKEN` cookie and sends `X-XSRF-TOKEN` header automatically
+- Spring Security 6+ defers CSRF token loading — a `csrfCookieFilter` eagerly loads it so the cookie is set on every response
+- CSRF is disabled for `/api/dev/**` (dev-only endpoints)
 
 ### Key classes in `shared/security/`
 - `SecurityConfig` — filter chain, CORS, CSRF, OAuth2, authorization rules
