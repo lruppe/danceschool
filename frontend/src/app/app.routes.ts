@@ -4,8 +4,16 @@ import { authGuard } from './shared/auth/auth.guard';
 export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./auth/login/login').then(m => m.LoginComponent) },
   { path: 'auth/callback', loadComponent: () => import('./auth/callback/callback').then(m => m.AuthCallbackComponent) },
-  { path: 'onboarding', loadComponent: () => import('./onboarding/onboarding').then(m => m.OnboardingComponent), canActivate: [authGuard] },
-  { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard').then(m => m.DashboardComponent), canActivate: [authGuard] },
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  {
+    path: '',
+    loadComponent: () => import('./shell/shell').then(m => m.ShellComponent),
+    canActivate: [authGuard],
+    children: [
+      { path: 'onboarding', loadComponent: () => import('./onboarding/onboarding').then(m => m.OnboardingComponent) },
+      { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard').then(m => m.DashboardComponent) },
+      { path: 'students', loadComponent: () => import('./students/students').then(m => m.StudentsComponent) },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    ],
+  },
   { path: '**', redirectTo: 'login' },
 ];

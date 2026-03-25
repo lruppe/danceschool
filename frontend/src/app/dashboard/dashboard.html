@@ -1,15 +1,4 @@
-<mat-toolbar color="primary">
-  <span>Dance School</span>
-  <span class="spacer"></span>
-  @if (user(); as u) {
-    <span class="user-name">{{ u.name || u.email }}</span>
-    <button mat-icon-button (click)="auth.logout()">
-      <mat-icon>logout</mat-icon>
-    </button>
-  }
-</mat-toolbar>
-
-<main class="dashboard-content">
+<div class="dashboard-content">
   @if (user(); as u) {
     @if (u.memberships.length > 0) {
       <h2>Your Schools</h2>
@@ -20,4 +9,4 @@
       <p>No schools yet. Please complete onboarding.</p>
     }
   }
-</main>
+</div>

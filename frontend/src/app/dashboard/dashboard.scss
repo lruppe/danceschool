@@ -1,16 +1,5 @@
-.spacer {
-  flex: 1 1 auto;
-}
-
-.user-name {
-  font: var(--mat-sys-body-medium);
-  margin-right: var(--ds-spacing-2);
-}
-
 .dashboard-content {
-  padding: var(--ds-page-block-padding) var(--ds-page-inline-padding);
   max-width: var(--ds-content-max-width);
-  margin: 0 auto;
 
   h2 {
     font: var(--mat-sys-headline-small);
