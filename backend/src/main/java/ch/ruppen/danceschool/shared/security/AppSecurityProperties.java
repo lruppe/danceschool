@@ -6,8 +6,6 @@ import java.util.List;
 
 @ConfigurationProperties(prefix = "app.security")
 public record AppSecurityProperties(
-        List<String> corsAllowedOrigins,
-        String frontendUrl,
-        boolean secureCookies
+        List<String> corsAllowedOrigins
 ) {
 }

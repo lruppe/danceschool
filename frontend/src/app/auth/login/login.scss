@@ -1,3 +1,5 @@
+@use 'styles' as ds;
+
 .login-container {
   display: flex;
   justify-content: center;
@@ -12,19 +14,23 @@
   padding: var(--ds-card-padding);
 }
 
-.login-buttons {
+.login-form {
   display: flex;
   flex-direction: column;
   gap: var(--ds-spacing-3);
   margin-top: var(--ds-spacing-4);
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+  }
 }
 
-.login-btn {
-  width: 100%;
-  justify-content: flex-start;
-  gap: var(--ds-spacing-2);
-}
-
-.dev-btn {
-  margin-top: var(--ds-spacing-2);
+.login-error {
+  color: var(--mat-sys-error);
+  font: var(--mat-sys-body-small);
+  margin: 0;
 }

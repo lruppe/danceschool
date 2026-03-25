@@ -5,22 +5,23 @@
       <mat-card-subtitle>Manage your dance school</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <div class="login-buttons">
-        <button mat-flat-button (click)="loginWithGoogle()" class="login-btn">
-          <mat-icon>login</mat-icon>
-          Continue with Google
-        </button>
-        <button mat-flat-button (click)="loginWithGitHub()" class="login-btn">
-          <mat-icon>code</mat-icon>
-          Continue with GitHub
-        </button>
-        @if (isDev) {
-          <button mat-stroked-button (click)="devLogin()" class="login-btn dev-btn">
-            <mat-icon>bug_report</mat-icon>
-            Dev Login
-          </button>
+      <form class="login-form" [formGroup]="form" (ngSubmit)="login()">
+        <mat-form-field>
+          <mat-label>Username</mat-label>
+          <input matInput formControlName="username" autocomplete="username" />
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input matInput type="password" formControlName="password" autocomplete="current-password" />
+        </mat-form-field>
+        @if (auth.loginError(); as error) {
+          <p class="login-error">{{ error }}</p>
         }
-      </div>
+        <button mat-flat-button type="submit" [disabled]="form.invalid">
+          <mat-icon>login</mat-icon>
+          Sign in
+        </button>
+      </form>
     </mat-card-content>
   </mat-card>
 </div>

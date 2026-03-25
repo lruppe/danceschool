@@ -28,9 +28,6 @@ public class AppUser {
 
     private String avatarUrl;
 
-    @Column(nullable = false)
-    private String oauthProvider;
-
-    @Column(nullable = false)
-    private String oauthId;
+    @Column(nullable = false, unique = true)
+    private String username;
 }

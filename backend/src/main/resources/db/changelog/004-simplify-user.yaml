@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-add-username-column
+      author: claude
+      changes:
+        - addColumn:
+            tableName: app_user
+            columns:
+              - column:
+                  name: username
+                  type: VARCHAR(100)
+        - sql:
+            sql: UPDATE app_user SET username = oauth_id WHERE username IS NULL
+        - addNotNullConstraint:
+            tableName: app_user
+            columnName: username
+        - addUniqueConstraint:
+            tableName: app_user
+            columnNames: username
+            constraintName: uk_user_username
+
+  - changeSet:
+      id: 004-drop-oauth-columns
+      author: claude
+      changes:
+        - dropUniqueConstraint:
+            tableName: app_user
+            constraintName: uk_user_oauth
+        - dropColumn:
+            tableName: app_user
+            columnName: oauth_provider
+        - dropColumn:
+            tableName: app_user
+            columnName: oauth_id
+
+  - changeSet:
+      id: 004-seed-admin-user
+      author: claude
+      changes:
+        - insert:
+            tableName: app_user
+            columns:
+              - column:
+                  name: username
+                  value: dance_admin
+              - column:
+                  name: email
+                  value: admin@danceschool.app
+              - column:
+                  name: name
+                  value: Dance Admin

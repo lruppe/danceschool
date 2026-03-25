@@ -25,11 +25,13 @@ export class AuthService {
   private readonly _user = signal<User | null>(null);
   private readonly _loading = signal(true);
   private readonly _checked = signal(false);
+  private readonly _loginError = signal<string | null>(null);
 
   readonly user = this._user.asReadonly();
   readonly isLoggedIn = computed(() => this._user() !== null);
   readonly isLoading = this._loading.asReadonly();
   readonly isChecked = this._checked.asReadonly();
+  readonly loginError = this._loginError.asReadonly();
 
   private apiUrl(path: string): string {
     return `${environment.apiUrl}${path}`;
@@ -51,12 +53,25 @@ export class AuthService {
     });
   }
 
-  loginWithGoogle(): void {
-    window.location.href = `${environment.apiUrl}/oauth2/authorization/google`;
-  }
-
-  loginWithGitHub(): void {
-    window.location.href = `${environment.apiUrl}/oauth2/authorization/github`;
+  login(username: string, password: string): void {
+    this._loginError.set(null);
+    this._loading.set(true);
+    this.http.post<User>(this.apiUrl('/api/auth/login'), { username, password }).subscribe({
+      next: (user) => {
+        this._user.set(user);
+        this._loading.set(false);
+        this._checked.set(true);
+        if (user.memberships.length === 0) {
+          this.router.navigate(['/onboarding']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
+      },
+      error: () => {
+        this._loginError.set('Invalid username or password');
+        this._loading.set(false);
+      },
+    });
   }
 
   logout(): void {
@@ -69,12 +84,6 @@ export class AuthService {
         this._user.set(null);
         this.router.navigate(['/login']);
       },
-    });
-  }
-
-  devLogin(email: string): void {
-    this.http.post(this.apiUrl('/api/dev/login'), { email }).subscribe({
-      next: () => this.router.navigate(['/auth/callback']),
     });
   }
 }
