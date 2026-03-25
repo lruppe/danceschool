@@ -91,11 +91,10 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 - `CORS_ALLOWED_ORIGINS` — comma-separated allowed origins (default: `http://localhost:4200`)
 
 ### CSRF
-- Uses `CookieCsrfTokenRepository.withHttpOnlyFalse()` — Angular reads the `XSRF-TOKEN` cookie and sends `X-XSRF-TOKEN` header automatically
-- Spring Security 6+ defers CSRF token loading — a `csrfCookieFilter` eagerly loads it so the cookie is set on every response
+- Disabled for now (single-admin app). Re-enable when integrating Auth0 or adding multi-user support.
 
 ### Key classes in `shared/security/`
-- `SecurityConfig` — filter chain, CORS, CSRF, session auth, authorization rules
+- `SecurityConfig` — filter chain, CORS, session auth, authorization rules
 - `AuthenticatedUser` — principal record (userId, email) available via `@AuthenticationPrincipal`
 - `AppSecurityProperties` — CORS configuration
 
