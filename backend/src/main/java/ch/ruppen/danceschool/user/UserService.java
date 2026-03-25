@@ -15,23 +15,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final SchoolMemberService schoolMemberService;
 
-    public AppUser findOrCreateOAuthUser(String provider, String oauthId, String email, String name, String avatarUrl) {
-        return userRepository.findByOauthProviderAndOauthId(provider, oauthId)
-                .map(existing -> {
-                    existing.setEmail(email);
-                    existing.setName(name);
-                    existing.setAvatarUrl(avatarUrl);
-                    return userRepository.save(existing);
-                })
-                .orElseGet(() -> {
-                    AppUser user = new AppUser();
-                    user.setOauthProvider(provider);
-                    user.setOauthId(oauthId);
-                    user.setEmail(email);
-                    user.setName(name);
-                    user.setAvatarUrl(avatarUrl);
-                    return userRepository.save(user);
-                });
+    public Optional<AppUser> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
     public Optional<AppUser> findByEmail(String email) {

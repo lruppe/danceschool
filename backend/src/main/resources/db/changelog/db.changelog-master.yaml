@@ -5,3 +5,5 @@ databaseChangeLog:
       file: db/changelog/002-create-user.yaml
   - include:
       file: db/changelog/003-create-school-member.yaml
+  - include:
+      file: db/changelog/004-simplify-user.yaml
