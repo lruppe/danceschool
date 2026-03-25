@@ -1,12 +1,13 @@
 {
   "permissions": {
-    "deny": [
-      "Bash(git push --force*)",
-      "Bash(git push -f*)"
-    ],
     "allow": [
       "Bash(git:*)",
+      "Bash(gh:*)",
       "Bash(./mvnw:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(curl:*)",
+      "Bash(docker compose:*)",
       "Bash(ls:*)",
       "Bash(cat:*)",
       "Bash(head:*)",
@@ -24,8 +25,18 @@
       "Read",
       "Glob",
       "Grep",
+      "WebSearch",
+      "WebFetch(domain:angular.dev)",
+      "Skill(update-config)",
       "mcp__github__*",
-      "WebSearch"
+      "mcp__angular-cli__*",
+      "mcp__playwright__*"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git reset --hard*)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true
 }

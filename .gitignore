@@ -19,6 +19,8 @@ backend/.mvn/wrapper/maven-wrapper.jar
 *.iml
 *.ipr
 
+.playwright-mcp
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
