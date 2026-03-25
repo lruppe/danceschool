@@ -1,0 +1,59 @@
+<mat-sidenav-container class="shell-container">
+  <mat-sidenav
+    #sidenav
+    class="shell-sidenav"
+    [mode]="isDesktop() ? 'side' : 'over'"
+    [opened]="isDesktop()"
+    fixedInViewport
+  >
+    <!-- Logo -->
+    <div class="sidenav-logo">
+      <div class="logo-icon">
+        <mat-icon>music_note</mat-icon>
+      </div>
+      <span class="logo-text">Dance School</span>
+    </div>
+
+    <mat-divider />
+
+    <!-- Navigation -->
+    <mat-nav-list class="sidenav-nav">
+      @for (item of navItems; track item.route) {
+        <a
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive="nav-active"
+          class="nav-item"
+          (click)="closeMobileSidenav()"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="shell-content">
+    <!-- Top App Bar -->
+    <mat-toolbar class="shell-toolbar">
+      @if (!isDesktop()) {
+        <button mat-icon-button (click)="sidenav.toggle()">
+          <mat-icon>menu</mat-icon>
+        </button>
+      }
+      <span class="toolbar-title">Bachata &amp; Salsa Management</span>
+      <span class="toolbar-spacer"></span>
+      @if (user(); as u) {
+        <span class="toolbar-user-name">{{ u.name || u.email }}</span>
+        <button mat-icon-button class="toolbar-avatar" (click)="auth.logout()" aria-label="Logout">
+          <span class="avatar-letter">{{ (u.name || u.email).charAt(0).toUpperCase() }}</span>
+        </button>
+      }
+    </mat-toolbar>
+
+    <!-- Page Content -->
+    <main class="shell-page">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

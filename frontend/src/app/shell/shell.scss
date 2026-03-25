@@ -1,0 +1,77 @@
+@use 'styles' as ds;
+
+.shell-container { height: 100vh; }
+
+// Sidebar
+.shell-sidenav {
+  width: 240px;
+  border-right: 1px solid var(--mat-sys-outline-variant);
+  background: var(--mat-sys-surface);
+}
+
+.sidenav-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-2);
+  padding: var(--ds-spacing-4);
+}
+
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ds-spacing-6);
+  height: var(--ds-spacing-6);
+  border-radius: var(--ds-spacing-1);
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  mat-icon { font-size: var(--ds-spacing-5); width: var(--ds-spacing-5); height: var(--ds-spacing-5); }
+}
+
+.logo-text {
+  font: var(--mat-sys-title-large);
+  color: var(--mat-sys-on-surface);
+}
+
+// Nav
+.sidenav-nav { padding: var(--ds-spacing-3) var(--ds-spacing-4); }
+
+.nav-item {
+  border-radius: var(--ds-spacing-2) !important;
+  margin-bottom: var(--ds-spacing-1);
+  &.nav-active {
+    background: var(--mat-sys-primary) !important;
+    mat-icon { color: var(--mat-sys-on-primary); opacity: 1; }
+    span[matListItemTitle] { color: var(--mat-sys-on-primary); }
+  }
+  mat-icon { color: var(--mat-sys-on-surface-variant); opacity: 0.6; }
+  span[matListItemTitle] { font: var(--mat-sys-label-large); color: var(--mat-sys-on-surface); }
+}
+
+// Toolbar
+.shell-toolbar {
+  height: var(--ds-spacing-16);
+  background: var(--mat-sys-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  padding-inline: var(--ds-spacing-6);
+}
+
+.toolbar-title { font: var(--mat-sys-title-medium); color: var(--mat-sys-on-surface); }
+.toolbar-spacer { flex: 1 1 auto; }
+.toolbar-user-name { font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); margin-right: var(--ds-spacing-2); }
+
+.toolbar-avatar {
+  width: var(--ds-spacing-8);
+  height: var(--ds-spacing-8);
+  border-radius: 50%;
+  background: var(--mat-sys-primary);
+}
+
+.avatar-letter { font: var(--mat-sys-label-large); color: var(--mat-sys-on-primary); }
+
+// Content
+.shell-page {
+  background: var(--mat-sys-surface-variant);
+  min-height: calc(100vh - var(--ds-spacing-16));
+  padding: var(--ds-card-padding);
+}
