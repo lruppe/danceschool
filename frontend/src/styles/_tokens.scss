@@ -17,12 +17,28 @@
   --ds-spacing-20: 80px;
   --ds-spacing-24: 96px;
 
+  // ── Border radius ──
+  --ds-radius-sm: 4px;
+  --ds-radius-md: 8px;
+  --ds-radius-lg: 12px;
+  --ds-radius-xl: 16px;
+  --ds-radius-full: 9999px;
+
   // ── Semantic layout tokens ──
   --ds-page-inline-padding: var(--ds-spacing-4);
   --ds-page-block-padding: var(--ds-spacing-16);
   --ds-card-padding: var(--ds-spacing-6);
   --ds-section-gap: var(--ds-spacing-8);
   --ds-content-max-width: 960px;
+
+  // ── Semantic colors (extend Material palette) ──
+  // These map to Figma variables not covered by Material's built-in palette.
+  --ds-color-success: #19a185;
+  --ds-color-success-container: #d8f4ed;
+  --ds-color-on-success: #ffffff;
+  --ds-color-info: #d18519;
+  --ds-color-info-container: #fcefd8;
+  --ds-color-on-info: #ffffff;
 
   // ── Motion ──
   --ds-duration-fast: 150ms;

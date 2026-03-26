@@ -61,13 +61,17 @@ Custom design tokens (`--ds-*`) extend Material's system tokens (`--mat-sys-*`).
 - Grid `minmax()` column widths (e.g., `minmax(280px, 1fr)`) — these are layout breakpoints, not spacing
 
 **Token files:**
-- `src/styles/_tokens.scss` — spacing scale, semantic layout, motion
+- `src/styles/_tokens.scss` — spacing scale, border radius, semantic colors, semantic layout, motion
 - `src/styles/_mixins.scss` — responsive breakpoint mixins
 - `src/styles/_index.scss` — barrel file
 
 **Spacing scale (4px base):** `--ds-spacing-{1,2,3,4,5,6,8,10,12,16,20,24}` → 4px–96px
 
-**Semantic tokens:** `--ds-page-inline-padding`, `--ds-page-block-padding`, `--ds-card-padding`, `--ds-section-gap`, `--ds-content-max-width`
+**Border radius:** `--ds-radius-{sm,md,lg,xl,full}` → 4px–9999px
+
+**Semantic colors (extend Material):** `--ds-color-{success,info}`, `--ds-color-{success,info}-container`, `--ds-color-on-{success,info}`
+
+**Semantic layout:** `--ds-page-inline-padding`, `--ds-page-block-padding`, `--ds-card-padding`, `--ds-section-gap`, `--ds-content-max-width`
 
 **Motion:** `--ds-duration-{fast,normal,slow}`, `--ds-easing-{standard,decelerate}`
 
