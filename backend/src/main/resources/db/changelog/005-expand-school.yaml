@@ -1,0 +1,126 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-add-school-profile-columns
+      author: claude
+      changes:
+        - addColumn:
+            tableName: school
+            columns:
+              - column:
+                  name: tagline
+                  type: VARCHAR(255)
+              - column:
+                  name: about
+                  type: TEXT
+              - column:
+                  name: website
+                  type: VARCHAR(500)
+              - column:
+                  name: cover_image_url
+                  type: VARCHAR(1000)
+              - column:
+                  name: logo_url
+                  type: VARCHAR(1000)
+
+  - changeSet:
+      id: 005-create-school-specialty
+      author: claude
+      changes:
+        - createTable:
+            tableName: school_specialty
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: school_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: school_specialty
+            baseColumnNames: school_id
+            referencedTableName: school
+            referencedColumnNames: id
+            constraintName: fk_school_specialty_school
+
+  - changeSet:
+      id: 005-create-school-gallery-image
+      author: claude
+      changes:
+        - createTable:
+            tableName: school_gallery_image
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: school_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: url
+                  type: VARCHAR(1000)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: position
+                  type: INT
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: school_gallery_image
+            baseColumnNames: school_id
+            referencedTableName: school
+            referencedColumnNames: id
+            constraintName: fk_school_gallery_image_school
+
+  - changeSet:
+      id: 005-create-school-youtube-video
+      author: claude
+      changes:
+        - createTable:
+            tableName: school_youtube_video
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: school_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: url
+                  type: VARCHAR(1000)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: position
+                  type: INT
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: school_youtube_video
+            baseColumnNames: school_id
+            referencedTableName: school
+            referencedColumnNames: id
+            constraintName: fk_school_youtube_video_school
