@@ -44,6 +44,33 @@ Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. 
 - **Merge strategy:** squash merge
 - **Auto-merge:** merge immediately after CI passes, no manual review needed
 
+## Visual Testing Workflow
+
+When verifying frontend changes visually (layout, styling, component rendering), follow this workflow:
+
+### 1. Start both servers
+
+- **Backend:** `cd backend && ./mvnw spring-boot:run` (runs on `http://localhost:8080`)
+- **Frontend:** Angular MCP `devserver.start` (workspace: `frontend/`) — uses `proxy.conf.json` to forward `/api` requests to the backend
+- Wait for both to be ready before proceeding
+
+### 2. Log in
+
+- **Credentials:** `dance_admin` / `DanceSchool2024!` (single in-memory admin user, configured in backend — see `backend/src/CLAUDE.md` for details)
+- Use Playwright MCP to fill the login form and click Sign in
+
+### 3. Handle fresh database state
+
+The backend uses H2 in-memory, so every restart is a clean slate:
+- If the admin has **no school**, login redirects to `/onboarding` — create a school first to reach the main app shell
+- If you only need to verify the shell layout (sidebar, toolbar), the onboarding page already shows it
+
+### 4. Navigate and screenshot
+
+- Use Playwright `browser_navigate` to the relevant page
+- Use `browser_take_screenshot` to visually verify layout and styling
+- **Always take a final screenshot before committing** style or layout changes
+
 ## Working Rules
 
 - **Always update the relevant CLAUDE.md** with learnings discovered during work (e.g., environment details, confirmed conventions, corrected assumptions). CLAUDE.md files should stay accurate and evolve as the project does.
