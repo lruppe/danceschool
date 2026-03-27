@@ -1,0 +1,39 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+
+export interface GalleryImage {
+  url: string;
+  position: number;
+}
+
+export interface YoutubeVideo {
+  url: string;
+  position: number;
+}
+
+export interface SchoolDetail {
+  id: number;
+  name: string;
+  tagline: string | null;
+  about: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  coverImageUrl: string | null;
+  logoUrl: string | null;
+  specialties: string[];
+  galleryImages: GalleryImage[];
+  youtubeVideos: YoutubeVideo[];
+}
+
+@Injectable({ providedIn: 'root' })
+export class SchoolService {
+  private http = inject(HttpClient);
+
+  getMySchool(): Observable<SchoolDetail> {
+    return this.http.get<SchoolDetail>(`${environment.apiUrl}/api/schools/me`);
+  }
+}
