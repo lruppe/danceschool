@@ -1,0 +1,290 @@
+@use 'styles/mixins' as ds;
+
+// Card pattern (from design system rules)
+.card {
+  background: var(--mat-sys-surface);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-card-padding);
+}
+
+// Page header
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.title-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-2);
+}
+
+.page-title {
+  font: var(--mat-sys-headline-small);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+}
+
+.page-subtitle {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+// Section titles
+.section-title {
+  font: var(--mat-sys-title-medium);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+}
+
+// Empty state hints
+.empty-hint {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+// Hero card
+.hero-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.cover-image {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+}
+
+.cover-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, var(--mat-sys-primary), #9c6af0);
+}
+
+.school-info {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-5);
+  padding: var(--ds-spacing-4) var(--ds-card-padding) var(--ds-spacing-5);
+}
+
+.school-logo {
+  width: var(--ds-spacing-20);
+  height: var(--ds-spacing-20);
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--mat-sys-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .logo-placeholder-icon {
+    font-size: var(--ds-spacing-10);
+    width: var(--ds-spacing-10);
+    height: var(--ds-spacing-10);
+    color: var(--mat-sys-on-primary);
+  }
+}
+
+.name-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-1);
+  min-width: 0;
+}
+
+.school-name {
+  font: var(--mat-sys-headline-small);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+}
+
+.school-tagline {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+// About & Specialties row
+.about-specialties-row {
+  display: flex;
+  gap: var(--ds-card-padding);
+
+  @include ds.bp-down(md) {
+    flex-direction: column;
+  }
+}
+
+.about-card {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-3);
+}
+
+.about-text {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.specialties-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-3);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-spacing-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ds-spacing-1) var(--ds-spacing-3);
+  border-radius: var(--ds-radius-md);
+  font: var(--mat-sys-label-medium);
+}
+
+.chip-primary {
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-primary);
+}
+
+// Location & Contact card
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-5);
+}
+
+.contact-columns {
+  display: flex;
+  gap: var(--ds-spacing-12);
+
+  @include ds.bp-down(md) {
+    flex-direction: column;
+    gap: var(--ds-spacing-6);
+  }
+}
+
+.contact-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-4);
+}
+
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contact-label {
+  font: var(--mat-sys-label-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.contact-value {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface);
+}
+
+// Gallery
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ds-spacing-3);
+
+  @include ds.bp-down(md) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.image-cell {
+  border-radius: var(--ds-radius-md);
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// YouTube Videos
+.videos-row {
+  display: flex;
+  gap: var(--ds-spacing-4);
+
+  @include ds.bp-down(md) {
+    flex-direction: column;
+  }
+}
+
+.video-thumbnail {
+  flex: 1;
+  height: 180px;
+  background: #202020;
+  border-radius: var(--ds-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  overflow: hidden;
+}
+
+.play-button {
+  width: var(--ds-spacing-12);
+  height: var(--ds-spacing-12);
+  border-radius: var(--ds-spacing-6);
+  background: red;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font: var(--mat-sys-title-medium);
+}
+
+// Loading / error states
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--ds-spacing-12);
+
+  p {
+    font: var(--mat-sys-body-large);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.error-text {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-error, #b00020);
+  text-align: center;
+  padding: var(--ds-spacing-12);
+}
+
+// Host layout
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-card-padding);
+}
