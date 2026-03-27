@@ -53,6 +53,13 @@ Create issues in dependency order (blockers first) so you can reference real iss
 
 #<prd-issue-number>
 
+## Design Reference
+
+- **Parent design page:** `<Figma URL of the full design page from the PRD>`
+- **Relevant node:** `<Figma URL with node-id for the specific section relevant to this slice>` (if applicable)
+
+If the slice has no UI, write "No UI in this slice." Do NOT embed screenshots — use the Figma links as the living reference.
+
 ## What to build
 
 A concise description of this vertical slice. Describe the end-to-end behavior, not layer-by-layer implementation. Reference specific sections of the parent PRD rather than duplicating content.

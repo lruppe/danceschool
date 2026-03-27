@@ -7,7 +7,6 @@
       "Bash(npm:*)",
       "Bash(npx:*)",
       "Bash(curl:*)",
-      "Bash(docker compose:*)",
       "Bash(ls:*)",
       "Bash(cat:*)",
       "Bash(head:*)",
@@ -28,7 +27,6 @@
       "WebSearch",
       "WebFetch(domain:angular.dev)",
       "Skill(update-config)",
-      "mcp__github__*",
       "mcp__angular-cli__*",
       "mcp__playwright__*",
       "mcp__plugin_figma_figma__*"
@@ -39,5 +37,8 @@
       "Bash(git reset --hard*)"
     ]
   },
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": true,
+  "enabledPlugins": {
+    "ralph-loop@claude-plugins-official": true
+  }
 }

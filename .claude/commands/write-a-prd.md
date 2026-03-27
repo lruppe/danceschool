@@ -20,6 +20,15 @@ Check with the user that these modules match their expectations. Check with the 
 
 The problem that the user is facing, from the user's perspective.
 
+## Design Reference
+
+If a Figma design exists for this feature, include links here:
+
+- **Figma design page:** `<URL with node-id>`
+- **Figma screenshot:** *(attach a screenshot from `get_screenshot` so the PRD is self-contained)*
+
+If no Figma design exists, write "No design — implementation is code-driven."
+
 ## Solution
 
 The solution to the problem, from the user's perspective.
