@@ -22,8 +22,26 @@ Frontend and backend are independent builds — no Maven integration. During dev
 
 Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. See `docs/GLOSSARY.md` for ubiquitous language (DDD-style).
 
-- **Admin portal** (current Angular frontend): for school Owners and Teachers
-- **Student apps** (future): students browse schools, view classes, enroll
+### Product Roadmap
+
+**Phase 1 — DanceStudio Manager Platform (current)**
+- Admin portal (Angular frontend) for school Owners and Teachers
+- Office-oriented: manage sign-ups, payments, organize helpers when students cancel (partner matching for couple dance)
+- Multi-tenant B2B — each school is a tenant
+
+**Phase 2 — Student App (future, Android/iOS)**
+- Students browse dance schools, view classes, enroll
+- Social login (Apple, Google, possibly Instagram) — frictionless onboarding is a priority
+- Dance events feed — community-oriented: school owners post events, plus external sources (scraped data, festival organizations)
+- Community building is a core goal
+
+**Business model:** Solve admin pain for teachers → get students onto the platform → build community via events → monetize via ads, school subscriptions, and other revenue streams TBD
+
+### Authentication Strategy (planned)
+
+- Phase 1 (current): single in-memory admin user (temporary — to be replaced)
+- Target: OAuth/social login for all users (owners, teachers, students) via a managed provider (Auth0, Clerk, or similar)
+- Decision pending on provider choice
 
 ## CI/CD
 
@@ -39,7 +57,8 @@ Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. 
 - **Git operations** (commit, push, pull, branch): use `git` CLI
 - **GitHub operations** (PRs, checks, issues): use `gh` CLI
 - **All changes go through PRs** — never commit directly to `main`
-- **Always work in a worktree** — start with `claude --worktree <name>` or create one at the beginning of a task
+- **Always work in a worktree** — use Claude Code's built-in worktree tools (`EnterWorktree`) or `claude --worktree <name>`. This creates worktrees at `.claude/worktrees/<name>/` inside the project. Do NOT use raw `git worktree add` to create worktrees outside the project directory — external worktrees break MCP tool context and file watching.
+- **Fresh worktrees need setup** — always run `npm install` in `frontend/` before building or starting the dev server in a new worktree
 - **Workflow:** pull main → create worktree → create branch → commit → push → create PR → `gh pr checks <number> --watch` → squash merge → pull main
 - **Merge strategy:** squash merge
 - **Auto-merge:** merge immediately after CI passes, no manual review needed

@@ -15,12 +15,15 @@ All commands run from the `frontend/` directory. For the dev server, see the wor
 
 Use MCP tools for the full develop → verify loop:
 
-1. **Start dev server:** Angular MCP `devserver.start` (workspace: `frontend/`)
-2. **Wait for build:** Angular MCP `devserver.wait_for_build` — also call this after every code change to confirm it compiled
-3. **Visual verify:** Playwright MCP `browser_navigate` to the dev server URL, then `browser_snapshot` (DOM/accessibility tree) or `browser_take_screenshot` (visual)
-4. **Iterate:** edit code → `devserver.wait_for_build` → snapshot/screenshot → repeat
-5. **Visual verify before commit:** MUST take a final screenshot and confirm no visual regressions before committing. Never commit style or layout changes without visually verifying the result.
-6. **Stop server:** Angular MCP `devserver.stop` when done
+1. **Install dependencies:** Run `npm install` if in a fresh worktree or after pulling new changes
+2. **Verify build first:** Run `npx ng build` to confirm compilation before starting the dev server. This catches errors faster than the MCP devserver.
+3. **Start dev server:** Angular MCP `devserver.start` (workspace: `frontend/`)
+4. **Wait for build:** Angular MCP `devserver.wait_for_build` — also call this after every code change to confirm it compiled
+   - **Fallback:** If `wait_for_build` returns the same error after you've fixed the code, don't cycle stop/restart — run `npx ng build` directly to get the real build status. The MCP devserver can cache stale errors.
+5. **Visual verify:** Playwright MCP `browser_navigate` to the dev server URL, then `browser_snapshot` (DOM/accessibility tree) or `browser_take_screenshot` (visual)
+6. **Iterate:** edit code → `devserver.wait_for_build` → snapshot/screenshot → repeat
+7. **Visual verify before commit:** MUST take a final screenshot and confirm no visual regressions before committing. Never commit style or layout changes without visually verifying the result.
+8. **Stop server:** Angular MCP `devserver.stop` when done
 
 ### Playwright MCP
 - Use `browser_snapshot` over `browser_take_screenshot` when you need to interact with elements (click, fill, etc.)
