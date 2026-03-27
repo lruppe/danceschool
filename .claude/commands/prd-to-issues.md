@@ -85,6 +85,32 @@ Reference by number from the parent PRD:
 
 </issue-template>
 
+### 6. Create architecture review issue
+
+After all feature slices are created, add one final issue: an architecture review that runs `/improve-codebase-architecture` after all feature slices are complete. This issue is blocked by ALL other slices and ensures structural health is checked after every PRD is shipped.
+
+Use this template:
+
+```
+## Parent PRD
+
+#<prd-issue-number>
+
+## What to do
+
+Run `/improve-codebase-architecture` to check whether the work from this PRD introduced architectural friction:
+
+- Shallow modules that should be deepened
+- Tightly-coupled seams between new and existing code
+- Opportunities to improve testability at module boundaries
+
+This is a post-implementation review, not a blocker for shipping.
+
+## Blocked by
+
+- Blocked by #<all-other-slice-issue-numbers>
+```
+
 Do NOT close or modify the parent PRD issue.
 
 $ARGUMENTS
