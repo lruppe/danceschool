@@ -1,5 +1,8 @@
 # Figma-to-Code Design System Rules
 
+> This file covers translating Figma designs **to Angular code** — component mappings, CSS tokens, and layout constants.
+> For working **inside Figma** (component structure, instancing, editing), see `figma-design-workflow.md`.
+
 These rules define how to translate Figma designs from the Dance School Admin design file into Angular code. Follow them for every Figma implementation task.
 
 ## Figma Design File
@@ -56,7 +59,7 @@ IMPORTANT: Always use these Angular Material equivalents. Never create custom co
 | `color/info` (#d18519) | `var(--ds-color-info)` |
 | `color/info-container` (#fcefd8) | `var(--ds-color-info-container)` |
 
-### Spacing
+### Spacing (Figma subset — full scale in `frontend/CLAUDE.md`)
 
 | Figma Variable | CSS Token |
 |---|---|
@@ -121,10 +124,13 @@ Chips use semantic colors not in Material's default palette. Style them with `--
 
 | Element | Height | Notes |
 |---|---|---|
-| App bar | 56px | `--ds-spacing-14` (use literal, no token needed — Material toolbar default) |
+| App bar | 56px | Material toolbar default |
 | Sidebar width | 240px | Fixed width |
 | Sidebar logo area | 56px | Match app bar height |
+| Table header | ~44px | — |
 | Table row | ~48px | Material table default density |
+| Filter/toolbar bar | ~56px | Enough for inputs + padding |
+| Footer | ~40px | — |
 | Page padding | 24px all sides | `var(--ds-card-padding)` or `var(--ds-spacing-6)` |
 | Section gap | 24px | `var(--ds-spacing-6)` |
 
@@ -134,11 +140,6 @@ Chips use semantic colors not in Material's default palette. Style them with `--
 - IMPORTANT: Do NOT import new icon packages — use Angular Material's `mat-icon` with Material Design Icons
 - Store downloaded assets in `frontend/src/assets/`
 
-## Styling Rules (from CLAUDE.md — always enforced)
+## Styling Rules
 
-- SCSS with `@use 'styles' as ds;` for shared imports
-- Spacing: MUST use `--ds-spacing-*` tokens (no hardcoded px/rem/em)
-- Colors: MUST use `--mat-sys-*` or `--ds-color-*` tokens (no hex codes)
-- Typography: MUST use `--mat-sys-*` type scale tokens
-- Breakpoints: MUST use `@include ds.bp-up()` / `ds.bp-down()` mixins
-- Transitions: MUST use `--ds-duration-*` and `--ds-easing-*` tokens
+All generated code MUST follow the mandatory styling rules in `frontend/CLAUDE.md` > Design Tokens & Styling. Key points: no hardcoded spacing/colors/typography — use `--ds-*` and `--mat-sys-*` tokens exclusively. See that file for the full token scale, allowed exceptions, and token file locations.

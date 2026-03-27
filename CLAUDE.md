@@ -16,7 +16,7 @@ danceschool/
 └── .mcp.json          ← MCP server config (Angular CLI + Playwright browser)
 ```
 
-Frontend and backend are independent builds — no Maven integration. During development, run `ng serve` with a proxy to the backend API.
+Frontend and backend are independent builds — no Maven integration. During development, use Angular MCP `devserver.start` with a proxy to the backend API.
 
 ## Domain
 
@@ -37,7 +37,7 @@ Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. 
 - **GitHub repo:** `lruppe/danceschool`
 - **Auth:** `gh auth setup-git` provides credentials for all git and GitHub operations
 - **Git operations** (commit, push, pull, branch): use `git` CLI
-- **GitHub operations** (PRs, checks, issues): use GitHub MCP tools or `gh` CLI
+- **GitHub operations** (PRs, checks, issues): use `gh` CLI
 - **All changes go through PRs** — never commit directly to `main`
 - **Always work in a worktree** — start with `claude --worktree <name>` or create one at the beginning of a task
 - **Workflow:** pull main → create worktree → create branch → commit → push → create PR → `gh pr checks <number> --watch` → squash merge → pull main

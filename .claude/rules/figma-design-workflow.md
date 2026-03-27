@@ -1,5 +1,8 @@
 # Figma Design Workflow
 
+> This file covers working **inside Figma** — component structure, instancing, and editing the design file.
+> For translating Figma designs **to Angular code**, see `figma-design-system.md`.
+
 ## Figma file links
 
 - **Design file** (source of truth for components and layouts): https://www.figma.com/design/uQoQs1ZZKO8fGIwFsaLStB/Dance-School-Admin
@@ -42,18 +45,15 @@ Always use these instead of creating inline frames:
 - **Students Page**, **My School Page**, **My School Edit Page** — full page content, used as instances in App Layouts.
 
 **Card pattern (not a component — intentional):**
-Cards share a consistent style but vary too much in content to componentize: white fill, 12px corner radius, `rgba(0,0,0,0.08)` border, 24px padding.
+Cards share a consistent style but vary too much in content to componentize. See `figma-design-system.md` > Card Pattern for the CSS implementation.
 
-## Spacing and density standards
+## Figma-specific density standards
 
-- Table rows: ~48px (not 100px)
+For layout constants (app bar, sidebar, page padding, etc.), see `figma-design-system.md` > Layout Constants. The values below are additional Figma-specific guidance:
+
 - Table headers: ~44px
 - Filter/toolbar bars: ~56px (enough for inputs + padding)
 - Footers: ~40px
-- App bar: 56px
-- Sidebar logo area: 56px (match app bar)
-- Page section gap: 24px
-- Page padding: 24px all sides
 - Filter bars: use `counterAxisAlignItems = 'CENTER'` for vertical centering
 
 ## Incremental Figma editing workflow

@@ -87,7 +87,6 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 - `GET /api/auth/me` returns the user with their memberships — frontend uses this to route
 
 ### Configuration (via env vars)
-- `ADMIN_PASSWORD` — password for the `dance_admin` user (default: `DanceSchool2024!`)
 - `CORS_ALLOWED_ORIGINS` — comma-separated allowed origins (default: `http://localhost:4200`)
 
 ### CSRF
@@ -97,7 +96,3 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 - `SecurityConfig` — filter chain, CORS, session auth, authorization rules
 - `AuthenticatedUser` — principal record (userId, email) available via `@AuthenticationPrincipal`
 - `AppSecurityProperties` — CORS configuration
-
-## Database Migrations
-
-All schema changes go through Liquibase. Add new changesets to files included from `db.changelog-master.yaml`. Never modify JPA entities without a corresponding migration.
