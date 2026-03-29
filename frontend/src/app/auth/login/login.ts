@@ -1,30 +1,36 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../shared/auth/auth.service';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './login.html',
   styleUrl: './login.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {
   protected auth = inject(AuthService);
+  private router = inject(Router);
 
-  protected form = new FormGroup({
-    username: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-    password: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-  });
+  constructor() {
+    effect(() => {
+      if (this.auth.isLoggedIn()) {
+        const user = this.auth.user();
+        if (user && user.memberships.length === 0) {
+          this.router.navigate(['/onboarding']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
+      }
+    });
+  }
 
-  login(): void {
-    if (this.form.invalid) return;
-    const { username, password } = this.form.getRawValue();
-    this.auth.login(username, password);
+  signIn(): void {
+    this.auth.signInWithGoogle();
   }
 }

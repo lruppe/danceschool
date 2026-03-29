@@ -36,7 +36,35 @@ Angular 21 application using Angular Material for UI components.
 **Key stack:**
 - Angular 21 (standalone components, signals, new control flow)
 - Angular Material 21 (custom SCSS theme)
+- Firebase SDK (authentication via Google sign-in)
 - TypeScript strict mode, SCSS
+
+## Authentication — Firebase
+
+### Architecture
+- **Firebase SDK** (`firebase` npm package) handles Google sign-in and token management
+- **No `@angular/fire`** — uses the Firebase JS SDK directly for simplicity and Angular 21 compatibility
+- `AuthService` initializes Firebase, listens to `onAuthStateChanged`, and manages auth state via signals
+- All API calls include `Authorization: Bearer <firebase-id-token>` via `authInterceptor`
+- Auth guard waits for Firebase to restore session from IndexedDB before making decisions (async)
+- Login page shows a Google sign-in button (no username/password)
+
+### Firebase Emulator (local development)
+- `firebase.json` at repo root configures the Auth emulator on port 9099
+- Dev environment (`environment.ts`) sets `useEmulators: true`
+- Start emulator: `npx firebase-tools emulators:start` (or install globally: `npm i -g firebase-tools`)
+- Emulator UI available at `http://localhost:4000`
+
+### Environment config
+- `src/environments/environment.ts` — dev config with emulator flag
+- `src/environments/environment.prod.ts` — prod config (Firebase project values are placeholders until #50)
+- Firebase config (apiKey, authDomain, projectId) is compile-time, not secret
+
+### Key files
+- `shared/auth/auth.service.ts` — Firebase init, `onAuthStateChanged`, `signInWithPopup`, token signals
+- `shared/auth/auth.interceptor.ts` — attaches Bearer token, redirects on 401
+- `shared/auth/auth.guard.ts` — async guard, waits for Firebase session restore
+- `auth/login/login.ts` — Google sign-in button, redirect on success
 
 ## Design Tokens & Styling — MANDATORY
 
