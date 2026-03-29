@@ -4,6 +4,7 @@ import ch.ruppen.danceschool.schoolmember.MembershipDto;
 import ch.ruppen.danceschool.schoolmember.SchoolMemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,8 +16,20 @@ public class UserService {
     private final UserRepository userRepository;
     private final SchoolMemberService schoolMemberService;
 
-    public Optional<AppUser> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+    public Optional<AppUser> findByFirebaseUid(String firebaseUid) {
+        return userRepository.findByFirebaseUid(firebaseUid);
+    }
+
+    @Transactional
+    public AppUser findOrCreateByFirebaseUid(String firebaseUid, String email, String name) {
+        return userRepository.findByFirebaseUid(firebaseUid)
+                .orElseGet(() -> {
+                    AppUser user = new AppUser();
+                    user.setFirebaseUid(firebaseUid);
+                    user.setEmail(email);
+                    user.setName(name);
+                    return userRepository.save(user);
+                });
     }
 
     public Optional<AppUser> findByEmail(String email) {

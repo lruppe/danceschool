@@ -8,3 +8,8 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://securetoken.google.com/${FIREBASE_PROJECT_ID}

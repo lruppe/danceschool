@@ -14,7 +14,7 @@ Spring Boot 3.5 application (Java 21) for managing a dance school. Uses Maven wr
 
 **Key stack:**
 - Spring Web (REST API), Spring Data JPA (persistence), Spring Validation
-- Spring Security (session-based auth, single in-memory admin user)
+- Spring Security + OAuth2 Resource Server (stateless Firebase JWT auth)
 - Liquibase for database migrations (`src/main/resources/db/changelog/db.changelog-master.yaml`)
 - H2 in-memory database (dev/test)
 - Lombok for boilerplate reduction (configured as annotation processor in maven-compiler-plugin)
@@ -73,12 +73,18 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 
 ## Security Architecture
 
-### Authentication Flow
-- Single admin user (`dance_admin`) configured via Spring Security's in-memory user properties
-- `POST /api/auth/login` accepts `{username, password}`, authenticates via `AuthenticationManager`, creates HTTP session
-- Session cookie (`JSESSIONID`) maintains authentication across requests
-- `GET /api/auth/me` returns the authenticated user with their school memberships
-- `POST /api/auth/logout` invalidates the session
+### Authentication Flow (Firebase JWT)
+- **Stateless JWT authentication** — no sessions, no cookies
+- Frontend authenticates via Firebase SDK (Google sign-in), sends Firebase ID token as `Authorization: Bearer <token>` on every request
+- Backend validates JWTs via Spring Security OAuth2 Resource Server against Firebase's issuer
+- `FirebaseJwtAuthenticationConverter` extracts Firebase UID, email, and name from JWT claims, then looks up or auto-creates an `app_user` record
+- `GET /api/auth/me` returns the authenticated user with their school memberships (resolved from JWT)
+- No login/logout endpoints — authentication is handled entirely client-side by Firebase SDK
+
+### User Auto-Provisioning
+- First request with a valid Firebase JWT auto-creates an `app_user` from token claims (UID, email, name)
+- Subsequent requests reuse the existing user (looked up by `firebase_uid`)
+- The `app_user.firebase_uid` column is the unique identifier linking Firebase to the app's user model
 
 ### Authorization Model
 - Roles are **scoped to a school**, not global — stored in `school_member` table
@@ -88,11 +94,20 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 
 ### Configuration (via env vars)
 - `CORS_ALLOWED_ORIGINS` — comma-separated allowed origins (default: `http://localhost:4200`)
+- `FIREBASE_ISSUER_URI` — Firebase JWT issuer URI (default: `https://securetoken.google.com/danceschool-dev`)
+- `FIREBASE_PROJECT_ID` — Firebase project ID (default: `danceschool-dev`)
 
 ### CSRF
-- Disabled for now (single-admin app). Re-enable when integrating Auth0 or adding multi-user support.
+- Disabled — stateless JWT auth does not need CSRF protection
 
 ### Key classes in `shared/security/`
-- `SecurityConfig` — filter chain, CORS, session auth, authorization rules
+- `SecurityConfig` — filter chain, CORS, stateless JWT auth, authorization rules
+- `FirebaseJwtAuthenticationConverter` — converts validated JWT to `AuthenticatedUser` principal, handles user auto-provisioning
+- `FirebaseAuthenticationToken` — custom `JwtAuthenticationToken` that carries `AuthenticatedUser` as principal
 - `AuthenticatedUser` — principal record (userId, email) available via `@AuthenticationPrincipal`
 - `AppSecurityProperties` — CORS configuration
+
+### Testing
+- Tests use a mock `JwtDecoder` (via `TestSecurityConfig`) to avoid real Firebase OIDC discovery
+- Auth integration tests verify JWT validation, user auto-provisioning, and endpoint behavior
+- Existing controller tests use `authentication()` post processor with `AuthenticatedUser` principal

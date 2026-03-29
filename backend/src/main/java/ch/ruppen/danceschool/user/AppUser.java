@@ -28,6 +28,6 @@ public class AppUser {
 
     private String avatarUrl;
 
-    @Column(nullable = false, unique = true)
-    private String username;
+    @Column(name = "firebase_uid", nullable = false, unique = true)
+    private String firebaseUid;
 }
