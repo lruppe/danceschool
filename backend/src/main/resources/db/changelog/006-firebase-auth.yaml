@@ -1,0 +1,42 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-add-firebase-uid-column
+      author: claude
+      changes:
+        - addColumn:
+            tableName: app_user
+            columns:
+              - column:
+                  name: firebase_uid
+                  type: VARCHAR(255)
+        - sql:
+            sql: UPDATE app_user SET firebase_uid = username WHERE firebase_uid IS NULL
+        - addNotNullConstraint:
+            tableName: app_user
+            columnName: firebase_uid
+        - addUniqueConstraint:
+            tableName: app_user
+            columnNames: firebase_uid
+            constraintName: uk_user_firebase_uid
+
+  - changeSet:
+      id: 006-drop-username-column
+      author: claude
+      changes:
+        - dropUniqueConstraint:
+            tableName: app_user
+            constraintName: uk_user_username
+        - dropColumn:
+            tableName: app_user
+            columnName: username
+
+  - changeSet:
+      id: 006-remove-seed-admin-user
+      author: claude
+      changes:
+        - delete:
+            tableName: school_member
+            where: user_id IN (SELECT id FROM app_user WHERE email = 'admin@danceschool.app')
+        - delete:
+            tableName: app_user
+            where: email = 'admin@danceschool.app'

@@ -1,5 +1,6 @@
 package ch.ruppen.danceschool.school;
 
+import ch.ruppen.danceschool.TestSecurityConfig;
 import ch.ruppen.danceschool.schoolmember.MemberRole;
 import ch.ruppen.danceschool.schoolmember.SchoolMember;
 import ch.ruppen.danceschool.shared.security.AuthenticatedUser;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@Import(TestSecurityConfig.class)
 class SchoolControllerIntegrationTest {
 
     @Autowired
@@ -39,7 +42,7 @@ class SchoolControllerIntegrationTest {
         testUser = new AppUser();
         testUser.setEmail("test@example.com");
         testUser.setName("Test User");
-        testUser.setUsername("testuser");
+        testUser.setFirebaseUid("test-firebase-uid");
         entityManager.persist(testUser);
         entityManager.flush();
     }
@@ -135,9 +138,9 @@ class SchoolControllerIntegrationTest {
     }
 
     @Test
-    void getMe_returnsForbidden_whenNotAuthenticated() throws Exception {
+    void getMe_returnsUnauthorized_whenNotAuthenticated() throws Exception {
         mockMvc.perform(get("/api/schools/me"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     private UsernamePasswordAuthenticationToken authToken(AppUser user) {

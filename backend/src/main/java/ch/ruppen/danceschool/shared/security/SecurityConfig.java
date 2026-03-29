@@ -22,6 +22,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final AppSecurityProperties securityProperties;
+    private final FirebaseJwtAuthenticationConverter firebaseJwtAuthenticationConverter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -29,13 +30,14 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(firebaseJwtAuthenticationConverter)))
                 .formLogin(AbstractHttpConfigurer::disable);
 
         return http.build();
@@ -47,7 +49,6 @@ public class SecurityConfig {
         config.setAllowedOrigins(securityProperties.corsAllowedOrigins());
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
