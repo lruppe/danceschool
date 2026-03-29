@@ -21,7 +21,7 @@ class ImageStorageConfig {
                     props.r2Bucket(),
                     props.r2PublicUrl());
             default -> new FilesystemImageStorageService(
-                    props.directory() != null ? props.directory() : "uploads",
+                    props.directory() != null ? props.directory() : System.getProperty("java.io.tmpdir") + "/danceschool-uploads",
                     props.baseUrl() != null ? props.baseUrl() : "http://localhost:8080/uploads");
         };
     }
@@ -29,7 +29,7 @@ class ImageStorageConfig {
     @Bean
     WebMvcConfigurer imageResourceConfigurer(ImageStorageProperties props) {
         String provider = props.provider() != null ? props.provider() : "filesystem";
-        String directory = props.directory() != null ? props.directory() : "uploads";
+        String directory = props.directory() != null ? props.directory() : System.getProperty("java.io.tmpdir") + "/danceschool-uploads";
 
         return new WebMvcConfigurer() {
             @Override
