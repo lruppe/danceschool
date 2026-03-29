@@ -12,6 +12,19 @@ app:
     cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
   firebase:
     project-id: ${FIREBASE_PROJECT_ID:dance-school-ch}
+  image-storage:
+    provider: ${IMAGE_STORAGE_PROVIDER:filesystem}
+    directory: ${IMAGE_STORAGE_DIRECTORY:uploads}
+    base-url: ${IMAGE_STORAGE_BASE_URL:http://localhost:8080/uploads}
+    r2-endpoint: ${R2_ENDPOINT:}
+    r2-access-key: ${R2_ACCESS_KEY:}
+    r2-secret-key: ${R2_SECRET_KEY:}
+    r2-bucket: ${R2_BUCKET:}
+    r2-public-url: ${R2_PUBLIC_URL:}
+
+spring.servlet.multipart:
+  max-file-size: 6MB
+  max-request-size: 6MB
 
 logging:
   level:

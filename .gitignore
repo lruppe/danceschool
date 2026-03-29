@@ -39,3 +39,6 @@ build/
 
 ### Docker ###
 .env
+
+### Image uploads (local dev) ###
+backend/uploads/
