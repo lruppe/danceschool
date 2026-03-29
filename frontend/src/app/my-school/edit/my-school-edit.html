@@ -1,0 +1,120 @@
+@if (!loading()) {
+  <!-- Header -->
+  <div class="page-header">
+    <div class="title-group">
+      <h1 class="page-title">My School</h1>
+      <p class="page-subtitle">Editing your dance school information</p>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button (click)="cancel()">Cancel</button>
+      <button mat-flat-button color="primary" (click)="save()" [disabled]="saving()">
+        {{ saving() ? 'Saving...' : 'Save Changes' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Hero Card -->
+  <div class="card hero-card">
+    <div class="cover-image">
+      <div class="cover-placeholder"></div>
+    </div>
+    <div class="hero-form">
+      <mat-form-field appearance="outline">
+        <mat-label>School Name</mat-label>
+        <input matInput [formControl]="form.controls.name" />
+        @if (form.controls.name.hasError('required')) {
+          <mat-error>School name is required</mat-error>
+        }
+        @if (form.controls.name.hasError('server')) {
+          <mat-error>{{ form.controls.name.getError('server') }}</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Tagline</mat-label>
+        <input matInput [formControl]="form.controls.tagline" placeholder="Where Passion Meets Rhythm" />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- About & Specialties Row -->
+  <div class="about-specialties-row">
+    <div class="card about-card">
+      <h3 class="section-title">About</h3>
+      <mat-form-field appearance="outline">
+        <mat-label>Description</mat-label>
+        <textarea matInput [formControl]="form.controls.about" rows="6"
+                  placeholder="Tell potential students about your school..."></textarea>
+      </mat-form-field>
+    </div>
+    <div class="card specialties-card">
+      <h3 class="section-title">Specialties</h3>
+      <p class="empty-hint">Specialty management coming soon</p>
+    </div>
+  </div>
+
+  <!-- Location & Contact Card -->
+  <div class="card contact-card">
+    <h3 class="section-title">Location & Contact</h3>
+    <div class="contact-columns">
+      <div class="contact-column">
+        <mat-form-field appearance="outline">
+          <mat-label>Street Address</mat-label>
+          <input matInput [formControl]="form.controls.streetAddress" />
+        </mat-form-field>
+        <div class="field-row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>City</mat-label>
+            <input matInput [formControl]="form.controls.city" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Postal Code</mat-label>
+            <input matInput [formControl]="form.controls.postalCode" />
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Country</mat-label>
+          <input matInput [formControl]="form.controls.country" />
+        </mat-form-field>
+      </div>
+      <div class="contact-column">
+        <mat-form-field appearance="outline">
+          <mat-label>Phone</mat-label>
+          <input matInput [formControl]="form.controls.phone" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" [formControl]="form.controls.email" />
+          @if (form.controls.email.hasError('email')) {
+            <mat-error>Must be a valid email address</mat-error>
+          }
+          @if (form.controls.email.hasError('server')) {
+            <mat-error>{{ form.controls.email.getError('server') }}</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Website</mat-label>
+          <input matInput [formControl]="form.controls.website" placeholder="https://www.example.com" />
+          @if (form.controls.website.hasError('server')) {
+            <mat-error>{{ form.controls.website.getError('server') }}</mat-error>
+          }
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gallery Card (placeholder for issue #45) -->
+  <div class="card">
+    <h3 class="section-title">Gallery</h3>
+    <p class="empty-hint">Image uploads coming soon</p>
+  </div>
+
+  <!-- YouTube Videos Card (placeholder for issue #46) -->
+  <div class="card">
+    <h3 class="section-title">YouTube Videos</h3>
+    <p class="empty-hint">Video management coming soon</p>
+  </div>
+} @else {
+  <div class="loading">
+    <p>Loading school information...</p>
+  </div>
+}

@@ -25,6 +25,22 @@ public class SchoolService {
         return schoolRepository.findByOwnerUserId(userId);
     }
 
+    public School updateSchool(School school, SchoolUpdateDto dto) {
+        school.setName(dto.name());
+        school.setTagline(dto.tagline());
+        school.setAbout(dto.about());
+        school.setStreetAddress(dto.streetAddress());
+        school.setCity(dto.city());
+        school.setPostalCode(dto.postalCode());
+        school.setCountry(dto.country());
+        school.setPhone(dto.phone());
+        school.setEmail(dto.email());
+        school.setWebsite(dto.website());
+        school.setCoverImageUrl(dto.coverImageUrl());
+        school.setLogoUrl(dto.logoUrl());
+        return schoolRepository.save(school);
+    }
+
     public SchoolDetailDto toDetailDto(School school) {
         return new SchoolDetailDto(
                 school.getId(),

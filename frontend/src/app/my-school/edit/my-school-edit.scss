@@ -1,0 +1,151 @@
+@use 'styles/mixins' as ds;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-card-padding);
+}
+
+// Card pattern
+.card {
+  background: var(--mat-sys-surface);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-card-padding);
+}
+
+// Page header
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  @include ds.bp-down(sm) {
+    flex-direction: column;
+    gap: var(--ds-spacing-4);
+  }
+}
+
+.title-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-2);
+}
+
+.page-title {
+  font: var(--mat-sys-headline-small);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+}
+
+.page-subtitle {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--ds-spacing-3);
+}
+
+// Section titles
+.section-title {
+  font: var(--mat-sys-title-medium);
+  color: var(--mat-sys-on-surface);
+  margin: 0 0 var(--ds-spacing-4);
+}
+
+.empty-hint {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+// Hero card
+.hero-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.cover-image {
+  height: 200px;
+}
+
+.cover-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, var(--mat-sys-primary), #9c6af0);
+}
+
+.hero-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-3);
+  padding: var(--ds-card-padding);
+}
+
+// About & Specialties row
+.about-specialties-row {
+  display: flex;
+  gap: var(--ds-card-padding);
+
+  @include ds.bp-down(md) {
+    flex-direction: column;
+  }
+}
+
+.about-card {
+  flex: 2;
+}
+
+.specialties-card {
+  flex: 1;
+}
+
+// Location & Contact card
+.contact-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-columns {
+  display: flex;
+  gap: var(--ds-spacing-6);
+
+  @include ds.bp-down(md) {
+    flex-direction: column;
+  }
+}
+
+.contact-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.field-row {
+  display: flex;
+  gap: var(--ds-spacing-4);
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+// Full-width form fields
+mat-form-field {
+  width: 100%;
+}
+
+// Loading state
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--ds-spacing-12);
+
+  p {
+    font: var(--mat-sys-body-large);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}

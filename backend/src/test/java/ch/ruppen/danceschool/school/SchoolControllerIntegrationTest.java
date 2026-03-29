@@ -20,6 +20,7 @@ import jakarta.persistence.EntityManager;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -146,6 +147,122 @@ class SchoolControllerIntegrationTest {
     @Test
     void getMe_returnsUnauthorized_whenNotAuthenticated() throws Exception {
         mockMvc.perform(get("/api/schools/me"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // --- PUT /api/schools/me tests ---
+
+    @Test
+    void updateMe_updatesAllFields_whenValid() throws Exception {
+        School school = new School();
+        school.setName("Old Name");
+        entityManager.persist(school);
+
+        SchoolMember member = new SchoolMember();
+        member.setUser(testUser);
+        member.setSchool(school);
+        member.setRole(MemberRole.OWNER);
+        entityManager.persist(member);
+        entityManager.flush();
+
+        mockMvc.perform(put("/api/schools/me")
+                        .with(authentication(authToken(testUser)))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "name": "Updated School",
+                                  "tagline": "New Tagline",
+                                  "about": "New about text",
+                                  "streetAddress": "456 Dance Ave",
+                                  "city": "Miami",
+                                  "postalCode": "33101",
+                                  "country": "US",
+                                  "phone": "+1 305-555-0100",
+                                  "email": "info@updated.com",
+                                  "website": "https://www.updated.com",
+                                  "coverImageUrl": "https://r2.example.com/cover.jpg",
+                                  "logoUrl": "https://r2.example.com/logo.png"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Updated School"))
+                .andExpect(jsonPath("$.tagline").value("New Tagline"))
+                .andExpect(jsonPath("$.about").value("New about text"))
+                .andExpect(jsonPath("$.streetAddress").value("456 Dance Ave"))
+                .andExpect(jsonPath("$.city").value("Miami"))
+                .andExpect(jsonPath("$.postalCode").value("33101"))
+                .andExpect(jsonPath("$.country").value("US"))
+                .andExpect(jsonPath("$.phone").value("+1 305-555-0100"))
+                .andExpect(jsonPath("$.email").value("info@updated.com"))
+                .andExpect(jsonPath("$.website").value("https://www.updated.com"))
+                .andExpect(jsonPath("$.coverImageUrl").value("https://r2.example.com/cover.jpg"))
+                .andExpect(jsonPath("$.logoUrl").value("https://r2.example.com/logo.png"));
+    }
+
+    @Test
+    void updateMe_returns400_whenNameIsBlank() throws Exception {
+        School school = new School();
+        school.setName("Test School");
+        entityManager.persist(school);
+
+        SchoolMember member = new SchoolMember();
+        member.setUser(testUser);
+        member.setSchool(school);
+        member.setRole(MemberRole.OWNER);
+        entityManager.persist(member);
+        entityManager.flush();
+
+        mockMvc.perform(put("/api/schools/me")
+                        .with(authentication(authToken(testUser)))
+                        .contentType("application/json")
+                        .content("""
+                                { "name": "" }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.name").exists());
+    }
+
+    @Test
+    void updateMe_returns400_whenEmailInvalid() throws Exception {
+        School school = new School();
+        school.setName("Test School");
+        entityManager.persist(school);
+
+        SchoolMember member = new SchoolMember();
+        member.setUser(testUser);
+        member.setSchool(school);
+        member.setRole(MemberRole.OWNER);
+        entityManager.persist(member);
+        entityManager.flush();
+
+        mockMvc.perform(put("/api/schools/me")
+                        .with(authentication(authToken(testUser)))
+                        .contentType("application/json")
+                        .content("""
+                                { "name": "Valid Name", "email": "not-an-email" }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.email").exists());
+    }
+
+    @Test
+    void updateMe_returns404_whenUserHasNoSchool() throws Exception {
+        mockMvc.perform(put("/api/schools/me")
+                        .with(authentication(authToken(testUser)))
+                        .contentType("application/json")
+                        .content("""
+                                { "name": "Some School" }
+                                """))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateMe_returnsUnauthorized_whenNotAuthenticated() throws Exception {
+        mockMvc.perform(put("/api/schools/me")
+                        .contentType("application/json")
+                        .content("""
+                                { "name": "Some School" }
+                                """))
                 .andExpect(status().isUnauthorized());
     }
 

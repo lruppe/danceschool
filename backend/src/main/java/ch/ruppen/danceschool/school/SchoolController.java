@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -32,5 +33,14 @@ public class SchoolController {
         School school = schoolService.findByOwnerUserId(principal.userId())
                 .orElseThrow(() -> new ResourceNotFoundException("School", principal.userId()));
         return schoolService.toDetailDto(school);
+    }
+
+    @PutMapping("/me")
+    public SchoolDetailDto updateMe(@Valid @RequestBody SchoolUpdateDto dto,
+                                    @AuthenticationPrincipal AuthenticatedUser principal) {
+        School school = schoolService.findByOwnerUserId(principal.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("School", principal.userId()));
+        School updated = schoolService.updateSchool(school, dto);
+        return schoolService.toDetailDto(updated);
     }
 }
