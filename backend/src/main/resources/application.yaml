@@ -5,13 +5,13 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${FIREBASE_ISSUER_URI:https://securetoken.google.com/danceschool-dev}
+          issuer-uri: ${FIREBASE_ISSUER_URI:https://securetoken.google.com/dance-school-ch}
 
 app:
   security:
     cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
   firebase:
-    project-id: ${FIREBASE_PROJECT_ID:danceschool-dev}
+    project-id: ${FIREBASE_PROJECT_ID:dance-school-ch}
 
 logging:
   level:

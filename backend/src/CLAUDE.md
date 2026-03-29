@@ -94,8 +94,8 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 
 ### Configuration (via env vars)
 - `CORS_ALLOWED_ORIGINS` — comma-separated allowed origins (default: `http://localhost:4200`)
-- `FIREBASE_ISSUER_URI` — Firebase JWT issuer URI (default: `https://securetoken.google.com/danceschool-dev`)
-- `FIREBASE_PROJECT_ID` — Firebase project ID (default: `danceschool-dev`)
+- `FIREBASE_ISSUER_URI` — Firebase JWT issuer URI (default: `https://securetoken.google.com/dance-school-ch`)
+- `FIREBASE_PROJECT_ID` — Firebase project ID (default: `dance-school-ch`)
 
 ### CSRF
 - Disabled — stateless JWT auth does not need CSRF protection

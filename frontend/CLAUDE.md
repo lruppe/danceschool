@@ -57,7 +57,7 @@ Angular 21 application using Angular Material for UI components.
 
 ### Environment config
 - `src/environments/environment.ts` — dev config with emulator flag
-- `src/environments/environment.prod.ts` — prod config (Firebase project values are placeholders until #50)
+- `src/environments/environment.prod.ts` — prod config (Firebase project: `dance-school-ch`)
 - Firebase config (apiKey, authDomain, projectId) is compile-time, not secret
 
 ### Key files
