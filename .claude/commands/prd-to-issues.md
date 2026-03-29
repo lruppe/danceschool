@@ -111,6 +111,10 @@ This is a post-implementation review, not a blocker for shipping.
 - Blocked by #<all-other-slice-issue-numbers>
 ```
 
+### 6. Link sub-issues to the parent PRD
+
+After all issues are created, link each one as a **sub-issue** of the parent PRD issue using the `sub_issue_write` MCP tool (method: `add`). This makes the PRD act as an epic with a trackable checklist of child issues.
+
 Do NOT close or modify the parent PRD issue.
 
 $ARGUMENTS
