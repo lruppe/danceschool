@@ -48,7 +48,26 @@
     </div>
     <div class="card specialties-card">
       <h3 class="section-title">Specialties</h3>
-      <p class="empty-hint">Specialty management coming soon</p>
+      <div class="chips">
+        @for (specialty of specialties(); track $index) {
+          <span class="chip chip-primary">
+            {{ specialty }}
+            <button class="chip-remove" (click)="removeSpecialty($index)">
+              <mat-icon>close</mat-icon>
+            </button>
+          </span>
+        }
+        @if (addingSpecialty()) {
+          <input class="specialty-input" #specialtyInput
+                 (keydown.enter)="confirmSpecialty(specialtyInput.value); specialtyInput.value = ''"
+                 (blur)="confirmSpecialty(specialtyInput.value); specialtyInput.value = ''"
+                 placeholder="Type specialty..." />
+        } @else {
+          <button class="chip chip-add" (click)="addingSpecialty.set(true)">
+            <mat-icon>add</mat-icon> Add
+          </button>
+        }
+      </div>
     </div>
   </div>
 

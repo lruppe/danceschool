@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, HostListener, inject, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, inject, signal, OnInit, computed } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { SchoolDetail, SchoolService, SchoolUpdateRequest } from '../school.service';
@@ -14,6 +15,7 @@ import { SchoolDetail, SchoolService, SchoolUpdateRequest } from '../school.serv
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
+    MatIconModule,
     MatInputModule,
     MatSnackBarModule,
   ],
@@ -29,6 +31,9 @@ export class MySchoolEditComponent implements OnInit {
 
   protected saving = signal(false);
   protected loading = signal(true);
+  protected specialties = signal<string[]>([]);
+  protected addingSpecialty = signal(false);
+  private specialtiesDirty = false;
 
   protected form = this.fb.group({
     name: ['', Validators.required],
@@ -70,6 +75,7 @@ export class MySchoolEditComponent implements OnInit {
     this.schoolService.updateMySchool(data).subscribe({
       next: () => {
         this.form.markAsPristine();
+        this.specialtiesDirty = false;
         this.router.navigate(['/my-school']);
       },
       error: (err) => {
@@ -87,15 +93,29 @@ export class MySchoolEditComponent implements OnInit {
     this.router.navigate(['/my-school']);
   }
 
+  protected removeSpecialty(index: number): void {
+    this.specialties.update(s => s.filter((_, i) => i !== index));
+    this.specialtiesDirty = true;
+  }
+
+  protected confirmSpecialty(value: string): void {
+    const trimmed = value.trim();
+    if (trimmed) {
+      this.specialties.update(s => [...s, trimmed]);
+      this.specialtiesDirty = true;
+    }
+    this.addingSpecialty.set(false);
+  }
+
   @HostListener('window:beforeunload', ['$event'])
   onBeforeUnload(event: BeforeUnloadEvent): void {
-    if (this.form.dirty) {
+    if (this.form.dirty || this.specialtiesDirty) {
       event.preventDefault();
     }
   }
 
   canDeactivate(): boolean {
-    return !this.form.dirty;
+    return !this.form.dirty && !this.specialtiesDirty;
   }
 
   private patchForm(school: SchoolDetail): void {
@@ -113,7 +133,9 @@ export class MySchoolEditComponent implements OnInit {
       coverImageUrl: school.coverImageUrl ?? '',
       logoUrl: school.logoUrl ?? '',
     });
+    this.specialties.set([...(school.specialties ?? [])]);
     this.form.markAsPristine();
+    this.specialtiesDirty = false;
   }
 
   private buildRequest(): SchoolUpdateRequest {
@@ -131,6 +153,7 @@ export class MySchoolEditComponent implements OnInit {
       website: v.website || null,
       coverImageUrl: v.coverImageUrl || null,
       logoUrl: v.logoUrl || null,
+      specialties: this.specialties(),
     };
   }
 

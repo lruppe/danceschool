@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
+import java.util.List;
+
 public record SchoolUpdateDto(
         @NotBlank String name,
         String tagline,
@@ -16,6 +18,7 @@ public record SchoolUpdateDto(
         @Email String email,
         @URL String website,
         String coverImageUrl,
-        String logoUrl
+        String logoUrl,
+        List<String> specialties
 ) {
 }
