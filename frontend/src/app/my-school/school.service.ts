@@ -39,4 +39,23 @@ export class SchoolService {
   getMySchool(): Observable<SchoolDetail> {
     return this.http.get<SchoolDetail>(`${environment.apiUrl}/api/schools/me`);
   }
+
+  updateMySchool(data: SchoolUpdateRequest): Observable<SchoolDetail> {
+    return this.http.put<SchoolDetail>(`${environment.apiUrl}/api/schools/me`, data);
+  }
+}
+
+export interface SchoolUpdateRequest {
+  name: string;
+  tagline: string | null;
+  about: string | null;
+  streetAddress: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  coverImageUrl: string | null;
+  logoUrl: string | null;
 }

@@ -1,11 +1,9 @@
 spring:
   application:
     name: danceschool
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${FIREBASE_ISSUER_URI:https://securetoken.google.com/dance-school-ch}
+  # JWT issuer-uri is configured in application-prod.yaml only.
+  # In the default profile, EmulatorJwtDecoderConfig provides a permissive decoder
+  # for use with the Firebase Auth emulator.
 
 app:
   security:
@@ -14,7 +12,7 @@ app:
     project-id: ${FIREBASE_PROJECT_ID:dance-school-ch}
   image-storage:
     provider: ${IMAGE_STORAGE_PROVIDER:filesystem}
-    directory: ${IMAGE_STORAGE_DIRECTORY:uploads}
+    directory: ${IMAGE_STORAGE_DIRECTORY:${java.io.tmpdir}/danceschool-uploads}
     base-url: ${IMAGE_STORAGE_BASE_URL:http://localhost:8080/uploads}
     r2-endpoint: ${R2_ENDPOINT:}
     r2-access-key: ${R2_ACCESS_KEY:}
