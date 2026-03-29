@@ -19,6 +19,8 @@ public record SchoolUpdateDto(
         @URL String website,
         String coverImageUrl,
         String logoUrl,
-        List<String> specialties
+        List<String> specialties,
+        List<YoutubeVideoDto> youtubeVideos
 ) {
+    public record YoutubeVideoDto(String url, int position) {}
 }

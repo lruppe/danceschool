@@ -33,7 +33,9 @@ export class MySchoolEditComponent implements OnInit {
   protected loading = signal(true);
   protected specialties = signal<string[]>([]);
   protected addingSpecialty = signal(false);
+  protected youtubeVideos = signal<string[]>([]);
   private specialtiesDirty = false;
+  private youtubeVideosDirty = false;
 
   protected form = this.fb.group({
     name: ['', Validators.required],
@@ -69,6 +71,12 @@ export class MySchoolEditComponent implements OnInit {
       return;
     }
 
+    const invalidVideos = this.youtubeVideos().some(url => url.trim() && !this.isValidYoutubeUrl(url));
+    if (invalidVideos) {
+      this.snackBar.open('Please enter valid YouTube URLs', 'Dismiss', { duration: 5000 });
+      return;
+    }
+
     this.saving.set(true);
     const data = this.buildRequest();
 
@@ -76,6 +84,7 @@ export class MySchoolEditComponent implements OnInit {
       next: () => {
         this.form.markAsPristine();
         this.specialtiesDirty = false;
+        this.youtubeVideosDirty = false;
         this.router.navigate(['/my-school']);
       },
       error: (err) => {
@@ -107,15 +116,40 @@ export class MySchoolEditComponent implements OnInit {
     this.addingSpecialty.set(false);
   }
 
+  protected addVideo(): void {
+    this.youtubeVideos.update(v => [...v, '']);
+    this.youtubeVideosDirty = true;
+  }
+
+  protected updateVideoUrl(index: number, url: string): void {
+    this.youtubeVideos.update(v => v.map((u, i) => i === index ? url : u));
+    this.youtubeVideosDirty = true;
+  }
+
+  protected removeVideo(index: number): void {
+    this.youtubeVideos.update(v => v.filter((_, i) => i !== index));
+    this.youtubeVideosDirty = true;
+  }
+
+  protected isValidYoutubeUrl(url: string): boolean {
+    if (!url) return true;
+    try {
+      const parsed = new URL(url);
+      return ['youtube.com', 'www.youtube.com', 'youtu.be'].includes(parsed.hostname);
+    } catch {
+      return false;
+    }
+  }
+
   @HostListener('window:beforeunload', ['$event'])
   onBeforeUnload(event: BeforeUnloadEvent): void {
-    if (this.form.dirty || this.specialtiesDirty) {
+    if (this.form.dirty || this.specialtiesDirty || this.youtubeVideosDirty) {
       event.preventDefault();
     }
   }
 
   canDeactivate(): boolean {
-    return !this.form.dirty && !this.specialtiesDirty;
+    return !this.form.dirty && !this.specialtiesDirty && !this.youtubeVideosDirty;
   }
 
   private patchForm(school: SchoolDetail): void {
@@ -134,8 +168,10 @@ export class MySchoolEditComponent implements OnInit {
       logoUrl: school.logoUrl ?? '',
     });
     this.specialties.set([...(school.specialties ?? [])]);
+    this.youtubeVideos.set((school.youtubeVideos ?? []).map(v => v.url));
     this.form.markAsPristine();
     this.specialtiesDirty = false;
+    this.youtubeVideosDirty = false;
   }
 
   private buildRequest(): SchoolUpdateRequest {
@@ -154,6 +190,9 @@ export class MySchoolEditComponent implements OnInit {
       coverImageUrl: v.coverImageUrl || null,
       logoUrl: v.logoUrl || null,
       specialties: this.specialties(),
+      youtubeVideos: this.youtubeVideos()
+        .filter(url => url.trim())
+        .map((url, i) => ({ url, position: i })),
     };
   }
 
