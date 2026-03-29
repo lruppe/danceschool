@@ -59,4 +59,5 @@ export interface SchoolUpdateRequest {
   coverImageUrl: string | null;
   logoUrl: string | null;
   specialties: string[];
+  youtubeVideos: { url: string; position: number }[];
 }

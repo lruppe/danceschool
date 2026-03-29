@@ -198,6 +198,33 @@
   flex: 1;
 }
 
+// YouTube Videos
+.youtube-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-4);
+}
+
+.video-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-2);
+}
+
+.video-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-spacing-2);
+}
+
+.video-delete {
+  margin-top: var(--ds-spacing-2);
+}
+
+.add-video-btn {
+  align-self: flex-start;
+}
+
 // Full-width form fields
 mat-form-field {
   width: 100%;

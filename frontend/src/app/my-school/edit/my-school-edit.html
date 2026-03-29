@@ -127,10 +127,32 @@
     <p class="empty-hint">Image uploads coming soon</p>
   </div>
 
-  <!-- YouTube Videos Card (placeholder for issue #46) -->
-  <div class="card">
+  <!-- YouTube Videos Card -->
+  <div class="card youtube-card">
     <h3 class="section-title">YouTube Videos</h3>
-    <p class="empty-hint">Video management coming soon</p>
+    <div class="video-rows">
+      @for (url of youtubeVideos(); track $index) {
+        <div class="video-row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>YouTube URL</mat-label>
+            <input matInput [value]="url"
+                   (input)="updateVideoUrl($index, $any($event.target).value)"
+                   placeholder="https://www.youtube.com/watch?v=..." />
+            @if (url && !isValidYoutubeUrl(url)) {
+              <mat-error>Must be a YouTube URL</mat-error>
+            }
+          </mat-form-field>
+          <button mat-icon-button (click)="removeVideo($index)" class="video-delete">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+    @if (youtubeVideos().length < 2) {
+      <button mat-stroked-button (click)="addVideo()" class="add-video-btn">
+        <mat-icon>add</mat-icon> Add Video
+      </button>
+    }
   </div>
 } @else {
   <div class="loading">

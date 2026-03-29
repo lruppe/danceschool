@@ -41,6 +41,7 @@ public class SchoolService {
         school.setCoverImageUrl(dto.coverImageUrl());
         school.setLogoUrl(dto.logoUrl());
         replaceSpecialties(school, dto.specialties());
+        replaceYoutubeVideos(school, dto.youtubeVideos());
         return schoolRepository.save(school);
     }
 
@@ -52,6 +53,19 @@ public class SchoolService {
                 specialty.setSchool(school);
                 specialty.setName(name);
                 school.getSpecialties().add(specialty);
+            }
+        }
+    }
+
+    private void replaceYoutubeVideos(School school, List<SchoolUpdateDto.YoutubeVideoDto> videos) {
+        school.getYoutubeVideos().clear();
+        if (videos != null) {
+            for (var dto : videos) {
+                var video = new SchoolYoutubeVideo();
+                video.setSchool(school);
+                video.setUrl(dto.url());
+                video.setPosition(dto.position());
+                school.getYoutubeVideos().add(video);
             }
         }
     }
