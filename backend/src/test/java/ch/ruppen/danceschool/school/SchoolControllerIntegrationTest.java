@@ -53,7 +53,10 @@ class SchoolControllerIntegrationTest {
         school.setName("Test Dance School");
         school.setTagline("Dance with us");
         school.setAbout("A great school");
-        school.setAddress("123 Main St");
+        school.setStreetAddress("123 Main St");
+        school.setCity("Springfield");
+        school.setPostalCode("62704");
+        school.setCountry("USA");
         school.setPhone("+1 555-1234");
         school.setEmail("school@example.com");
         school.setWebsite("www.testschool.com");
@@ -91,7 +94,10 @@ class SchoolControllerIntegrationTest {
                 .andExpect(jsonPath("$.name").value("Test Dance School"))
                 .andExpect(jsonPath("$.tagline").value("Dance with us"))
                 .andExpect(jsonPath("$.about").value("A great school"))
-                .andExpect(jsonPath("$.address").value("123 Main St"))
+                .andExpect(jsonPath("$.streetAddress").value("123 Main St"))
+                .andExpect(jsonPath("$.city").value("Springfield"))
+                .andExpect(jsonPath("$.postalCode").value("62704"))
+                .andExpect(jsonPath("$.country").value("USA"))
                 .andExpect(jsonPath("$.phone").value("+1 555-1234"))
                 .andExpect(jsonPath("$.email").value("school@example.com"))
                 .andExpect(jsonPath("$.website").value("www.testschool.com"))

@@ -26,7 +26,10 @@ export class OnboardingComponent {
 
   protected form = this.fb.group({
     name: ['', Validators.required],
-    address: [''],
+    streetAddress: [''],
+    city: [''],
+    postalCode: [''],
+    country: [''],
     phone: [''],
     email: [''],
   });

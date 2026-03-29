@@ -64,17 +64,39 @@
   <!-- Location & Contact Card -->
   <div class="card contact-card">
     <h3 class="section-title">Location & Contact</h3>
-    @if (school.address || school.phone || school.email || school.website) {
+    @if (school.streetAddress || school.city || school.postalCode || school.country || school.phone || school.email || school.website) {
       <div class="contact-columns">
         <div class="contact-column">
           <div class="contact-field">
-            <span class="contact-label">Address</span>
-            @if (school.address) {
-              @for (line of school.address.split(', '); track line) {
-                <span class="contact-value">{{ line }}</span>
-              }
+            <span class="contact-label">Street Address</span>
+            @if (school.streetAddress) {
+              <span class="contact-value">{{ school.streetAddress }}</span>
             } @else {
-              <span class="empty-hint">No address added yet</span>
+              <span class="empty-hint">Not provided</span>
+            }
+          </div>
+          <div class="contact-field">
+            <span class="contact-label">City</span>
+            @if (school.city) {
+              <span class="contact-value">{{ school.city }}</span>
+            } @else {
+              <span class="empty-hint">Not provided</span>
+            }
+          </div>
+          <div class="contact-field">
+            <span class="contact-label">Postal Code</span>
+            @if (school.postalCode) {
+              <span class="contact-value">{{ school.postalCode }}</span>
+            } @else {
+              <span class="empty-hint">Not provided</span>
+            }
+          </div>
+          <div class="contact-field">
+            <span class="contact-label">Country</span>
+            @if (school.country) {
+              <span class="contact-value">{{ school.country }}</span>
+            } @else {
+              <span class="empty-hint">Not provided</span>
             }
           </div>
         </div>

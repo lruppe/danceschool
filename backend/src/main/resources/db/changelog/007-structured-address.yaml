@@ -1,0 +1,35 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-add-structured-address-columns
+      author: claude
+      changes:
+        - addColumn:
+            tableName: school
+            columns:
+              - column:
+                  name: street_address
+                  type: VARCHAR(500)
+              - column:
+                  name: city
+                  type: VARCHAR(255)
+              - column:
+                  name: postal_code
+                  type: VARCHAR(20)
+              - column:
+                  name: country
+                  type: VARCHAR(255)
+
+  - changeSet:
+      id: 006-migrate-address-data
+      author: claude
+      changes:
+        - sql:
+            sql: UPDATE school SET street_address = address WHERE address IS NOT NULL
+
+  - changeSet:
+      id: 006-drop-address-column
+      author: claude
+      changes:
+        - dropColumn:
+            tableName: school
+            columnName: address

@@ -11,3 +11,5 @@ databaseChangeLog:
       file: db/changelog/005-expand-school.yaml
   - include:
       file: db/changelog/006-firebase-auth.yaml
+  - include:
+      file: db/changelog/007-structured-address.yaml

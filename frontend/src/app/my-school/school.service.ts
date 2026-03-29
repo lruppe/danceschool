@@ -18,7 +18,10 @@ export interface SchoolDetail {
   name: string;
   tagline: string | null;
   about: string | null;
-  address: string | null;
+  streetAddress: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
   phone: string | null;
   email: string | null;
   website: string | null;
