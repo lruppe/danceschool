@@ -58,4 +58,5 @@ export interface SchoolUpdateRequest {
   website: string | null;
   coverImageUrl: string | null;
   logoUrl: string | null;
+  specialties: string[];
 }

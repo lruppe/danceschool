@@ -3,6 +3,8 @@ package ch.ruppen.danceschool.school;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -38,7 +40,20 @@ public class SchoolService {
         school.setWebsite(dto.website());
         school.setCoverImageUrl(dto.coverImageUrl());
         school.setLogoUrl(dto.logoUrl());
+        replaceSpecialties(school, dto.specialties());
         return schoolRepository.save(school);
+    }
+
+    private void replaceSpecialties(School school, List<String> specialties) {
+        school.getSpecialties().clear();
+        if (specialties != null) {
+            for (String name : specialties) {
+                var specialty = new SchoolSpecialty();
+                specialty.setSchool(school);
+                specialty.setName(name);
+                school.getSpecialties().add(specialty);
+            }
+        }
     }
 
     public SchoolDetailDto toDetailDto(School school) {
