@@ -44,9 +44,22 @@
   margin: 0;
 }
 
-.header-actions {
+// Sticky footer action bar
+.footer-actions {
+  position: sticky;
+  bottom: 0;
   display: flex;
+  justify-content: flex-end;
   gap: var(--ds-spacing-3);
+  padding: var(--ds-spacing-4) var(--ds-card-padding);
+  margin: 0 calc(var(--ds-card-padding) * -1) calc(var(--ds-card-padding) * -1);
+  background: var(--mat-sys-surface);
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  z-index: 10;
+
+  @include ds.bp-down(sm) {
+    flex-direction: column;
+  }
 }
 
 // Section titles

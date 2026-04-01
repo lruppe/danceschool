@@ -5,12 +5,6 @@
       <h1 class="page-title">My School</h1>
       <p class="page-subtitle">Editing your dance school information</p>
     </div>
-    <div class="header-actions">
-      <button mat-stroked-button (click)="cancel()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="save()" [disabled]="saving()">
-        {{ saving() ? 'Saving...' : 'Save Changes' }}
-      </button>
-    </div>
   </div>
 
   <!-- Hero Card -->
@@ -208,6 +202,14 @@
         <mat-icon>add</mat-icon> Add Video
       </button>
     }
+  </div>
+
+  <!-- Sticky Footer Action Bar -->
+  <div class="footer-actions">
+    <button mat-stroked-button (click)="cancel()">Cancel</button>
+    <button mat-flat-button color="primary" (click)="save()" [disabled]="saving()">
+      {{ saving() ? 'Saving...' : 'Save Changes' }}
+    </button>
   </div>
 } @else {
   <div class="loading">
