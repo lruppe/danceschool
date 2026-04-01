@@ -27,7 +27,7 @@
   "devDependencies": {
     "@angular/build": "^21.2.3",
     "@angular/cli": "^21.2.3",
-    "@angular/compiler-cli": "^21.2.0",
+    "@angular/compiler-cli": "^21.2.6",
     "@vitest/browser-playwright": "^4.1.1",
     "firebase-tools": "^15.12.0",
     "jsdom": "^29.0.1",
