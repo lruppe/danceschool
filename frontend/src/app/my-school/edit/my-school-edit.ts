@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostListener, inject, signal, OnInit, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,7 +6,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { SchoolDetail, SchoolService, SchoolUpdateRequest } from '../school.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { GalleryImage, SchoolDetail, SchoolService, SchoolUpdateRequest } from '../school.service';
 
 @Component({
   selector: 'app-my-school-edit',
@@ -18,6 +19,7 @@ import { SchoolDetail, SchoolService, SchoolUpdateRequest } from '../school.serv
     MatIconModule,
     MatInputModule,
     MatSnackBarModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './my-school-edit.html',
   styleUrl: './my-school-edit.scss',
@@ -34,8 +36,18 @@ export class MySchoolEditComponent implements OnInit {
   protected specialties = signal<string[]>([]);
   protected addingSpecialty = signal(false);
   protected youtubeVideos = signal<string[]>([]);
+  protected coverImageUrl = signal<string | null>(null);
+  protected logoUrl = signal<string | null>(null);
+  protected galleryImages = signal<GalleryImage[]>([]);
+  protected uploadingCover = signal(false);
+  protected uploadingLogo = signal(false);
+  protected uploadingGallery = signal(false);
   private specialtiesDirty = false;
   private youtubeVideosDirty = false;
+  private imagesDirty = false;
+
+  protected readonly MAX_GALLERY_IMAGES = 12;
+  private static readonly ACCEPTED_IMAGE_TYPES = 'image/jpeg,image/png,image/webp';
 
   protected form = this.fb.group({
     name: ['', Validators.required],
@@ -48,8 +60,6 @@ export class MySchoolEditComponent implements OnInit {
     phone: [''],
     email: ['', Validators.email],
     website: [''],
-    coverImageUrl: [''],
-    logoUrl: [''],
   });
 
   ngOnInit(): void {
@@ -85,6 +95,7 @@ export class MySchoolEditComponent implements OnInit {
         this.form.markAsPristine();
         this.specialtiesDirty = false;
         this.youtubeVideosDirty = false;
+        this.imagesDirty = false;
         this.router.navigate(['/my-school']);
       },
       error: (err) => {
@@ -131,6 +142,72 @@ export class MySchoolEditComponent implements OnInit {
     this.youtubeVideosDirty = true;
   }
 
+  protected get acceptedImageTypes(): string {
+    return MySchoolEditComponent.ACCEPTED_IMAGE_TYPES;
+  }
+
+  protected onCoverFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.uploadingCover.set(true);
+    this.schoolService.uploadImage(file).subscribe({
+      next: (res) => {
+        this.coverImageUrl.set(res.url);
+        this.imagesDirty = true;
+        this.uploadingCover.set(false);
+      },
+      error: () => {
+        this.snackBar.open('Failed to upload cover image', 'Dismiss', { duration: 5000 });
+        this.uploadingCover.set(false);
+      },
+    });
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  protected onLogoFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.uploadingLogo.set(true);
+    this.schoolService.uploadImage(file).subscribe({
+      next: (res) => {
+        this.logoUrl.set(res.url);
+        this.imagesDirty = true;
+        this.uploadingLogo.set(false);
+      },
+      error: () => {
+        this.snackBar.open('Failed to upload logo', 'Dismiss', { duration: 5000 });
+        this.uploadingLogo.set(false);
+      },
+    });
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  protected onGalleryFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (this.galleryImages().length >= this.MAX_GALLERY_IMAGES) return;
+    this.uploadingGallery.set(true);
+    this.schoolService.uploadImage(file).subscribe({
+      next: (res) => {
+        this.galleryImages.update(imgs => [...imgs, { url: res.url, position: imgs.length }]);
+        this.imagesDirty = true;
+        this.uploadingGallery.set(false);
+      },
+      error: () => {
+        this.snackBar.open('Failed to upload image', 'Dismiss', { duration: 5000 });
+        this.uploadingGallery.set(false);
+      },
+    });
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  protected removeGalleryImage(index: number): void {
+    this.galleryImages.update(imgs =>
+      imgs.filter((_, i) => i !== index).map((img, i) => ({ ...img, position: i }))
+    );
+    this.imagesDirty = true;
+  }
+
   protected isValidYoutubeUrl(url: string): boolean {
     if (!url) return true;
     try {
@@ -143,13 +220,13 @@ export class MySchoolEditComponent implements OnInit {
 
   @HostListener('window:beforeunload', ['$event'])
   onBeforeUnload(event: BeforeUnloadEvent): void {
-    if (this.form.dirty || this.specialtiesDirty || this.youtubeVideosDirty) {
+    if (this.form.dirty || this.specialtiesDirty || this.youtubeVideosDirty || this.imagesDirty) {
       event.preventDefault();
     }
   }
 
   canDeactivate(): boolean {
-    return !this.form.dirty && !this.specialtiesDirty && !this.youtubeVideosDirty;
+    return !this.form.dirty && !this.specialtiesDirty && !this.youtubeVideosDirty && !this.imagesDirty;
   }
 
   private patchForm(school: SchoolDetail): void {
@@ -164,14 +241,16 @@ export class MySchoolEditComponent implements OnInit {
       phone: school.phone ?? '',
       email: school.email ?? '',
       website: school.website ?? '',
-      coverImageUrl: school.coverImageUrl ?? '',
-      logoUrl: school.logoUrl ?? '',
     });
     this.specialties.set([...(school.specialties ?? [])]);
     this.youtubeVideos.set((school.youtubeVideos ?? []).map(v => v.url));
+    this.coverImageUrl.set(school.coverImageUrl ?? null);
+    this.logoUrl.set(school.logoUrl ?? null);
+    this.galleryImages.set([...(school.galleryImages ?? [])]);
     this.form.markAsPristine();
     this.specialtiesDirty = false;
     this.youtubeVideosDirty = false;
+    this.imagesDirty = false;
   }
 
   private buildRequest(): SchoolUpdateRequest {
@@ -187,9 +266,10 @@ export class MySchoolEditComponent implements OnInit {
       phone: v.phone || null,
       email: v.email || null,
       website: v.website || null,
-      coverImageUrl: v.coverImageUrl || null,
-      logoUrl: v.logoUrl || null,
+      coverImageUrl: this.coverImageUrl() || null,
+      logoUrl: this.logoUrl() || null,
       specialties: this.specialties(),
+      galleryImages: this.galleryImages().map((img, i) => ({ url: img.url, position: i })),
       youtubeVideos: this.youtubeVideos()
         .filter(url => url.trim())
         .map((url, i) => ({ url, position: i })),

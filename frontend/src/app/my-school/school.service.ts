@@ -43,6 +43,12 @@ export class SchoolService {
   updateMySchool(data: SchoolUpdateRequest): Observable<SchoolDetail> {
     return this.http.put<SchoolDetail>(`${environment.apiUrl}/api/schools/me`, data);
   }
+
+  uploadImage(file: File): Observable<{ url: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ url: string }>(`${environment.apiUrl}/api/images`, formData);
+  }
 }
 
 export interface SchoolUpdateRequest {
@@ -59,5 +65,6 @@ export interface SchoolUpdateRequest {
   coverImageUrl: string | null;
   logoUrl: string | null;
   specialties: string[];
+  galleryImages: { url: string; position: number }[];
   youtubeVideos: { url: string; position: number }[];
 }
