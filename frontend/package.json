@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "emulators": "firebase --config ../firebase.json emulators:start --only auth --import ../emulator-data"
   },
   "private": true,
   "packageManager": "npm@11.9.0",
@@ -28,6 +29,7 @@
     "@angular/cli": "^21.2.3",
     "@angular/compiler-cli": "^21.2.0",
     "@vitest/browser-playwright": "^4.1.1",
+    "firebase-tools": "^15.12.0",
     "jsdom": "^29.0.1",
     "playwright": "^1.58.2",
     "prettier": "^3.8.1",

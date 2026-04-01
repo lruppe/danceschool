@@ -181,7 +181,11 @@ class SchoolControllerIntegrationTest {
                                   "email": "info@updated.com",
                                   "website": "https://www.updated.com",
                                   "coverImageUrl": "https://r2.example.com/cover.jpg",
-                                  "logoUrl": "https://r2.example.com/logo.png"
+                                  "logoUrl": "https://r2.example.com/logo.png",
+                                  "galleryImages": [
+                                    { "url": "https://r2.example.com/photo1.jpg", "position": 0 },
+                                    { "url": "https://r2.example.com/photo2.jpg", "position": 1 }
+                                  ]
                                 }
                                 """))
                 .andExpect(status().isOk())
@@ -196,7 +200,11 @@ class SchoolControllerIntegrationTest {
                 .andExpect(jsonPath("$.email").value("info@updated.com"))
                 .andExpect(jsonPath("$.website").value("https://www.updated.com"))
                 .andExpect(jsonPath("$.coverImageUrl").value("https://r2.example.com/cover.jpg"))
-                .andExpect(jsonPath("$.logoUrl").value("https://r2.example.com/logo.png"));
+                .andExpect(jsonPath("$.logoUrl").value("https://r2.example.com/logo.png"))
+                .andExpect(jsonPath("$.galleryImages[0].url").value("https://r2.example.com/photo1.jpg"))
+                .andExpect(jsonPath("$.galleryImages[0].position").value(0))
+                .andExpect(jsonPath("$.galleryImages[1].url").value("https://r2.example.com/photo2.jpg"))
+                .andExpect(jsonPath("$.galleryImages[1].position").value(1));
     }
 
     @Test

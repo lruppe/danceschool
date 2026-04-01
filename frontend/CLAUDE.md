@@ -52,8 +52,8 @@ Angular 21 application using Angular Material for UI components.
 ### Firebase Emulator (local development)
 - `firebase.json` at repo root configures the Auth emulator on port 9099
 - Dev environment (`environment.ts`) sets `useEmulators: true`
-- Start emulator: `npx firebase-tools emulators:start` (or install globally: `npm i -g firebase-tools`)
-- Emulator UI available at `http://localhost:4000`
+- Start emulator: `cd frontend && npm run emulators`
+- Pre-seeded test user: `test@danceschool.com` / `test123456` (imported from `emulator-data/` at repo root)
 
 ### Environment config
 - `src/environments/environment.ts` — dev config with emulator flag

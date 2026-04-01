@@ -15,24 +15,54 @@
 
   <!-- Hero Card -->
   <div class="card hero-card">
-    <div class="cover-image">
-      <div class="cover-placeholder"></div>
+    <div class="cover-image" [style.background-image]="coverImageUrl() ? 'url(' + coverImageUrl() + ')' : ''">
+      @if (!coverImageUrl()) {
+        <div class="cover-placeholder"></div>
+      }
+      <div class="cover-actions">
+        @if (uploadingCover()) {
+          <mat-spinner diameter="24"></mat-spinner>
+        } @else {
+          <button mat-flat-button (click)="coverInput.click()">
+            <mat-icon>photo_camera</mat-icon> Change Cover
+          </button>
+        }
+        <input #coverInput type="file" hidden [accept]="acceptedImageTypes"
+               (change)="onCoverFileSelected($event)" />
+      </div>
     </div>
-    <div class="hero-form">
-      <mat-form-field appearance="outline">
-        <mat-label>School Name</mat-label>
-        <input matInput [formControl]="form.controls.name" />
-        @if (form.controls.name.hasError('required')) {
-          <mat-error>School name is required</mat-error>
+    <div class="hero-form-area">
+      <div class="logo-wrapper" (click)="logoInput.click()">
+        @if (uploadingLogo()) {
+          <div class="logo-circle logo-placeholder">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+        } @else if (logoUrl()) {
+          <img class="logo-circle" [src]="logoUrl()" alt="School logo" />
+        } @else {
+          <div class="logo-circle logo-placeholder">
+            <mat-icon>add_a_photo</mat-icon>
+          </div>
         }
-        @if (form.controls.name.hasError('server')) {
-          <mat-error>{{ form.controls.name.getError('server') }}</mat-error>
-        }
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Tagline</mat-label>
-        <input matInput [formControl]="form.controls.tagline" placeholder="Where Passion Meets Rhythm" />
-      </mat-form-field>
+        <input #logoInput type="file" hidden [accept]="acceptedImageTypes"
+               (change)="onLogoFileSelected($event)" />
+      </div>
+      <div class="hero-form">
+        <mat-form-field appearance="outline">
+          <mat-label>School Name</mat-label>
+          <input matInput [formControl]="form.controls.name" />
+          @if (form.controls.name.hasError('required')) {
+            <mat-error>School name is required</mat-error>
+          }
+          @if (form.controls.name.hasError('server')) {
+            <mat-error>{{ form.controls.name.getError('server') }}</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Tagline</mat-label>
+          <input matInput [formControl]="form.controls.tagline" placeholder="Where Passion Meets Rhythm" />
+        </mat-form-field>
+      </div>
     </div>
   </div>
 
@@ -121,10 +151,35 @@
     </div>
   </div>
 
-  <!-- Gallery Card (placeholder for issue #45) -->
-  <div class="card">
+  <!-- Gallery Card -->
+  <div class="card gallery-card">
     <h3 class="section-title">Gallery</h3>
-    <p class="empty-hint">Image uploads coming soon</p>
+    <div class="gallery-grid">
+      @for (image of galleryImages(); track image.url) {
+        <div class="gallery-item">
+          <img [src]="image.url" alt="Gallery image" />
+          <button class="gallery-remove" (click)="removeGalleryImage($index)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      }
+      @if (uploadingGallery()) {
+        <div class="gallery-item gallery-uploading">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      }
+    </div>
+    @if (galleryImages().length === 0 && !uploadingGallery()) {
+      <p class="empty-hint">No gallery images yet</p>
+    }
+    @if (galleryImages().length < MAX_GALLERY_IMAGES) {
+      <button mat-stroked-button (click)="galleryInput.click()" class="add-gallery-btn"
+              [disabled]="uploadingGallery()">
+        <mat-icon>add</mat-icon> Add Image
+      </button>
+    }
+    <input #galleryInput type="file" hidden [accept]="acceptedImageTypes"
+           (change)="onGalleryFileSelected($event)" />
   </div>
 
   <!-- YouTube Videos Card -->

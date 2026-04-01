@@ -20,7 +20,9 @@ public record SchoolUpdateDto(
         String coverImageUrl,
         String logoUrl,
         List<String> specialties,
+        List<GalleryImageDto> galleryImages,
         List<YoutubeVideoDto> youtubeVideos
 ) {
+    public record GalleryImageDto(String url, int position) {}
     public record YoutubeVideoDto(String url, int position) {}
 }
