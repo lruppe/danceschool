@@ -37,11 +37,7 @@ export class LoginComponent {
     effect(() => {
       if (this.auth.isLoggedIn()) {
         const user = this.auth.user();
-        if (user && user.memberships.length === 0) {
-          this.router.navigate(['/my-school/edit']);
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
+        this.router.navigate(['/dashboard']);
       }
     });
   }
