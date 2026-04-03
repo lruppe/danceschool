@@ -7,4 +7,5 @@ export const environment = {
     projectId: 'dance-school-ch',
   },
   useEmulators: false,
+  useDevLogin: false,
 };

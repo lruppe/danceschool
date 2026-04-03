@@ -6,5 +6,6 @@ export const environment = {
     authDomain: 'dance-school-ch.firebaseapp.com',
     projectId: 'dance-school-ch',
   },
-  useEmulators: true,
+  useEmulators: false,
+  useDevLogin: true,
 };

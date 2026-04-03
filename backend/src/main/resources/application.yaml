@@ -2,12 +2,13 @@ spring:
   application:
     name: danceschool
   # JWT issuer-uri is configured in application-prod.yaml only.
-  # In the default profile, EmulatorJwtDecoderConfig provides a permissive decoder
-  # for use with the Firebase Auth emulator.
+  # In the default (dev) profile, DevSecurityConfig provides form login with
+  # in-memory users — no Firebase emulator needed.
 
 app:
   security:
     cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+    dev-auth: ${DEV_AUTH:true}
   firebase:
     project-id: ${FIREBASE_PROJECT_ID:dance-school-ch}
   image-storage:

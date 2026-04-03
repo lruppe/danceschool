@@ -79,15 +79,24 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 
 ## Security Architecture
 
-### Authentication Flow (Firebase JWT)
-- **Stateless JWT authentication** — no sessions, no cookies
-- Frontend authenticates via Firebase SDK (Google sign-in), sends Firebase ID token as `Authorization: Bearer <token>` on every request
-- Backend validates JWTs via Spring Security OAuth2 Resource Server against Firebase's issuer
-- `FirebaseJwtAuthenticationConverter` extracts Firebase UID, email, and name from JWT claims, then looks up or auto-creates an `app_user` record
-- `GET /api/auth/me` returns the authenticated user with their school memberships (resolved from JWT)
-- No login/logout endpoints — authentication is handled entirely client-side by Firebase SDK
+### Two auth modes (controlled by `app.security.dev-auth` property)
 
-### User Auto-Provisioning
+**Dev mode** (`dev-auth: true` — default in `application.yaml`):
+- Spring Security form login with session-based authentication
+- `DevSecurityConfig` provides the security filter chain (form login, sessions, CORS with credentials)
+- `InMemoryUserDetailsManager` with two users: `owner@test.com` and `user@test.com` (password: `password`)
+- Custom `AuthenticationSuccessHandler` resolves the `AppUser` by email and creates a `FirebaseAuthenticationToken` with `AuthenticatedUser` principal — so `@AuthenticationPrincipal AuthenticatedUser` works identically in controllers
+- `DevDataSeeder` (ApplicationRunner) seeds dev users + a school + memberships on startup — login lands in app shell immediately
+- Login: POST `/api/auth/login` (form-encoded `username` + `password`). Logout: POST `/api/auth/logout`.
+
+**Prod mode** (`dev-auth: false` — set in `application-prod.yaml`):
+- Stateless Firebase JWT authentication — no sessions, no cookies
+- `SecurityConfig` provides the security filter chain (OAuth2 Resource Server with JWT)
+- Frontend authenticates via Firebase SDK (Google sign-in), sends `Authorization: Bearer <token>` on every request
+- `FirebaseJwtAuthenticationConverter` extracts Firebase UID, email, and name from JWT claims, then looks up or auto-creates an `app_user` record
+- `GET /api/auth/me` returns the authenticated user with their school memberships
+
+### User Auto-Provisioning (prod only)
 - First request with a valid Firebase JWT auto-creates an `app_user` from token claims (UID, email, name)
 - Subsequent requests reuse the existing user (looked up by `firebase_uid`)
 - The `app_user.firebase_uid` column is the unique identifier linking Firebase to the app's user model
@@ -100,20 +109,24 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 
 ### Configuration (via env vars)
 - `CORS_ALLOWED_ORIGINS` — comma-separated allowed origins (default: `http://localhost:4200`)
-- `FIREBASE_ISSUER_URI` — Firebase JWT issuer URI (default: `https://securetoken.google.com/dance-school-ch`)
+- `DEV_AUTH` — `true` (default) for form login, `false` for Firebase JWT
 - `FIREBASE_PROJECT_ID` — Firebase project ID (default: `dance-school-ch`)
 
 ### CSRF
-- Disabled — stateless JWT auth does not need CSRF protection
+- Disabled in both modes — SPA frontend uses API calls, not form submissions
 
 ### Key classes in `shared/security/`
-- `SecurityConfig` — filter chain, CORS, stateless JWT auth, authorization rules
+- `DevSecurityConfig` — dev filter chain: form login, session auth, in-memory users (`@ConditionalOnProperty dev-auth=true`)
+- `DevAuthenticationToken` — session-based auth token carrying `AuthenticatedUser` principal (dev only)
+- `DevDataSeeder` — seeds dev users + school on startup (`@ConditionalOnProperty dev-auth=true`)
+- `SecurityConfig` — prod filter chain: stateless JWT auth (`@ConditionalOnProperty dev-auth=false`)
 - `FirebaseJwtAuthenticationConverter` — converts validated JWT to `AuthenticatedUser` principal, handles user auto-provisioning
 - `FirebaseAuthenticationToken` — custom `JwtAuthenticationToken` that carries `AuthenticatedUser` as principal
 - `AuthenticatedUser` — principal record (userId, email) available via `@AuthenticationPrincipal`
 - `AppSecurityProperties` — CORS configuration
 
 ### Testing
+- Tests set `app.security.dev-auth: false` to use the JWT-based `SecurityConfig`
 - Tests use a mock `JwtDecoder` (via `TestSecurityConfig`) to avoid real Firebase OIDC discovery
 - Auth integration tests verify JWT validation, user auto-provisioning, and endpoint behavior
 - Existing controller tests use `authentication()` post processor with `AuthenticatedUser` principal

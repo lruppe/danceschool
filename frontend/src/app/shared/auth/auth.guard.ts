@@ -12,7 +12,7 @@ export const authGuard: CanActivateFn = () => {
     return auth.isLoggedIn() || router.createUrlTree(['/login']);
   }
 
-  // Wait for Firebase to complete initial auth check (session restore from IndexedDB)
+  // Wait for auth check to complete (Firebase session restore or dev fetchUser)
   return toObservable(auth.isChecked).pipe(
     filter((checked) => checked),
     take(1),

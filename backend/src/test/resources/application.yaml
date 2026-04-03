@@ -1,3 +1,7 @@
+app:
+  security:
+    dev-auth: false
+
 spring:
   security:
     oauth2:

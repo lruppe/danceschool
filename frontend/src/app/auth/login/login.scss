@@ -22,6 +22,22 @@
   margin-top: var(--ds-spacing-4);
 }
 
+.full-width {
+  width: 100%;
+}
+
+.quick-login {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-2);
+  margin-top: var(--ds-spacing-2);
+}
+
+.quick-login-label {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
 .google-button {
   width: 100%;
   display: flex;
