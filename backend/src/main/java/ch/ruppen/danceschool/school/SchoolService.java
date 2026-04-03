@@ -17,13 +17,7 @@ import java.util.stream.Collectors;
 public class SchoolService {
 
     private final SchoolRepository schoolRepository;
-    private final SchoolMapper schoolMapper;
     private final ImageStorageService imageStorageService;
-
-    public School createSchool(SchoolDto dto) {
-        School school = schoolMapper.toEntity(dto);
-        return schoolRepository.save(school);
-    }
 
     public School createSchoolFull(SchoolUpdateDto dto) {
         School school = new School();
@@ -44,10 +38,6 @@ public class SchoolService {
         replaceGalleryImages(saved, dto.galleryImages());
         replaceYoutubeVideos(saved, dto.youtubeVideos());
         return schoolRepository.save(saved);
-    }
-
-    public SchoolDto toDto(School school) {
-        return schoolMapper.toDto(school);
     }
 
     public Optional<School> findByOwnerUserId(Long userId) {
