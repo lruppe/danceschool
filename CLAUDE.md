@@ -37,11 +37,11 @@ Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. 
 
 **Business model:** Solve admin pain for teachers → get students onto the platform → build community via events → monetize via ads, school subscriptions, and other revenue streams TBD
 
-### Authentication Strategy (planned)
+### Authentication Strategy
 
-- Phase 1 (current): single in-memory admin user (temporary — to be replaced)
-- Target: OAuth/social login for all users (owners, teachers, students) via a managed provider (Auth0, Clerk, or similar)
-- Decision pending on provider choice
+- **Local dev:** Spring Security form login with in-memory users (`owner@test.com` / `password` as OWNER, `user@test.com` / `password` as USER). Dev users and a school are seeded on startup by `DevDataSeeder` — no onboarding needed.
+- **Production:** Firebase JWT auth (Google sign-in via Firebase SDK). Stateless, token-based. Activated by setting `app.security.dev-auth=false` and configuring the `prod` Spring profile.
+- **Future:** OAuth/social login for all users (owners, teachers, students) via a managed provider (Auth0, Clerk, or similar). Decision pending on provider choice.
 
 ## CI/CD
 
@@ -75,14 +75,13 @@ When verifying frontend changes visually (layout, styling, component rendering),
 
 ### 2. Log in
 
-- **Credentials:** `dance_admin` / `DanceSchool2024!` (single in-memory admin user, configured in backend — see `backend/src/CLAUDE.md` for details)
-- Use Playwright MCP to fill the login form and click Sign in
+- **Dev credentials:** `owner@test.com` / `password` (OWNER role) or `user@test.com` / `password` (USER role)
+- The login page shows a simple email/password form with quick-login buttons for each role
+- Use Playwright MCP to fill the form or click a quick-login button
 
 ### 3. Handle fresh database state
 
-The backend uses H2 in-memory, so every restart is a clean slate:
-- If the admin has **no school**, login redirects to `/onboarding` — create a school first to reach the main app shell
-- If you only need to verify the shell layout (sidebar, toolbar), the onboarding page already shows it
+The backend uses H2 in-memory, so every restart is a clean slate. However, `DevDataSeeder` automatically seeds dev users + a school on startup, so login lands directly in the app shell — no onboarding step needed.
 
 ### 4. Navigate and screenshot
 

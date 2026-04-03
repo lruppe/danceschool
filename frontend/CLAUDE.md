@@ -39,32 +39,36 @@ Angular 21 application using Angular Material for UI components.
 - Firebase SDK (authentication via Google sign-in)
 - TypeScript strict mode, SCSS
 
-## Authentication — Firebase
+## Authentication
 
-### Architecture
-- **Firebase SDK** (`firebase` npm package) handles Google sign-in and token management
-- **No `@angular/fire`** — uses the Firebase JS SDK directly for simplicity and Angular 21 compatibility
-- `AuthService` initializes Firebase, listens to `onAuthStateChanged`, and manages auth state via signals
+### Two modes (controlled by `environment.useDevLogin`)
+
+**Dev mode** (`useDevLogin: true` — default in `environment.ts`):
+- No Firebase SDK initialization — Firebase is not loaded at all
+- `AuthService` uses form login: POSTs credentials to Spring's `/login` endpoint
+- Session-based auth — browser session cookie handles authentication automatically
+- `authInterceptor` adds `withCredentials: true` (no Bearer token)
+- Login page shows email/password form with quick-login buttons for Owner and User roles
+- Dev users: `owner@test.com` / `password` (OWNER), `user@test.com` / `password` (USER)
+
+**Prod mode** (`useDevLogin: false` — set in `environment.prod.ts`):
+- Firebase SDK (`firebase` npm package) handles Google sign-in and token management
+- **No `@angular/fire`** — uses the Firebase JS SDK directly (dynamic imports)
+- `AuthService` initializes Firebase, listens to `onAuthStateChanged`, manages auth state via signals
 - All API calls include `Authorization: Bearer <firebase-id-token>` via `authInterceptor`
 - Auth guard waits for Firebase to restore session from IndexedDB before making decisions (async)
-- Login page shows a Google sign-in button (no username/password)
-
-### Firebase Emulator (local development)
-- `firebase.json` at repo root configures the Auth emulator on port 9099
-- Dev environment (`environment.ts`) sets `useEmulators: true`
-- Start emulator: `cd frontend && npm run emulators`
-- Pre-seeded test user: `test@danceschool.com` / `test123456` (imported from `emulator-data/` at repo root)
+- Login page shows a Google sign-in button
 
 ### Environment config
-- `src/environments/environment.ts` — dev config with emulator flag
-- `src/environments/environment.prod.ts` — prod config (Firebase project: `dance-school-ch`)
+- `src/environments/environment.ts` — dev config (`useDevLogin: true`, `useEmulators: false`)
+- `src/environments/environment.prod.ts` — prod config (Firebase project: `dance-school-ch`, `useDevLogin: false`)
 - Firebase config (apiKey, authDomain, projectId) is compile-time, not secret
 
 ### Key files
-- `shared/auth/auth.service.ts` — Firebase init, `onAuthStateChanged`, `signInWithPopup`, token signals
-- `shared/auth/auth.interceptor.ts` — attaches Bearer token, redirects on 401
-- `shared/auth/auth.guard.ts` — async guard, waits for Firebase session restore
-- `auth/login/login.ts` — Google sign-in button, redirect on success
+- `shared/auth/auth.service.ts` — dual-mode auth: dev (form login) or prod (Firebase). Manages state via signals.
+- `shared/auth/auth.interceptor.ts` — dev: withCredentials; prod: Bearer token. Redirects on 401.
+- `shared/auth/auth.guard.ts` — async guard, waits for auth check to complete
+- `auth/login/login.ts` — dev: email/password form with quick-login; prod: Google sign-in button
 
 ## Design Tokens & Styling — MANDATORY
 

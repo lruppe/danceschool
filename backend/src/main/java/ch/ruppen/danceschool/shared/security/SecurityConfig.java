@@ -1,6 +1,7 @@
 package ch.ruppen.danceschool.shared.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,9 +16,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Production security configuration. Uses stateless Firebase JWT authentication
+ * via OAuth2 Resource Server.
+ * <p>
+ * Active when {@code app.security.dev-auth} is {@code false} (production and tests).
+ */
 @Configuration
 @EnableWebSecurity
 @EnableConfigurationProperties(AppSecurityProperties.class)
+@ConditionalOnProperty(name = "app.security.dev-auth", havingValue = "false")
 @RequiredArgsConstructor
 public class SecurityConfig {
 

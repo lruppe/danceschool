@@ -2,17 +2,6 @@ import { Injectable, signal, computed, inject, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { initializeApp, FirebaseApp } from 'firebase/app';
-import {
-  getAuth,
-  Auth,
-  onAuthStateChanged,
-  onIdTokenChanged,
-  signInWithPopup,
-  signOut,
-  GoogleAuthProvider,
-  connectAuthEmulator,
-} from 'firebase/auth';
 
 export interface Membership {
   schoolId: number;
@@ -34,9 +23,6 @@ export class AuthService {
   private router = inject(Router);
   private zone = inject(NgZone);
 
-  private app: FirebaseApp;
-  private firebaseAuth: Auth;
-
   private readonly _user = signal<User | null>(null);
   private readonly _loading = signal(true);
   private readonly _checked = signal(false);
@@ -51,8 +37,57 @@ export class AuthService {
   readonly loginError = this._loginError.asReadonly();
 
   constructor() {
-    this.app = initializeApp(environment.firebase);
-    this.firebaseAuth = getAuth(this.app);
+    if (environment.useDevLogin) {
+      this.initDev();
+    } else {
+      this.initFirebase();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Dev mode — form login with session cookie
+  // ---------------------------------------------------------------------------
+
+  private initDev(): void {
+    // Check if we already have a session (page refresh)
+    this.fetchUser();
+  }
+
+  async devLogin(email: string, password: string): Promise<void> {
+    this._loginError.set(null);
+    this._loading.set(true);
+    try {
+      const body = new URLSearchParams();
+      body.set('username', email);
+      body.set('password', password);
+
+      await fetch(this.apiUrl('/api/auth/login'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+        credentials: 'include',
+      });
+
+      this.fetchUser();
+    } catch {
+      this._loading.set(false);
+      this._loginError.set('Login failed');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Production mode — Firebase Google sign-in
+  // ---------------------------------------------------------------------------
+
+  private firebaseAuth: import('firebase/auth').Auth | null = null;
+
+  private async initFirebase(): Promise<void> {
+    const { initializeApp } = await import('firebase/app');
+    const { getAuth, onAuthStateChanged, onIdTokenChanged, connectAuthEmulator } =
+      await import('firebase/auth');
+
+    const app = initializeApp(environment.firebase);
+    this.firebaseAuth = getAuth(app);
 
     if (environment.useEmulators) {
       connectAuthEmulator(this.firebaseAuth, 'http://localhost:9099', { disableWarnings: true });
@@ -82,6 +117,24 @@ export class AuthService {
     });
   }
 
+  async signInWithGoogle(): Promise<void> {
+    if (!this.firebaseAuth) return;
+    const { signInWithPopup, GoogleAuthProvider } = await import('firebase/auth');
+    this._loginError.set(null);
+    this._loading.set(true);
+    try {
+      await signInWithPopup(this.firebaseAuth, new GoogleAuthProvider());
+    } catch (error: unknown) {
+      this._loading.set(false);
+      const message = error instanceof Error ? error.message : 'Sign-in failed';
+      this._loginError.set(message);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Shared
+  // ---------------------------------------------------------------------------
+
   private apiUrl(path: string): string {
     return `${environment.apiUrl}${path}`;
   }
@@ -107,23 +160,17 @@ export class AuthService {
     this.fetchUser();
   }
 
-  async signInWithGoogle(): Promise<void> {
-    this._loginError.set(null);
-    this._loading.set(true);
-    try {
-      await signInWithPopup(this.firebaseAuth, new GoogleAuthProvider());
-      // onAuthStateChanged handles the rest
-    } catch (error: unknown) {
+  async logout(): Promise<void> {
+    if (environment.useDevLogin) {
+      await fetch(this.apiUrl('/api/auth/logout'), { method: 'POST', credentials: 'include' });
+      this._user.set(null);
+      this._checked.set(true);
       this._loading.set(false);
-      const message = error instanceof Error ? error.message : 'Sign-in failed';
-      this._loginError.set(message);
-    }
-  }
-
-  logout(): void {
-    signOut(this.firebaseAuth).then(() => {
-      // onAuthStateChanged handles clearing state
       this.router.navigate(['/login']);
-    });
+    } else if (this.firebaseAuth) {
+      const { signOut } = await import('firebase/auth');
+      await signOut(this.firebaseAuth);
+      this.router.navigate(['/login']);
+    }
   }
 }

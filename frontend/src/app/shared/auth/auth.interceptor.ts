@@ -10,10 +10,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
   if (req.url.startsWith('/api') || req.url.startsWith(environment.apiUrl)) {
-    const token = auth.idToken();
-    const authReq = token
-      ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-      : req;
+    let authReq = req;
+
+    if (environment.useDevLogin) {
+      // Session-based auth — browser sends cookie automatically
+      authReq = req.clone({ withCredentials: true });
+    } else {
+      // Firebase JWT — attach Bearer token
+      const token = auth.idToken();
+      if (token) {
+        authReq = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+      }
+    }
 
     return next(authReq).pipe(
       catchError((error) => {
