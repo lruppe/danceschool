@@ -1,4 +1,4 @@
-package ch.ruppen.danceschool.image;
+package ch.ruppen.danceschool.shared.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;

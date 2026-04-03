@@ -1,4 +1,4 @@
-package ch.ruppen.danceschool.image;
+package ch.ruppen.danceschool.shared.storage;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

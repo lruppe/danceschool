@@ -1,4 +1,4 @@
-package ch.ruppen.danceschool.image;
+package ch.ruppen.danceschool.shared.storage;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -8,10 +8,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableConfigurationProperties(ImageStorageProperties.class)
-class ImageStorageConfig {
+public class ImageStorageConfig {
 
     @Bean
-    ImageStorageService imageStorageService(ImageStorageProperties props) {
+    public ImageStorageService imageStorageService(ImageStorageProperties props) {
         String provider = props.provider() != null ? props.provider() : "filesystem";
         return switch (provider) {
             case "r2" -> new CloudflareR2ImageStorageService(

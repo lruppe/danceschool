@@ -1,4 +1,4 @@
-package ch.ruppen.danceschool.image;
+package ch.ruppen.danceschool.shared.storage;
 
 /**
  * Abstraction for storing and deleting uploaded images.
@@ -21,4 +21,19 @@ public interface ImageStorageService {
      * @param key storage key (filename or object key) identifying the image
      */
     void delete(String key);
+
+    /**
+     * Extract the storage key from a public URL.
+     * Both storage implementations use a UUID-based filename as the last path segment.
+     *
+     * @param url public URL of the stored image
+     * @return storage key, or null if the URL is null/empty
+     */
+    static String extractKey(String url) {
+        if (url == null || url.isBlank()) {
+            return null;
+        }
+        int lastSlash = url.lastIndexOf('/');
+        return lastSlash >= 0 ? url.substring(lastSlash + 1) : url;
+    }
 }
