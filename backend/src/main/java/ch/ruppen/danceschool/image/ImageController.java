@@ -1,5 +1,6 @@
 package ch.ruppen.danceschool.image;
 
+import ch.ruppen.danceschool.shared.storage.ImageStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
