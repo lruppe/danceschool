@@ -67,11 +67,23 @@
   height: var(--ds-spacing-8);
   border-radius: 50%;
   background: var(--mat-sys-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.avatar-letter { font: var(--mat-sys-label-large); color: var(--mat-sys-on-primary); }
+.avatar-letter {
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-primary);
+  line-height: 1;
+}
 
 // Content
+.shell-content {
+  background: var(--mat-sys-surface-variant);
+}
+
 .shell-page {
   background: var(--mat-sys-surface-variant);
   min-height: calc(100vh - var(--ds-spacing-16));
