@@ -1,73 +1,90 @@
-# Improve Codebase Architecture
+# Codebase Health Check
 
-Explore a codebase like an AI would, surface architectural friction, discover opportunities for improving testability, and propose module-deepening refactors as GitHub issue RFCs.
+Post-implementation review: find and fix what's messy, dead, or drifting from our architecture rules. Prioritize simplicity, cleanliness, and maintainability — not new abstractions.
 
-A **deep module** (John Ousterhout, "A Philosophy of Software Design") has a small interface hiding a large implementation. Deep modules are more testable, more AI-navigable, and let you test at the boundary instead of inside.
+## Guiding Principles
+
+1. **Clean over clever.** Delete dead code. Remove unused abstractions. Simplify what's over-engineered.
+2. **Respect the architecture rules.** CLAUDE.md files define the architecture. Violations of those rules are findings. Disagreements with those rules are not.
+3. **Prefer duplication over coupling.** If reuse requires coupling modules that shouldn't know about each other, keep the duplication.
+4. **Don't add abstractions.** No new interfaces, wrappers, or helpers unless they remove existing complexity. Three similar lines of code is better than a premature abstraction.
+5. **Fix what's actually wrong.** Standard framework patterns (JPA value objects, thin CRUD services, Spring layering within a slice) are not problems — even if they look "shallow."
+6. **Optimize for the AI developer.** The primary developer is Claude (AI agent). Findings should prioritize: consistent patterns (so the agent can apply the same approach everywhere), locality (so understanding a feature doesn't require reading 10 files), and explicit contracts (so the agent doesn't have to guess behavior).
 
 ## Process
 
-### 1. Explore the codebase
+### 1. Read the architecture rules
 
-Use the Agent tool with subagent_type=Explore to navigate the codebase naturally. Do NOT follow rigid heuristics — explore organically and note where you experience friction:
+Read all CLAUDE.md files (root, backend, frontend) to understand the established architecture. These are the baseline — not suggestions, not defaults. Findings are measured against these rules.
 
-- Where does understanding one concept require bouncing between many small files?
-- Where are modules so shallow that the interface is nearly as complex as the implementation?
-- Where have pure functions been extracted just for testability, but the real bugs hide in how they're called?
-- Where do tightly-coupled modules create integration risk in the seams between them?
-- Which parts of the codebase are untested, or hard to test?
+### 2. Explore the codebase
 
-The friction you encounter IS the signal.
+Use the Agent tool with subagent_type=Explore to navigate the code affected by the parent PRD. Look for:
 
-### 2. Present candidates
+**Dead weight:**
+- Unused code (methods, classes, imports, DTOs, routes) that survived refactoring
+- Abstractions that serve a single caller and add indirection without value
+- Commented-out code, TODOs that are already done, stale documentation
 
-Present a numbered list of deepening opportunities. For each candidate, show:
+**Architecture rule violations:**
+- Cross-slice entity leakage (entities visible outside their slice)
+- Circular or unexpected dependencies between slices
+- Business logic in controllers (should be in services or use-cases)
+- Inconsistent patterns (e.g., POST uses a use-case class but PUT doesn't)
+- Missing validations at system boundaries
+- Hardcoded values that should use tokens (frontend)
 
-- **Cluster**: Which modules/concepts are involved
-- **Why they're coupled**: Shared types, call patterns, co-ownership of a concept
-- **Dependency category**: See [REFERENCE.md](REFERENCE.md) for the four categories
-- **Test impact**: What existing tests would be replaced by boundary tests
+**Cleanliness issues:**
+- Duplicated logic that could be a private method within the same class (not a shared util)
+- Fragmented state management (mixed paradigms for the same concern)
+- Resource leaks (unclosed clients, missing unsubscribe)
+- Silent failure patterns (catch-all exception handlers that swallow errors)
 
-Do NOT propose interfaces yet. Ask the user: "Which of these would you like to explore?"
+**What is NOT a finding:**
+- Standard framework patterns (JPA entities, thin repos, mapper interfaces) — even if "shallow"
+- Pragmatic cross-slice JPA references (entity FKs require references; that's JPA, not a bug)
+- Anemic services for simple CRUD — not every service needs complex logic
+- Missing client-side validation when the backend validates (nice-to-have, not architecture)
 
-### 3. User picks a candidate
+### 3. Present findings
 
-### 4. Frame the problem space
+Present a categorized list. For each finding:
 
-Before spawning sub-agents, write a user-facing explanation of the problem space for the chosen candidate:
+- **What:** One-sentence description
+- **Where:** File path(s) and line numbers
+- **Why it matters:** Impact on maintainability, correctness, or developer (AI) efficiency
+- **Suggested fix:** Concrete action (delete X, move Y, inline Z) — not "consider refactoring"
+- **Effort:** S (< 30 min), M (30 min – 2 hours), L (> 2 hours)
 
-- The constraints any new interface would need to satisfy
-- The dependencies it would need to rely on
-- A rough illustrative code sketch to make the constraints concrete — this is not a proposal, just a way to ground the constraints
+Group findings into:
+1. **Delete** — dead code, unused abstractions
+2. **Fix** — rule violations, bugs, resource leaks
+3. **Simplify** — reduce complexity without changing behavior
+4. **Standardize** — make inconsistent patterns consistent
 
-Show this to the user, then immediately proceed to Step 5. The user reads and thinks about the problem while the sub-agents work in parallel.
+Ask the user: "Which of these should I turn into issues? Or should I just fix them directly?"
 
-### 5. Design multiple interfaces
+### 4. Act on user decision
 
-Spawn 3+ sub-agents in parallel using the Agent tool. Each must produce a **radically different** interface for the deepened module.
+Based on user's choice, either:
+- **Create GitHub issues** using `gh issue create` for findings the user wants tracked
+- **Fix directly** in the current session for quick wins the user approves
+- **Skip** findings the user disagrees with
 
-Prompt each sub-agent with a separate technical brief (file paths, coupling details, dependency category, what's being hidden). This brief is independent of the user-facing explanation in Step 4. Give each agent a different design constraint:
+For GitHub issues, use a simple format:
 
-- Agent 1: "Minimize the interface — aim for 1-3 entry points max"
-- Agent 2: "Maximize flexibility — support many use cases and extension"
-- Agent 3: "Optimize for the most common caller — make the default case trivial"
-- Agent 4 (if applicable): "Design around the ports & adapters pattern for cross-boundary dependencies"
+```
+## What
+[One-sentence description]
 
-Each sub-agent outputs:
+## Where
+[File paths and line numbers]
 
-1. Interface signature (types, methods, params)
-2. Usage example showing how callers use it
-3. What complexity it hides internally
-4. Dependency strategy (how deps are handled — see [REFERENCE.md](REFERENCE.md))
-5. Trade-offs
+## Why
+[Impact on maintainability / correctness]
 
-Present designs sequentially, then compare them in prose.
-
-After comparing, give your own recommendation: which design you think is strongest and why. If elements from different designs would combine well, propose a hybrid. Be opinionated — the user wants a strong read, not just a menu.
-
-### 6. User picks an interface (or accepts recommendation)
-
-### 7. Create GitHub issue
-
-Create a refactor RFC as a GitHub issue using `gh issue create`. Use the template in [REFERENCE.md](REFERENCE.md). Do NOT ask the user to review before creating — just create it and share the URL.
+## Fix
+[Concrete steps — what to delete, move, change]
+```
 
 $ARGUMENTS
