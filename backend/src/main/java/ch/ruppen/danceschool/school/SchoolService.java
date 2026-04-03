@@ -89,6 +89,8 @@ public class SchoolService {
         }
     }
 
+    // Intentionally best-effort: image cleanup failure must not block school updates.
+    // Orphaned images in storage are acceptable; they can be garbage-collected later.
     private void deleteImageSafely(String url) {
         try {
             String key = ImageStorageService.extractKey(url);

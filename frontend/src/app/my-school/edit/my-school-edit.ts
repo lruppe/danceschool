@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, HostListener, inject, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, signal, OnInit, WritableSignal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -32,6 +33,7 @@ export class MySchoolEditComponent implements OnInit {
   private schoolService = inject(SchoolService);
   private snackBar = inject(MatSnackBar);
   private auth = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
 
   protected saving = signal(false);
   protected loading = signal(true);
@@ -45,9 +47,9 @@ export class MySchoolEditComponent implements OnInit {
   protected uploadingCover = signal(false);
   protected uploadingLogo = signal(false);
   protected uploadingGallery = signal(false);
-  private specialtiesDirty = false;
-  private youtubeVideosDirty = false;
-  private imagesDirty = false;
+  private specialtiesDirty = signal(false);
+  private youtubeVideosDirty = signal(false);
+  private imagesDirty = signal(false);
 
   protected readonly MAX_GALLERY_IMAGES = 12;
   private static readonly ACCEPTED_IMAGE_TYPES = 'image/jpeg,image/png,image/webp';
@@ -73,7 +75,7 @@ export class MySchoolEditComponent implements OnInit {
       return;
     }
 
-    this.schoolService.getMySchool().subscribe({
+    this.schoolService.getMySchool().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (school) => {
         this.patchForm(school);
         this.loading.set(false);
@@ -104,12 +106,12 @@ export class MySchoolEditComponent implements OnInit {
       ? this.schoolService.createSchool(data)
       : this.schoolService.updateMySchool(data);
 
-    save$.subscribe({
+    save$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.form.markAsPristine();
-        this.specialtiesDirty = false;
-        this.youtubeVideosDirty = false;
-        this.imagesDirty = false;
+        this.specialtiesDirty.set(false);
+        this.youtubeVideosDirty.set(false);
+        this.imagesDirty.set(false);
         if (this.creationMode()) {
           this.auth.checkAuth();
         }
@@ -132,31 +134,31 @@ export class MySchoolEditComponent implements OnInit {
 
   protected removeSpecialty(index: number): void {
     this.specialties.update(s => s.filter((_, i) => i !== index));
-    this.specialtiesDirty = true;
+    this.specialtiesDirty.set(true);
   }
 
   protected confirmSpecialty(value: string): void {
     const trimmed = value.trim();
     if (trimmed) {
       this.specialties.update(s => [...s, trimmed]);
-      this.specialtiesDirty = true;
+      this.specialtiesDirty.set(true);
     }
     this.addingSpecialty.set(false);
   }
 
   protected addVideo(): void {
     this.youtubeVideos.update(v => [...v, '']);
-    this.youtubeVideosDirty = true;
+    this.youtubeVideosDirty.set(true);
   }
 
   protected updateVideoUrl(index: number, url: string): void {
     this.youtubeVideos.update(v => v.map((u, i) => i === index ? url : u));
-    this.youtubeVideosDirty = true;
+    this.youtubeVideosDirty.set(true);
   }
 
   protected removeVideo(index: number): void {
     this.youtubeVideos.update(v => v.filter((_, i) => i !== index));
-    this.youtubeVideosDirty = true;
+    this.youtubeVideosDirty.set(true);
   }
 
   protected get acceptedImageTypes(): string {
@@ -164,65 +166,48 @@ export class MySchoolEditComponent implements OnInit {
   }
 
   protected onCoverFileSelected(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    this.uploadingCover.set(true);
-    this.schoolService.uploadImage(file).subscribe({
-      next: (res) => {
-        this.coverImageUrl.set(res.url);
-        this.imagesDirty = true;
-        this.uploadingCover.set(false);
-      },
-      error: () => {
-        this.snackBar.open('Failed to upload cover image', 'Dismiss', { duration: 5000 });
-        this.uploadingCover.set(false);
-      },
+    this.uploadFile(event, this.uploadingCover, 'Failed to upload cover image', (url) => {
+      this.coverImageUrl.set(url);
     });
-    (event.target as HTMLInputElement).value = '';
   }
 
   protected onLogoFileSelected(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    this.uploadingLogo.set(true);
-    this.schoolService.uploadImage(file).subscribe({
-      next: (res) => {
-        this.logoUrl.set(res.url);
-        this.imagesDirty = true;
-        this.uploadingLogo.set(false);
-      },
-      error: () => {
-        this.snackBar.open('Failed to upload logo', 'Dismiss', { duration: 5000 });
-        this.uploadingLogo.set(false);
-      },
+    this.uploadFile(event, this.uploadingLogo, 'Failed to upload logo', (url) => {
+      this.logoUrl.set(url);
     });
-    (event.target as HTMLInputElement).value = '';
   }
 
   protected onGalleryFileSelected(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
     if (this.galleryImages().length >= this.MAX_GALLERY_IMAGES) return;
-    this.uploadingGallery.set(true);
-    this.schoolService.uploadImage(file).subscribe({
+    this.uploadFile(event, this.uploadingGallery, 'Failed to upload image', (url) => {
+      this.galleryImages.update(imgs => [...imgs, { url, position: imgs.length }]);
+    });
+  }
+
+  private uploadFile(event: Event, uploading: WritableSignal<boolean>, errorMsg: string, onSuccess: (url: string) => void): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    uploading.set(true);
+    this.schoolService.uploadImage(file).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
-        this.galleryImages.update(imgs => [...imgs, { url: res.url, position: imgs.length }]);
-        this.imagesDirty = true;
-        this.uploadingGallery.set(false);
+        onSuccess(res.url);
+        this.imagesDirty.set(true);
+        uploading.set(false);
       },
       error: () => {
-        this.snackBar.open('Failed to upload image', 'Dismiss', { duration: 5000 });
-        this.uploadingGallery.set(false);
+        this.snackBar.open(errorMsg, 'Dismiss', { duration: 5000 });
+        uploading.set(false);
       },
     });
-    (event.target as HTMLInputElement).value = '';
+    input.value = '';
   }
 
   protected removeGalleryImage(index: number): void {
     this.galleryImages.update(imgs =>
       imgs.filter((_, i) => i !== index).map((img, i) => ({ ...img, position: i }))
     );
-    this.imagesDirty = true;
+    this.imagesDirty.set(true);
   }
 
   protected isValidYoutubeUrl(url: string): boolean {
@@ -237,13 +222,17 @@ export class MySchoolEditComponent implements OnInit {
 
   @HostListener('window:beforeunload', ['$event'])
   onBeforeUnload(event: BeforeUnloadEvent): void {
-    if (this.form.dirty || this.specialtiesDirty || this.youtubeVideosDirty || this.imagesDirty) {
+    if (this.isDirty()) {
       event.preventDefault();
     }
   }
 
   canDeactivate(): boolean {
-    return !this.form.dirty && !this.specialtiesDirty && !this.youtubeVideosDirty && !this.imagesDirty;
+    return !this.isDirty();
+  }
+
+  private isDirty(): boolean {
+    return this.form.dirty || this.specialtiesDirty() || this.youtubeVideosDirty() || this.imagesDirty();
   }
 
   private patchForm(school: SchoolDetail): void {
@@ -265,9 +254,9 @@ export class MySchoolEditComponent implements OnInit {
     this.logoUrl.set(school.logoUrl ?? null);
     this.galleryImages.set([...(school.galleryImages ?? [])]);
     this.form.markAsPristine();
-    this.specialtiesDirty = false;
-    this.youtubeVideosDirty = false;
-    this.imagesDirty = false;
+    this.specialtiesDirty.set(false);
+    this.youtubeVideosDirty.set(false);
+    this.imagesDirty.set(false);
   }
 
   private buildRequest(): SchoolUpdateRequest {
