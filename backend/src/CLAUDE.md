@@ -18,7 +18,6 @@ Spring Boot 3.5 application (Java 21) for managing a dance school. Uses Maven wr
 - Liquibase for database migrations (`src/main/resources/db/changelog/db.changelog-master.yaml`)
 - H2 in-memory database (dev/test)
 - Lombok for boilerplate reduction (configured as annotation processor in maven-compiler-plugin)
-- MapStruct for entity/DTO mapping (`@Mapper(componentModel = "spring")`, package-private, per slice)
 - SpringDoc OpenAPI for API docs (Swagger UI at `/swagger-ui.html`)
 - Spring Boot Actuator (endpoints at `/actuator`)
 
