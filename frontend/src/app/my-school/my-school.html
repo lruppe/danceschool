@@ -163,6 +163,13 @@
       <p class="empty-hint">No videos added yet. Link YouTube videos to promote your school.</p>
     }
   </div>
+} @else if (noSchool()) {
+  <div class="empty-state">
+    <mat-icon class="empty-state-icon">business</mat-icon>
+    <h2 class="empty-state-title">Set up your school to get started</h2>
+    <p class="empty-state-text">Create your dance school profile to begin managing students, classes, and more.</p>
+    <a mat-flat-button routerLink="/my-school/edit">Create School</a>
+  </div>
 } @else if (error()) {
   <p class="error-text">Could not load school information. Please try again later.</p>
 } @else {

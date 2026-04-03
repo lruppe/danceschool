@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { GalleryImage, SchoolDetail, SchoolService, SchoolUpdateRequest } from '../school.service';
+import { AuthService } from '../../shared/auth/auth.service';
 
 @Component({
   selector: 'app-my-school-edit',
@@ -30,9 +31,11 @@ export class MySchoolEditComponent implements OnInit {
   private router = inject(Router);
   private schoolService = inject(SchoolService);
   private snackBar = inject(MatSnackBar);
+  private auth = inject(AuthService);
 
   protected saving = signal(false);
   protected loading = signal(true);
+  protected creationMode = signal(false);
   protected specialties = signal<string[]>([]);
   protected addingSpecialty = signal(false);
   protected youtubeVideos = signal<string[]>([]);
@@ -63,6 +66,13 @@ export class MySchoolEditComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const user = this.auth.user();
+    if (user && user.memberships.length === 0) {
+      this.creationMode.set(true);
+      this.loading.set(false);
+      return;
+    }
+
     this.schoolService.getMySchool().subscribe({
       next: (school) => {
         this.patchForm(school);
@@ -90,12 +100,19 @@ export class MySchoolEditComponent implements OnInit {
     this.saving.set(true);
     const data = this.buildRequest();
 
-    this.schoolService.updateMySchool(data).subscribe({
+    const save$ = this.creationMode()
+      ? this.schoolService.createSchool(data)
+      : this.schoolService.updateMySchool(data);
+
+    save$.subscribe({
       next: () => {
         this.form.markAsPristine();
         this.specialtiesDirty = false;
         this.youtubeVideosDirty = false;
         this.imagesDirty = false;
+        if (this.creationMode()) {
+          this.auth.checkAuth();
+        }
         this.router.navigate(['/my-school']);
       },
       error: (err) => {

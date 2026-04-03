@@ -19,11 +19,11 @@ public class CreateSchoolUseCase {
     private final UserService userService;
 
     @Transactional
-    public SchoolDto execute(SchoolDto dto, Long userId) {
+    public SchoolDetailDto execute(SchoolUpdateDto dto, Long userId) {
         AppUser user = userService.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
 
-        School school = schoolService.createSchool(dto);
+        School school = schoolService.createSchoolFull(dto);
 
         SchoolMember member = new SchoolMember();
         member.setUser(user);
@@ -31,6 +31,6 @@ public class CreateSchoolUseCase {
         member.setRole(MemberRole.OWNER);
         schoolMemberService.createMembership(member);
 
-        return schoolService.toDto(school);
+        return schoolService.toDetailDto(school);
     }
 }

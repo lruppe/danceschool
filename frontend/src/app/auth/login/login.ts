@@ -38,7 +38,7 @@ export class LoginComponent {
       if (this.auth.isLoggedIn()) {
         const user = this.auth.user();
         if (user && user.memberships.length === 0) {
-          this.router.navigate(['/onboarding']);
+          this.router.navigate(['/my-school/edit']);
         } else {
           this.router.navigate(['/dashboard']);
         }

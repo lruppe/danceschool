@@ -40,6 +40,10 @@ export class SchoolService {
     return this.http.get<SchoolDetail>(`${environment.apiUrl}/api/schools/me`);
   }
 
+  createSchool(data: SchoolUpdateRequest): Observable<SchoolDetail> {
+    return this.http.post<SchoolDetail>(`${environment.apiUrl}/api/schools`, data);
+  }
+
   updateMySchool(data: SchoolUpdateRequest): Observable<SchoolDetail> {
     return this.http.put<SchoolDetail>(`${environment.apiUrl}/api/schools/me`, data);
   }

@@ -9,8 +9,7 @@ export const routes: Routes = [
     loadComponent: () => import('./shell/shell').then(m => m.ShellComponent),
     canActivate: [authGuard],
     children: [
-      { path: 'onboarding', loadComponent: () => import('./onboarding/onboarding').then(m => m.OnboardingComponent) },
-      { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard').then(m => m.DashboardComponent) },
+{ path: 'dashboard', loadComponent: () => import('./dashboard/dashboard').then(m => m.DashboardComponent) },
       { path: 'students', loadComponent: () => import('./students/students').then(m => m.StudentsComponent) },
       {
         path: 'my-school/edit',

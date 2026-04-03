@@ -16,11 +16,18 @@ export class MySchoolComponent implements OnInit {
 
   protected school = signal<SchoolDetail | null>(null);
   protected error = signal(false);
+  protected noSchool = signal(false);
 
   ngOnInit(): void {
     this.schoolService.getMySchool().subscribe({
       next: (school) => this.school.set(school),
-      error: () => this.error.set(true),
+      error: (err) => {
+        if (err.status === 404) {
+          this.noSchool.set(true);
+        } else {
+          this.error.set(true);
+        }
+      },
     });
   }
 }

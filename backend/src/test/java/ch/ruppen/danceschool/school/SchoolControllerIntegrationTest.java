@@ -20,6 +20,7 @@ import jakarta.persistence.EntityManager;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -272,6 +273,70 @@ class SchoolControllerIntegrationTest {
                                 { "name": "Some School" }
                                 """))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // --- POST /api/schools tests ---
+
+    @Test
+    void create_createsSchoolWithAllFields_whenValid() throws Exception {
+        mockMvc.perform(post("/api/schools")
+                        .with(authentication(authToken(testUser)))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "name": "New School",
+                                  "tagline": "Learn to dance",
+                                  "about": "A brand new school",
+                                  "streetAddress": "789 Rhythm Rd",
+                                  "city": "Austin",
+                                  "postalCode": "73301",
+                                  "country": "US",
+                                  "phone": "+1 512-555-0100",
+                                  "email": "info@newschool.com",
+                                  "website": "https://www.newschool.com",
+                                  "specialties": ["Salsa", "Bachata"],
+                                  "galleryImages": [
+                                    { "url": "https://r2.example.com/gallery1.jpg", "position": 0 }
+                                  ],
+                                  "youtubeVideos": [
+                                    { "url": "https://www.youtube.com/watch?v=xyz789", "position": 0 }
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("New School"))
+                .andExpect(jsonPath("$.tagline").value("Learn to dance"))
+                .andExpect(jsonPath("$.about").value("A brand new school"))
+                .andExpect(jsonPath("$.streetAddress").value("789 Rhythm Rd"))
+                .andExpect(jsonPath("$.specialties[0]").value("Salsa"))
+                .andExpect(jsonPath("$.specialties[1]").value("Bachata"))
+                .andExpect(jsonPath("$.galleryImages[0].url").value("https://r2.example.com/gallery1.jpg"))
+                .andExpect(jsonPath("$.youtubeVideos[0].url").value("https://www.youtube.com/watch?v=xyz789"));
+    }
+
+    @Test
+    void create_createsSchoolWithNameOnly_whenMinimalFields() throws Exception {
+        mockMvc.perform(post("/api/schools")
+                        .with(authentication(authToken(testUser)))
+                        .contentType("application/json")
+                        .content("""
+                                { "name": "Minimal School" }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("Minimal School"))
+                .andExpect(jsonPath("$.specialties").isArray())
+                .andExpect(jsonPath("$.specialties").isEmpty());
+    }
+
+    @Test
+    void create_returns400_whenNameIsBlank() throws Exception {
+        mockMvc.perform(post("/api/schools")
+                        .with(authentication(authToken(testUser)))
+                        .contentType("application/json")
+                        .content("""
+                                { "name": "" }
+                                """))
+                .andExpect(status().isBadRequest());
     }
 
     private UsernamePasswordAuthenticationToken authToken(AppUser user) {

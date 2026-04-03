@@ -24,7 +24,7 @@ public class SchoolController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SchoolDto create(@Valid @RequestBody SchoolDto dto, @AuthenticationPrincipal AuthenticatedUser principal) {
+    public SchoolDetailDto create(@Valid @RequestBody SchoolUpdateDto dto, @AuthenticationPrincipal AuthenticatedUser principal) {
         return createSchoolUseCase.execute(dto, principal.userId());
     }
 
