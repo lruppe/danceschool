@@ -53,14 +53,12 @@ Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. 
 ## Git & GitHub
 
 - **GitHub repo:** `lruppe/danceschool`
-- **Auth:** `gh auth setup-git` provides credentials for all git and GitHub operations
 - **Git operations** (commit, push, pull, branch): use `git` CLI
 - **GitHub operations** (PRs, checks, issues): use `gh` CLI
 - **All changes go through PRs** — never commit directly to `main`
 - **Always work in a worktree** — use Claude Code's built-in worktree tools (`EnterWorktree`) or `claude --worktree <name>`. This creates worktrees at `.claude/worktrees/<name>/` inside the project. Do NOT use raw `git worktree add` to create worktrees outside the project directory — external worktrees break MCP tool context and file watching.
 - **Fresh worktrees need setup** — always run `npm install` in `frontend/` before building or starting the dev server in a new worktree
 - **Workflow:** pull main → create worktree → create branch → commit → rebase on main → push → create PR → `gh pr checks <number> --watch` → squash merge → pull main
-- **Merge strategy:** squash merge
 - **Auto-merge:** merge immediately after CI passes, no manual review needed
 
 ## Visual Testing Workflow

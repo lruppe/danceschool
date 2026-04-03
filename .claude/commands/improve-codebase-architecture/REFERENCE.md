@@ -1,78 +1,35 @@
 # Reference
 
-## Dependency Categories
+## Finding Categories
 
-When assessing a candidate for deepening, classify its dependencies:
+### 1. Delete — Dead code and unused abstractions
 
-### 1. In-process
+Code that survived a refactoring but is no longer called. Unused DTOs, mapper methods, old creation paths, commented-out code. These add cognitive load and mislead the AI developer into thinking they're load-bearing.
 
-Pure computation, in-memory state, no I/O. Always deepenable — just merge the modules and test directly.
+**Action:** Delete. No replacement needed. Run tests to confirm nothing breaks.
 
-### 2. Local-substitutable
+### 2. Fix — Architecture rule violations and bugs
 
-Dependencies that have local test stand-ins (e.g., PGLite for Postgres, in-memory filesystem). Deepenable if the test substitute exists. The deepened module is tested with the local stand-in running in the test suite.
+Violations of the rules in CLAUDE.md files: cross-slice entity leakage, business logic in controllers, missing validations at system boundaries, resource leaks, silent failure patterns.
 
-### 3. Remote but owned (Ports & Adapters)
+**Action:** Fix to match the documented rules. If a rule is wrong, flag it for discussion — don't silently ignore it.
 
-Your own services across a network boundary (microservices, internal APIs). Define a port (interface) at the module boundary. The deep module owns the logic; the transport is injected. Tests use an in-memory adapter. Production uses the real HTTP/gRPC/queue adapter.
+### 3. Simplify — Over-engineered code
 
-Recommendation shape: "Define a shared interface (port), implement an HTTP adapter for production and an in-memory adapter for testing, so the logic can be tested as one deep module even though it's deployed across a network boundary."
+Abstractions that serve a single caller. Fragmented state management. Multiple code paths that do the same thing differently. Code that's harder to read than it needs to be.
 
-### 4. True external (Mock)
+**Action:** Inline, consolidate, or reduce. The goal is fewer concepts, not fewer lines.
 
-Third-party services (Stripe, Twilio, etc.) you don't control. Mock at the boundary. The deepened module takes the external dependency as an injected port, and tests provide a mock implementation.
+### 4. Standardize — Inconsistent patterns
 
-## Testing Strategy
+Two endpoints that handle the same concern differently (e.g., POST uses a use-case class but PUT doesn't). Mixed state paradigms in one component. Different validation strategies for similar forms.
 
-The core principle: **replace, don't layer.**
+**Action:** Pick the better pattern and apply it consistently. Document the pattern in CLAUDE.md if it's not already there.
 
-- Old unit tests on shallow modules are waste once boundary tests exist — delete them
-- Write new tests at the deepened module's interface boundary
-- Tests assert on observable outcomes through the public interface, not internal state
-- Tests should survive internal refactors — they describe behavior, not implementation
+## Effort Sizing
 
-## Issue Template
-
-<issue-template>
-
-## Problem
-
-Describe the architectural friction:
-
-- Which modules are shallow and tightly coupled
-- What integration risk exists in the seams between them
-- Why this makes the codebase harder to navigate and maintain
-
-## Proposed Interface
-
-The chosen interface design:
-
-- Interface signature (types, methods, params)
-- Usage example showing how callers use it
-- What complexity it hides internally
-
-## Dependency Strategy
-
-Which category applies and how dependencies are handled:
-
-- **In-process**: merged directly
-- **Local-substitutable**: tested with [specific stand-in]
-- **Ports & adapters**: port definition, production adapter, test adapter
-- **Mock**: mock boundary for external services
-
-## Testing Strategy
-
-- **New boundary tests to write**: describe the behaviors to verify at the interface
-- **Old tests to delete**: list the shallow module tests that become redundant
-- **Test environment needs**: any local stand-ins or adapters required
-
-## Implementation Recommendations
-
-Durable architectural guidance that is NOT coupled to current file paths:
-
-- What the module should own (responsibilities)
-- What it should hide (implementation details)
-- What it should expose (the interface contract)
-- How callers should migrate to the new interface
-
-</issue-template>
+| Size | Time | Examples |
+|------|------|---------|
+| **S** | < 30 min | Delete unused method, inline a single-caller helper, add missing unsubscribe |
+| **M** | 30 min – 2 hours | Consolidate duplicate upload handlers, standardize endpoint patterns, fix state management |
+| **L** | > 2 hours | Move cross-slice logic to use-case class, restructure component into sub-components, migrate data model |
