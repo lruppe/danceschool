@@ -1,8 +1,8 @@
 package ch.ruppen.danceschool.shared.security;
 
 import ch.ruppen.danceschool.school.CreateSchoolUseCase;
-import ch.ruppen.danceschool.school.SchoolDto;
 import ch.ruppen.danceschool.school.SchoolService;
+import ch.ruppen.danceschool.school.SchoolUpdateDto;
 import ch.ruppen.danceschool.schoolmember.MemberRole;
 import ch.ruppen.danceschool.schoolmember.SchoolMember;
 import ch.ruppen.danceschool.schoolmember.SchoolMemberService;
@@ -41,8 +41,9 @@ public class DevDataSeeder implements ApplicationRunner {
 
         // Create school owned by owner if they don't have one yet
         if (schoolService.findByOwnerUserId(owner.getId()).isEmpty()) {
-            var schoolDto = new SchoolDto(null, "Dev Dance School", null, "Zurich", null, "Switzerland",
-                    null, "info@devdanceschool.com");
+            var schoolDto = new SchoolUpdateDto("Dev Dance School", null, null, null, "Zurich",
+                    null, "Switzerland", null, "info@devdanceschool.com", null, null, null,
+                    null, null, null);
             createSchoolUseCase.execute(schoolDto, owner.getId());
 
             // Also add the regular user to the same school
