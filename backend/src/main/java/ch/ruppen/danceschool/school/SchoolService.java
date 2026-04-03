@@ -1,18 +1,24 @@
 package ch.ruppen.danceschool.school;
 
+import ch.ruppen.danceschool.shared.storage.ImageStorageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SchoolService {
 
     private final SchoolRepository schoolRepository;
     private final SchoolMapper schoolMapper;
+    private final ImageStorageService imageStorageService;
 
     public School createSchool(SchoolDto dto) {
         School school = schoolMapper.toEntity(dto);
@@ -28,6 +34,8 @@ public class SchoolService {
     }
 
     public School updateSchool(School school, SchoolUpdateDto dto) {
+        deleteReplacedImages(school, dto);
+
         school.setName(dto.name());
         school.setTagline(dto.tagline());
         school.setAbout(dto.about());
@@ -44,6 +52,41 @@ public class SchoolService {
         replaceGalleryImages(school, dto.galleryImages());
         replaceYoutubeVideos(school, dto.youtubeVideos());
         return schoolRepository.save(school);
+    }
+
+    private void deleteReplacedImages(School school, SchoolUpdateDto dto) {
+        deleteImageIfChanged(school.getCoverImageUrl(), dto.coverImageUrl());
+        deleteImageIfChanged(school.getLogoUrl(), dto.logoUrl());
+        deleteRemovedGalleryImages(school, dto.galleryImages());
+    }
+
+    private void deleteImageIfChanged(String oldUrl, String newUrl) {
+        if (oldUrl != null && !oldUrl.isBlank() && !Objects.equals(oldUrl, newUrl)) {
+            deleteImageSafely(oldUrl);
+        }
+    }
+
+    private void deleteRemovedGalleryImages(School school, List<SchoolUpdateDto.GalleryImageDto> newImages) {
+        Set<String> newUrls = newImages != null
+                ? newImages.stream().map(SchoolUpdateDto.GalleryImageDto::url).collect(Collectors.toSet())
+                : Set.of();
+
+        for (SchoolGalleryImage existing : school.getGalleryImages()) {
+            if (!newUrls.contains(existing.getUrl())) {
+                deleteImageSafely(existing.getUrl());
+            }
+        }
+    }
+
+    private void deleteImageSafely(String url) {
+        try {
+            String key = ImageStorageService.extractKey(url);
+            if (key != null) {
+                imageStorageService.delete(key);
+            }
+        } catch (Exception e) {
+            log.warn("Failed to delete old image from storage: {}. Error: {}", url, e.getMessage());
+        }
     }
 
     private void replaceSpecialties(School school, List<String> specialties) {
