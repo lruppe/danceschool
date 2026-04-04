@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -20,7 +20,26 @@ import { RouterLink } from '@angular/router';
           <a class="btn-get-started" routerLink="/login">Get Started</a>
         </div>
       </div>
+      <button
+        class="hamburger"
+        aria-label="Toggle menu"
+        [attr.aria-expanded]="menuOpen()"
+        (click)="menuOpen.set(!menuOpen())"
+      >
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
     </header>
+    @if (menuOpen()) {
+      <nav class="mobile-menu">
+        <a (click)="featuresClick.emit(); menuOpen.set(false)">Features</a>
+        <a>Pricing</a>
+        <div class="mobile-menu-divider"></div>
+        <a class="btn-login" routerLink="/login">Login</a>
+        <a class="btn-get-started" routerLink="/login">Get Started</a>
+      </nav>
+    }
   `,
   styleUrl: './public-header.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,4 +47,5 @@ import { RouterLink } from '@angular/router';
 export class PublicHeaderComponent {
   logoClick = output<void>();
   featuresClick = output<void>();
+  menuOpen = signal(false);
 }
