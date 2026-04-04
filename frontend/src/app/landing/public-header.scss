@@ -1,0 +1,113 @@
+@use "styles/mixins" as ds;
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ds-spacing-4) var(--ds-spacing-20);
+  position: relative;
+  z-index: 1;
+
+  @include ds.bp-down(md) {
+    padding: var(--ds-spacing-4) var(--ds-spacing-6);
+  }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-2);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.logo-icon {
+  width: var(--ds-spacing-8);
+  height: var(--ds-spacing-8);
+  border-radius: var(--ds-radius-full);
+  background: white;
+  opacity: 0.9;
+}
+
+.logo-text {
+  font-weight: 700;
+  font-size: var(--mat-sys-title-medium-size);
+  color: white;
+  white-space: nowrap;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-8);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-6);
+
+  a {
+    font-weight: 500;
+    font-size: var(--mat-sys-body-large-size);
+    color: white;
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  @include ds.bp-down(md) {
+    display: none;
+  }
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-3);
+}
+
+.btn-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-spacing-2) var(--ds-spacing-5);
+  border: 1px solid var(--ds-landing-border-muted);
+  border-radius: var(--ds-radius-md);
+  font-weight: 500;
+  font-size: var(--mat-sys-label-large-size);
+  color: white;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--ds-duration-fast) var(--ds-easing-standard);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.btn-get-started {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-spacing-2) var(--ds-spacing-5);
+  background: white;
+  border-radius: var(--ds-radius-md);
+  font-weight: 600;
+  font-size: var(--mat-sys-label-large-size);
+  color: var(--mat-sys-primary);
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity var(--ds-duration-fast) var(--ds-easing-standard);
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

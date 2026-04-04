@@ -4,7 +4,12 @@ import { publicGuard } from './shared/auth/public.guard';
 import { unsavedChangesGuard } from './my-school/edit/unsaved-changes.guard';
 
 export const routes: Routes = [
-  { path: '', canActivate: [publicGuard], children: [] },
+  {
+    path: '',
+    pathMatch: 'full',
+    canActivate: [publicGuard],
+    loadComponent: () => import('./landing/landing').then(m => m.LandingComponent),
+  },
   { path: 'login', loadComponent: () => import('./auth/login/login').then(m => m.LoginComponent) },
   {
     path: 'app',

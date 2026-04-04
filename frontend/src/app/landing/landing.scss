@@ -1,0 +1,178 @@
+@use "styles/mixins" as ds;
+
+:host {
+  display: block;
+}
+
+.landing-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--ds-landing-bg-end);
+}
+
+// ── Hero Section ──
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 900px;
+  overflow: hidden;
+  background: linear-gradient(
+    32deg,
+    var(--ds-landing-bg-start) 14%,
+    var(--ds-landing-bg-mid) 57%,
+    var(--ds-landing-bg-end) 86%
+  );
+
+  @include ds.bp-down(md) {
+    height: auto;
+    min-height: 600px;
+  }
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.2)
+  );
+  pointer-events: none;
+}
+
+.hero-glow {
+  position: absolute;
+  width: 800px;
+  height: 500px;
+  left: 50%;
+  top: calc(50% + 100px);
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse at center,
+    var(--ds-landing-glow) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+
+  @include ds.bp-down(md) {
+    width: 400px;
+    height: 300px;
+  }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-spacing-6);
+  flex: 1;
+  padding: 0 var(--ds-spacing-20) var(--ds-spacing-20);
+
+  @include ds.bp-down(md) {
+    padding: var(--ds-spacing-12) var(--ds-spacing-6);
+  }
+}
+
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-spacing-4);
+  text-align: center;
+}
+
+.hero-heading {
+  margin: 0;
+  font-size: var(--mat-sys-display-large-size);
+  line-height: var(--mat-sys-display-large-line-height);
+  font-weight: 700;
+  color: white;
+
+  @include ds.bp-down(md) {
+    font-size: var(--mat-sys-display-small-size);
+    line-height: var(--mat-sys-display-small-line-height);
+  }
+}
+
+.hero-subheading {
+  margin: 0;
+  font-size: var(--mat-sys-body-large-size);
+  line-height: var(--mat-sys-body-large-line-height);
+  color: var(--ds-landing-text-muted);
+
+  @include ds.bp-down(md) {
+    font-size: var(--mat-sys-body-medium-size);
+  }
+}
+
+.hero-cta {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-4);
+
+  @include ds.bp-down(sm) {
+    flex-direction: column;
+    width: 100%;
+  }
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-spacing-3) var(--ds-spacing-8);
+  background: var(--mat-sys-primary);
+  border-radius: var(--ds-radius-lg);
+  font-weight: 600;
+  font-size: var(--mat-sys-body-large-size);
+  color: white;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity var(--ds-duration-fast) var(--ds-easing-standard);
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  @include ds.bp-down(sm) {
+    width: 100%;
+  }
+}
+
+.btn-outlined {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-spacing-3) var(--ds-spacing-8);
+  border: 1.5px solid white;
+  border-radius: var(--ds-radius-lg);
+  font-weight: 600;
+  font-size: var(--mat-sys-body-large-size);
+  color: white;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--ds-duration-fast) var(--ds-easing-standard);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  @include ds.bp-down(sm) {
+    width: 100%;
+  }
+}
+
+.hero-image-placeholder {
+  // Slot for a future dance studio background image.
+  // To add: set background-image on .hero section and adjust overlay opacity.
+}
