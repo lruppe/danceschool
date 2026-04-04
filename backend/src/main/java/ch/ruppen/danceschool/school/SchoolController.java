@@ -1,6 +1,5 @@
 package ch.ruppen.danceschool.school;
 
-import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
 import ch.ruppen.danceschool.shared.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,28 +18,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class SchoolController {
 
-    private final CreateSchoolUseCase createSchoolUseCase;
     private final SchoolService schoolService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public SchoolDetailDto create(@Valid @RequestBody SchoolUpdateDto dto, @AuthenticationPrincipal AuthenticatedUser principal) {
-        return createSchoolUseCase.execute(dto, principal.userId());
+        return schoolService.createSchool(dto, principal.userId());
     }
 
     @GetMapping("/me")
     public SchoolDetailDto me(@AuthenticationPrincipal AuthenticatedUser principal) {
-        School school = schoolService.findByOwnerUserId(principal.userId())
-                .orElseThrow(() -> new ResourceNotFoundException("School", principal.userId()));
-        return schoolService.toDetailDto(school);
+        return schoolService.getByOwnerUserId(principal.userId());
     }
 
     @PutMapping("/me")
     public SchoolDetailDto updateMe(@Valid @RequestBody SchoolUpdateDto dto,
                                     @AuthenticationPrincipal AuthenticatedUser principal) {
-        School school = schoolService.findByOwnerUserId(principal.userId())
-                .orElseThrow(() -> new ResourceNotFoundException("School", principal.userId()));
-        School updated = schoolService.updateSchool(school, dto);
-        return schoolService.toDetailDto(updated);
+        return schoolService.updateSchool(principal.userId(), dto);
     }
 }

@@ -1,10 +1,7 @@
-package ch.ruppen.danceschool.auth;
+package ch.ruppen.danceschool.user;
 
 import ch.ruppen.danceschool.shared.security.AuthenticatedUser;
-import ch.ruppen.danceschool.user.UserDto;
-import ch.ruppen.danceschool.user.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,15 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class UserController {
 
     private final UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<UserDto> me(@AuthenticationPrincipal AuthenticatedUser principal) {
-        return userService.findById(principal.userId())
-                .map(userService::toUserDto)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public UserDto me(@AuthenticationPrincipal AuthenticatedUser principal) {
+        return userService.getMe(principal.userId());
     }
 }

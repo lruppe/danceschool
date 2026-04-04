@@ -16,26 +16,11 @@ danceschool/
 └── .mcp.json          ← MCP server config (Angular CLI + Playwright browser)
 ```
 
-Frontend and backend are independent builds — no Maven integration. During development, use Angular MCP `devserver.start` with a proxy to the backend API.
+Frontend and backend are independent builds. During development, use Angular MCP `devserver.start` with a proxy to the backend API.
 
 ## Domain
 
 Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. See `docs/GLOSSARY.md` for ubiquitous language (DDD-style).
-
-### Product Roadmap
-
-**Phase 1 — DanceStudio Manager Platform (current)**
-- Admin portal (Angular frontend) for school Owners and Teachers
-- Office-oriented: manage sign-ups, payments, organize helpers when students cancel (partner matching for couple dance)
-- Multi-tenant B2B — each school is a tenant
-
-**Phase 2 — Student App (future, Android/iOS)**
-- Students browse dance schools, view classes, enroll
-- Social login (Apple, Google, possibly Instagram) — frictionless onboarding is a priority
-- Dance events feed — community-oriented: school owners post events, plus external sources (scraped data, festival organizations)
-- Community building is a core goal
-
-**Business model:** Solve admin pain for teachers → get students onto the platform → build community via events → monetize via ads, school subscriptions, and other revenue streams TBD
 
 ### Authentication Strategy
 
