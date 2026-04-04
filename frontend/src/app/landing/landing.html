@@ -1,0 +1,36 @@
+<div class="landing-page" #pageTop>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-glow"></div>
+
+    <app-public-header
+      (logoClick)="scrollToTop()"
+      (featuresClick)="scrollToFeatures()"
+    />
+
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-heading">
+          Simplify your studio.<br />
+          Amplify your passion.
+        </h1>
+        <p class="hero-subheading">
+          Because you started for the dance. — The no.1 app for managing your dance school
+        </p>
+      </div>
+      <div class="hero-cta">
+        <a class="btn-primary" routerLink="/login">Try for Free</a>
+        <a class="btn-outlined" routerLink="/login">Already have an account?</a>
+      </div>
+    </div>
+
+    <div class="hero-image-placeholder"></div>
+  </section>
+
+  <!-- Features placeholder (implemented in #85) -->
+  <section id="features"></section>
+
+  <!-- Footer -->
+  <app-public-footer />
+</div>

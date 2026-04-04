@@ -43,6 +43,17 @@
   // ── Shadows ──
   --ds-shadow-sm: 0 2px 4px rgb(0 0 0 / 0.1);
 
+  // ── Landing page ──
+  --ds-landing-bg-start: #2e1459;
+  --ds-landing-bg-mid: #140a26;
+  --ds-landing-bg-end: #0d051a;
+  --ds-landing-text-muted: rgba(255, 255, 255, 0.9);
+  --ds-landing-border-muted: rgba(255, 255, 255, 0.5);
+  --ds-landing-footer-text: #9991a6;
+  --ds-landing-footer-divider: #33264d;
+  --ds-landing-logo-accent: #f5c73d;
+  --ds-landing-glow: rgba(98, 50, 201, 0.15);
+
   // ── Motion ──
   --ds-duration-fast: 150ms;
   --ds-duration-normal: 250ms;
