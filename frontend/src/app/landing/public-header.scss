@@ -45,6 +45,10 @@
   display: flex;
   align-items: center;
   gap: var(--ds-spacing-8);
+
+  @include ds.bp-down(md) {
+    display: none;
+  }
 }
 
 .nav-links {
@@ -59,10 +63,6 @@
     white-space: nowrap;
     cursor: pointer;
     text-decoration: none;
-  }
-
-  @include ds.bp-down(md) {
-    display: none;
   }
 }
 
@@ -110,4 +110,63 @@
   &:hover {
     opacity: 0.9;
   }
+}
+
+// ── Hamburger button (mobile only) ──
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--ds-spacing-1);
+  padding: var(--ds-spacing-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+
+  @include ds.bp-down(md) {
+    display: flex;
+  }
+}
+
+.hamburger-line {
+  display: block;
+  width: var(--ds-spacing-5);
+  height: 2px;
+  background: white;
+  border-radius: var(--ds-radius-sm);
+}
+
+// ── Mobile menu ──
+
+.mobile-menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-4);
+  padding: var(--ds-spacing-4) var(--ds-spacing-6) var(--ds-spacing-6);
+  position: relative;
+  z-index: 1;
+
+  a {
+    font-weight: 500;
+    font-size: var(--mat-sys-body-large-size);
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .btn-login {
+    justify-content: center;
+  }
+
+  .btn-get-started {
+    justify-content: center;
+    color: var(--mat-sys-primary);
+  }
+}
+
+.mobile-menu-divider {
+  height: 1px;
+  background: var(--ds-landing-border-muted);
 }

@@ -9,6 +9,7 @@
   flex-direction: column;
   min-height: 100vh;
   background: var(--ds-landing-bg-end);
+  overflow-x: hidden;
 }
 
 // ── Header area with dark gradient ──
@@ -38,6 +39,7 @@
   width: 100%;
   margin: 0 auto;
   padding: var(--ds-spacing-12) var(--ds-spacing-20);
+  box-sizing: border-box;
 
   @include ds.bp-down(md) {
     padding: var(--ds-spacing-8) var(--ds-spacing-6);
