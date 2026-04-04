@@ -24,9 +24,9 @@
 }
 
 .empty-state-icon {
-  font-size: 64px;
-  width: 64px;
-  height: 64px;
+  font-size: var(--ds-spacing-16);
+  width: var(--ds-spacing-16);
+  height: var(--ds-spacing-16);
   color: var(--mat-sys-on-surface-variant);
   margin-bottom: var(--ds-spacing-4);
 }
