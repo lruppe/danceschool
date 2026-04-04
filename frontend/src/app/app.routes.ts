@@ -11,6 +11,8 @@ export const routes: Routes = [
     loadComponent: () => import('./landing/landing').then(m => m.LandingComponent),
   },
   { path: 'login', loadComponent: () => import('./auth/login/login').then(m => m.LoginComponent) },
+  { path: 'terms', loadComponent: () => import('./legal/terms').then(m => m.TermsComponent) },
+  { path: 'privacy', loadComponent: () => import('./legal/privacy').then(m => m.PrivacyComponent) },
   {
     path: 'app',
     loadComponent: () => import('./shell/shell').then(m => m.ShellComponent),
