@@ -18,7 +18,7 @@ import { AuthService } from '../shared/auth/auth.service';
         <mat-icon class="empty-state-icon">business</mat-icon>
         <h2 class="empty-state-title">Set up your school to get started</h2>
         <p class="empty-state-text">Create your dance school profile to begin managing students.</p>
-        <a mat-flat-button routerLink="/my-school/edit">Create School</a>
+        <a mat-flat-button routerLink="/app/my-school/edit">Create School</a>
       </div>
     }
   `,

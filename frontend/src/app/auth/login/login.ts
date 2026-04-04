@@ -37,7 +37,7 @@ export class LoginComponent {
     effect(() => {
       if (this.auth.isLoggedIn()) {
         const user = this.auth.user();
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/app/dashboard']);
       }
     });
   }
