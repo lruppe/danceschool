@@ -176,3 +176,104 @@
   // Slot for a future dance studio background image.
   // To add: set background-image on .hero section and adjust overlay opacity.
 }
+
+// ── Features Section ──
+
+.features {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-spacing-16);
+  padding: var(--ds-spacing-20);
+  background: white;
+
+  @include ds.bp-down(lg) {
+    flex-direction: column;
+    padding: var(--ds-spacing-10) var(--ds-spacing-6);
+    gap: var(--ds-spacing-10);
+  }
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-8);
+  max-width: 480px;
+
+  @include ds.bp-down(lg) {
+    max-width: 100%;
+  }
+}
+
+.features-heading {
+  margin: 0;
+  font-size: var(--mat-sys-display-small-size);
+  line-height: var(--mat-sys-display-small-line-height);
+  font-weight: 700;
+  color: var(--mat-sys-on-surface);
+}
+
+.feature-item {
+  display: flex;
+  gap: var(--ds-spacing-4);
+  align-items: flex-start;
+}
+
+.feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ds-spacing-12);
+  height: var(--ds-spacing-12);
+  min-width: var(--ds-spacing-12);
+  border-radius: var(--ds-radius-full);
+
+  svg {
+    width: var(--ds-spacing-6);
+    height: var(--ds-spacing-6);
+  }
+
+  &.icon-dashboard { background: var(--ds-landing-feature-dashboard); }
+  &.icon-students { background: var(--ds-landing-feature-students); }
+  &.icon-school { background: var(--ds-landing-feature-school); }
+  &.icon-analytics { background: var(--ds-landing-feature-analytics); }
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-1);
+}
+
+.feature-title {
+  margin: 0;
+  font-size: var(--mat-sys-body-large-size);
+  line-height: var(--mat-sys-body-large-line-height);
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
+.feature-description {
+  margin: 0;
+  font-size: var(--mat-sys-body-medium-size);
+  line-height: var(--mat-sys-body-medium-line-height);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.product-screenshot {
+  width: 700px;
+  border-radius: var(--ds-radius-xl);
+  box-shadow: var(--ds-landing-screenshot-shadow);
+  overflow: hidden;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  @include ds.bp-down(lg) {
+    width: 100%;
+    max-width: 700px;
+  }
+}
