@@ -139,7 +139,7 @@
       <div class="image-grid">
         @for (image of school.galleryImages; track image.url) {
           <div class="image-cell">
-            <img [src]="image.url" alt="Gallery image" />
+            <img [ngSrc]="image.url" alt="Gallery image" fill />
           </div>
         }
       </div>

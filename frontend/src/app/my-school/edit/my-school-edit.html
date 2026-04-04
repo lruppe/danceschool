@@ -151,7 +151,7 @@
     <div class="gallery-grid">
       @for (image of galleryImages(); track image.url) {
         <div class="gallery-item">
-          <img [src]="image.url" alt="Gallery image" />
+          <img [ngSrc]="image.url" alt="Gallery image" fill />
           <button class="gallery-remove" (click)="removeGalleryImage($index)">
             <mat-icon>close</mat-icon>
           </button>
