@@ -1,7 +1,6 @@
-package ch.ruppen.danceschool.auth;
+package ch.ruppen.danceschool.user;
 
 import ch.ruppen.danceschool.TestSecurityConfig;
-import ch.ruppen.danceschool.user.AppUser;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Import(TestSecurityConfig.class)
-class AuthControllerIntegrationTest {
+class UserControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -42,13 +41,11 @@ class AuthControllerIntegrationTest {
 
     @Test
     void me_autoCreatesUser_onFirstRequest() throws Exception {
-        // First request — user does not exist yet
         mockMvc.perform(get("/api/auth/me")
                         .header("Authorization", "Bearer " + TestSecurityConfig.VALID_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(TestSecurityConfig.TEST_EMAIL));
 
-        // Verify user was created in DB
         AppUser created = entityManager
                 .createQuery("SELECT u FROM AppUser u WHERE u.firebaseUid = :uid", AppUser.class)
                 .setParameter("uid", TestSecurityConfig.TEST_FIREBASE_UID)
@@ -60,7 +57,6 @@ class AuthControllerIntegrationTest {
 
     @Test
     void me_reusesExistingUser_onSubsequentRequests() throws Exception {
-        // First request creates the user
         mockMvc.perform(get("/api/auth/me")
                         .header("Authorization", "Bearer " + TestSecurityConfig.VALID_TOKEN))
                 .andExpect(status().isOk());
@@ -70,13 +66,11 @@ class AuthControllerIntegrationTest {
                 .setParameter("uid", TestSecurityConfig.TEST_FIREBASE_UID)
                 .getSingleResult();
 
-        // Second request reuses the same user
         mockMvc.perform(get("/api/auth/me")
                         .header("Authorization", "Bearer " + TestSecurityConfig.VALID_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userId));
 
-        // Verify no duplicate
         long count = entityManager
                 .createQuery("SELECT COUNT(u) FROM AppUser u WHERE u.firebaseUid = :uid", Long.class)
                 .setParameter("uid", TestSecurityConfig.TEST_FIREBASE_UID)

@@ -1,6 +1,6 @@
 package ch.ruppen.danceschool.shared.security;
 
-import ch.ruppen.danceschool.school.CreateSchoolUseCase;
+import ch.ruppen.danceschool.school.School;
 import ch.ruppen.danceschool.school.SchoolService;
 import ch.ruppen.danceschool.school.SchoolUpdateDto;
 import ch.ruppen.danceschool.schoolmember.MemberRole;
@@ -31,7 +31,6 @@ public class DevDataSeeder implements ApplicationRunner {
     private final UserService userService;
     private final SchoolService schoolService;
     private final SchoolMemberService schoolMemberService;
-    private final CreateSchoolUseCase createSchoolUseCase;
 
     @Override
     @Transactional
@@ -39,15 +38,13 @@ public class DevDataSeeder implements ApplicationRunner {
         AppUser owner = userService.findOrCreateByFirebaseUid("dev-owner", "owner@test.com", "Dev Owner");
         AppUser user = userService.findOrCreateByFirebaseUid("dev-user", "user@test.com", "Dev User");
 
-        // Create school owned by owner if they don't have one yet
-        if (schoolService.findByOwnerUserId(owner.getId()).isEmpty()) {
+        if (!schoolService.hasSchoolByOwner(owner.getId())) {
             var schoolDto = new SchoolUpdateDto("Dev Dance School", null, null, null, "Zurich",
                     null, "Switzerland", null, "info@devdanceschool.com", null, null, null,
                     null, null, null);
-            createSchoolUseCase.execute(schoolDto, owner.getId());
+            schoolService.createSchool(schoolDto, owner.getId());
 
-            // Also add the regular user to the same school
-            var school = schoolService.findByOwnerUserId(owner.getId()).orElseThrow();
+            School school = schoolService.findSchoolByOwner(owner.getId());
             SchoolMember member = new SchoolMember();
             member.setUser(user);
             member.setSchool(school);

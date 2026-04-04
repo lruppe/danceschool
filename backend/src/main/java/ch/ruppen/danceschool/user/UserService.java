@@ -2,6 +2,7 @@ package ch.ruppen.danceschool.user;
 
 import ch.ruppen.danceschool.schoolmember.MembershipDto;
 import ch.ruppen.danceschool.schoolmember.SchoolMemberService;
+import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +41,9 @@ public class UserService {
         return userRepository.findById(id);
     }
 
-    public UserDto toUserDto(AppUser user) {
+    public UserDto getMe(Long userId) {
+        AppUser user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
         List<MembershipDto> memberships = schoolMemberService.findMembershipsByUserId(user.getId());
         return new UserDto(user.getId(), user.getEmail(), user.getName(), user.getAvatarUrl(), memberships);
     }

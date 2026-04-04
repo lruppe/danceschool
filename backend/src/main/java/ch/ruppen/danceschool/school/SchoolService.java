@@ -1,9 +1,16 @@
 package ch.ruppen.danceschool.school;
 
+import ch.ruppen.danceschool.schoolmember.MemberRole;
+import ch.ruppen.danceschool.schoolmember.SchoolMember;
+import ch.ruppen.danceschool.schoolmember.SchoolMemberService;
+import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
 import ch.ruppen.danceschool.shared.storage.ImageStorageService;
+import ch.ruppen.danceschool.user.AppUser;
+import ch.ruppen.danceschool.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,35 +25,48 @@ public class SchoolService {
 
     private final SchoolRepository schoolRepository;
     private final ImageStorageService imageStorageService;
+    private final SchoolMemberService schoolMemberService;
+    private final UserService userService;
 
-    public School createSchoolFull(SchoolUpdateDto dto) {
+    @Transactional
+    public SchoolDetailDto createSchool(SchoolUpdateDto dto, Long userId) {
+        AppUser user = userService.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
         School school = new School();
-        school.setName(dto.name());
-        school.setTagline(dto.tagline());
-        school.setAbout(dto.about());
-        school.setStreetAddress(dto.streetAddress());
-        school.setCity(dto.city());
-        school.setPostalCode(dto.postalCode());
-        school.setCountry(dto.country());
-        school.setPhone(dto.phone());
-        school.setEmail(dto.email());
-        school.setWebsite(dto.website());
-        school.setCoverImageUrl(dto.coverImageUrl());
-        school.setLogoUrl(dto.logoUrl());
+        applyDto(school, dto);
         School saved = schoolRepository.save(school);
-        replaceSpecialties(saved, dto.specialties());
-        replaceGalleryImages(saved, dto.galleryImages());
-        replaceYoutubeVideos(saved, dto.youtubeVideos());
-        return schoolRepository.save(saved);
+
+        SchoolMember member = new SchoolMember();
+        member.setUser(user);
+        member.setSchool(saved);
+        member.setRole(MemberRole.OWNER);
+        schoolMemberService.createMembership(member);
+
+        return toDetailDto(saved);
     }
 
-    public Optional<School> findByOwnerUserId(Long userId) {
-        return schoolRepository.findByOwnerUserId(userId);
+    public boolean hasSchoolByOwner(Long userId) {
+        return schoolRepository.findByOwnerUserId(userId).isPresent();
     }
 
-    public School updateSchool(School school, SchoolUpdateDto dto) {
+    public SchoolDetailDto getByOwnerUserId(Long userId) {
+        return toDetailDto(findSchoolByOwner(userId));
+    }
+
+    public SchoolDetailDto updateSchool(Long userId, SchoolUpdateDto dto) {
+        School school = findSchoolByOwner(userId);
         deleteReplacedImages(school, dto);
+        applyDto(school, dto);
+        return toDetailDto(schoolRepository.save(school));
+    }
 
+    public School findSchoolByOwner(Long userId) {
+        return schoolRepository.findByOwnerUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("School", userId));
+    }
+
+    private void applyDto(School school, SchoolUpdateDto dto) {
         school.setName(dto.name());
         school.setTagline(dto.tagline());
         school.setAbout(dto.about());
@@ -62,7 +82,6 @@ public class SchoolService {
         replaceSpecialties(school, dto.specialties());
         replaceGalleryImages(school, dto.galleryImages());
         replaceYoutubeVideos(school, dto.youtubeVideos());
-        return schoolRepository.save(school);
     }
 
     private void deleteReplacedImages(School school, SchoolUpdateDto dto) {
@@ -140,7 +159,7 @@ public class SchoolService {
         }
     }
 
-    public SchoolDetailDto toDetailDto(School school) {
+    private SchoolDetailDto toDetailDto(School school) {
         return new SchoolDetailDto(
                 school.getId(),
                 school.getName(),
