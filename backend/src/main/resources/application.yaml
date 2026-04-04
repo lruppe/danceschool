@@ -12,9 +12,10 @@ app:
   firebase:
     project-id: ${FIREBASE_PROJECT_ID:dance-school-ch}
   image-storage:
-    provider: ${IMAGE_STORAGE_PROVIDER:filesystem}
+    # Filesystem (dev) — used when prod profile is not active
     directory: ${IMAGE_STORAGE_DIRECTORY:${java.io.tmpdir}/danceschool-uploads}
     base-url: ${IMAGE_STORAGE_BASE_URL:http://localhost:8080/uploads}
+    # Cloudflare R2 (prod) — required when prod profile is active
     r2-endpoint: ${R2_ENDPOINT:}
     r2-access-key: ${R2_ACCESS_KEY:}
     r2-secret-key: ${R2_SECRET_KEY:}
