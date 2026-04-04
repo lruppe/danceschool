@@ -11,11 +11,11 @@
         } @else if (isDevLogin) {
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Email</mat-label>
-            <input matInput [(ngModel)]="email" type="email" />
+            <input matInput [formControl]="loginForm.controls.email" type="email" />
           </mat-form-field>
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Password</mat-label>
-            <input matInput [(ngModel)]="password" type="password" (keyup.enter)="devLogin()" />
+            <input matInput [formControl]="loginForm.controls.password" type="password" (keyup.enter)="devLogin()" />
           </mat-form-field>
           <button mat-flat-button class="full-width" (click)="devLogin()">Sign in</button>
           <div class="quick-login">

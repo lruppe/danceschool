@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, inject, signal, OnInit, WritableSignal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, OnInit, WritableSignal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,14 +8,18 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { NgOptimizedImage } from '@angular/common';
 import { GalleryImage, SchoolDetail, SchoolService, SchoolUpdateRequest } from '../school.service';
 import { AuthService } from '../../shared/auth/auth.service';
 
 @Component({
   selector: 'app-my-school-edit',
-  standalone: true,
+  host: {
+    '(window:beforeunload)': 'onBeforeUnload($event)',
+  },
   imports: [
     ReactiveFormsModule,
+    NgOptimizedImage,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -220,7 +224,6 @@ export class MySchoolEditComponent implements OnInit {
     }
   }
 
-  @HostListener('window:beforeunload', ['$event'])
   onBeforeUnload(event: BeforeUnloadEvent): void {
     if (this.isDirty()) {
       event.preventDefault();

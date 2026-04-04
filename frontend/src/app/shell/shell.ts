@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
@@ -35,6 +36,7 @@ export class ShellComponent {
   protected user = this.auth.user;
 
   private breakpointObserver = inject(BreakpointObserver);
+  private destroyRef = inject(DestroyRef);
   private sidenav = viewChild<MatSidenav>('sidenav');
 
   protected isDesktop = signal(true);
@@ -46,7 +48,9 @@ export class ShellComponent {
   ];
 
   constructor() {
-    this.breakpointObserver.observe('(min-width: 960px)').subscribe(result => {
+    this.breakpointObserver.observe('(min-width: 960px)').pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(result => {
       this.isDesktop.set(result.matches);
     });
   }
