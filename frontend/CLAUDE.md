@@ -87,6 +87,10 @@ Custom design tokens (`--ds-*`) extend Material's system tokens (`--mat-sys-*`).
 4. **Breakpoints:** MUST use mixins `@include ds.bp-up(md)`, `ds.bp-down(sm)`, `ds.bp-between(sm, lg)`. No hardcoded `@media` queries.
 5. **Transitions:** MUST use `--ds-duration-*` and `--ds-easing-*` tokens. No hardcoded durations or easing functions.
 
+## Testing
+
+No unit test convention for now. Components are thin Material wrappers. Visual verification via Playwright covers rendering regressions. Revisit when complexity in frontend grows.
+
 ## Angular Rules
 
 Before writing or modifying Angular code, always call Angular MCP `get_best_practices` (with `workspacePath`) and `list_projects`. Follow those rules — they are version-specific and authoritative.

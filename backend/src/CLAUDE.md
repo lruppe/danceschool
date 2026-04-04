@@ -75,3 +75,13 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 - `CORS_ALLOWED_ORIGINS` — comma-separated (default: `http://localhost:4200`)
 - `DEV_AUTH` — `true` for form login, `false` for Firebase JWT
 - `FIREBASE_PROJECT_ID` — default: `dance-school-ch`
+
+## Testing
+
+**When to write tests:**
+- New API endpoints — integration test (`@SpringBootTest` + `MockMvc`) covering happy path, validation errors, and auth requirements
+- Domain logic in services with business rules beyond simple CRUD
+- Custom `@Query` methods
+- Tenant isolation — only when an endpoint accepts an ID/parameter that could reference another tenant's data. `/me` pattern endpoints are isolated by design.
+
+**Style:** Integration tests over unit tests. Real Spring context, real database. Match existing pattern (`@SpringBootTest` + `MockMvc` + `EntityManager` for setup).
