@@ -24,7 +24,7 @@ Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. 
 
 ### Authentication Strategy
 
-- **Local dev:** Spring Security form login with in-memory users (`owner@test.com` / `password` as OWNER, `user@test.com` / `password` as USER). Dev users and a school are seeded on startup by `DevDataSeeder` — no onboarding needed.
+- **Local dev:** Spring Security form login with in-memory users (`owner@test.com` / `password` and `owner2@test.com` / `password`, both OWNER). Dev users and two separate schools are seeded on startup by `DevDataSeeder` — no onboarding needed.
 - **Production:** Firebase JWT auth (Google sign-in via Firebase SDK). Stateless, token-based. Activated by setting `app.security.dev-auth=false` and configuring the `prod` Spring profile.
 - **Future:** OAuth/social login for all users (owners, teachers, students) via a managed provider (Auth0, Clerk, or similar). Decision pending on provider choice.
 
@@ -58,13 +58,13 @@ When verifying frontend changes visually (layout, styling, component rendering),
 
 ### 2. Log in
 
-- **Dev credentials:** `owner@test.com` / `password` (OWNER role) or `user@test.com` / `password` (USER role)
-- The login page shows a simple email/password form with quick-login buttons for each role
+- **Dev credentials:** `owner@test.com` / `password` (School 1) or `owner2@test.com` / `password` (School 2)
+- The login page shows a simple email/password form with quick-login buttons for each owner
 - Use Playwright MCP to fill the form or click a quick-login button
 
 ### 3. Handle fresh database state
 
-The backend uses H2 in-memory, so every restart is a clean slate. However, `DevDataSeeder` automatically seeds dev users + a school on startup, so login lands directly in the app shell — no onboarding step needed.
+The backend uses H2 in-memory, so every restart is a clean slate. However, `DevDataSeeder` automatically seeds two dev users with separate schools on startup, so login lands directly in the app shell — no onboarding step needed.
 
 ### 4. Navigate and screenshot
 

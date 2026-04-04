@@ -73,12 +73,12 @@ public class DevSecurityConfig {
                 .password(passwordEncoder.encode("password"))
                 .roles("USER")
                 .build();
-        var user = User.builder()
-                .username("user@test.com")
+        var owner2 = User.builder()
+                .username("owner2@test.com")
                 .password(passwordEncoder.encode("password"))
                 .roles("USER")
                 .build();
-        return new InMemoryUserDetailsManager(owner, user);
+        return new InMemoryUserDetailsManager(owner, owner2);
     }
 
     @Bean

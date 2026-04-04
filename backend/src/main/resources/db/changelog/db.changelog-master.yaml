@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/006-firebase-auth.yaml
   - include:
       file: db/changelog/007-structured-address.yaml
+  - include:
+      file: db/changelog/008-rename-user-role-to-teacher.yaml
