@@ -1,15 +1,17 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './shared/auth/auth.guard';
+import { publicGuard } from './shared/auth/public.guard';
 import { unsavedChangesGuard } from './my-school/edit/unsaved-changes.guard';
 
 export const routes: Routes = [
+  { path: '', canActivate: [publicGuard], children: [] },
   { path: 'login', loadComponent: () => import('./auth/login/login').then(m => m.LoginComponent) },
   {
-    path: '',
+    path: 'app',
     loadComponent: () => import('./shell/shell').then(m => m.ShellComponent),
     canActivate: [authGuard],
     children: [
-{ path: 'dashboard', loadComponent: () => import('./dashboard/dashboard').then(m => m.DashboardComponent) },
+      { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard').then(m => m.DashboardComponent) },
       { path: 'students', loadComponent: () => import('./students/students').then(m => m.StudentsComponent) },
       {
         path: 'my-school/edit',
@@ -20,5 +22,5 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
-  { path: '**', redirectTo: 'login' },
+  { path: '**', redirectTo: '' },
 ];

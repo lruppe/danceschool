@@ -40,9 +40,9 @@ export class ShellComponent {
   protected isDesktop = signal(true);
 
   protected navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
-    { label: 'Students', icon: 'people', route: '/students' },
-    { label: 'My School', icon: 'business', route: '/my-school' },
+    { label: 'Dashboard', icon: 'dashboard', route: '/app/dashboard' },
+    { label: 'Students', icon: 'people', route: '/app/students' },
+    { label: 'My School', icon: 'business', route: '/app/my-school' },
   ];
 
   constructor() {

@@ -115,7 +115,7 @@ export class MySchoolEditComponent implements OnInit {
         if (this.creationMode()) {
           this.auth.checkAuth();
         }
-        this.router.navigate(['/my-school']);
+        this.router.navigate(['/app/my-school']);
       },
       error: (err) => {
         this.saving.set(false);
@@ -129,7 +129,7 @@ export class MySchoolEditComponent implements OnInit {
   }
 
   protected cancel(): void {
-    this.router.navigate(['/my-school']);
+    this.router.navigate(['/app/my-school']);
   }
 
   protected removeSpecialty(index: number): void {
