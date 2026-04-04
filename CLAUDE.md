@@ -16,7 +16,7 @@ danceschool/
 └── .mcp.json          ← MCP server config (Angular CLI + Playwright browser)
 ```
 
-Frontend and backend are independent builds. During development, use Angular MCP `devserver.start` with a proxy to the backend API.
+Frontend and backend are independent builds — no Maven integration. During development, use Angular MCP `devserver.start` with a proxy to the backend API.
 
 ## Domain
 
@@ -35,6 +35,20 @@ Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. 
 - **Frontend** deployed on Render (static site): https://danceschool-2g1m.onrender.com/
 - **Backend** deployed on Render (Docker): https://danceschool-api.onrender.com/ (API base: `/api`)
 
+## Issue Workflow
+
+Use `/start-issue <number>` to work on a GitHub issue. This runs the full automated lifecycle:
+
+**Setup** → load issue, create worktree + branch, install deps
+**Plan** → enter plan mode for non-trivial issues (use judgment to skip for trivial fixes)
+**Implement** → code, build, test
+**Visual E2E** → start both servers, login via Playwright, screenshot affected pages
+**Ship** → commit, rebase, push, PR, watch CI, squash merge
+
+**Do not stop between phases** unless genuinely blocked. Auto-merge after CI passes — no manual review needed.
+
+See `.claude/commands/start-issue.md` for the full step-by-step.
+
 ## Git & GitHub
 
 - **GitHub repo:** `lruppe/danceschool`
@@ -43,12 +57,11 @@ Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. 
 - **All changes go through PRs** — never commit directly to `main`
 - **Always work in a worktree** — use Claude Code's built-in worktree tools (`EnterWorktree`) or `claude --worktree <name>`. This creates worktrees at `.claude/worktrees/<name>/` inside the project. Do NOT use raw `git worktree add` to create worktrees outside the project directory — external worktrees break MCP tool context and file watching.
 - **Fresh worktrees need setup** — always run `npm install` in `frontend/` before building or starting the dev server in a new worktree
-- **Workflow:** pull main → create worktree → create branch → commit → rebase on main → push → create PR → `gh pr checks <number> --watch` → squash merge → pull main
 - **Auto-merge:** merge immediately after CI passes, no manual review needed
 
 ## Visual Testing Workflow
 
-When verifying frontend changes visually (layout, styling, component rendering), follow this workflow:
+Required for all frontend changes. Skip only for purely backend issues with no UI impact.
 
 ### 1. Start both servers
 
@@ -60,7 +73,7 @@ When verifying frontend changes visually (layout, styling, component rendering),
 
 - **Dev credentials:** `owner@test.com` / `password` (School 1) or `owner2@test.com` / `password` (School 2)
 - The login page shows a simple email/password form with quick-login buttons for each owner
-- Use Playwright MCP to fill the form or click a quick-login button
+- Use Playwright MCP to click a quick-login button
 
 ### 3. Handle fresh database state
 
@@ -71,6 +84,11 @@ The backend uses H2 in-memory, so every restart is a clean slate. However, `DevD
 - Use Playwright `browser_navigate` to the relevant page
 - Use `browser_take_screenshot` to visually verify layout and styling
 - **Always take a final screenshot before committing** style or layout changes
+
+### 5. Stop servers
+
+- Stop the frontend devserver: Angular MCP `devserver.stop`
+- Kill the backend process
 
 ## Working Rules
 
