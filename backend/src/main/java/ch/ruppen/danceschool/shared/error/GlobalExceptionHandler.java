@@ -26,6 +26,13 @@ class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(ImageUploadException.class)
+    ProblemDetail handleImageUpload(ImageUploadException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Invalid Image Upload");
+        return problem;
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,

@@ -4,9 +4,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "app.image-storage")
 public record ImageStorageProperties(
-        /** "filesystem" or "r2" */
-        String provider,
-
         /** Filesystem provider: directory to store images */
         String directory,
 

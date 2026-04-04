@@ -1,11 +1,10 @@
 package ch.ruppen.danceschool.image;
 
+import ch.ruppen.danceschool.shared.error.ImageUploadException;
 import ch.ruppen.danceschool.shared.storage.ImageStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,7 +31,7 @@ class ImageController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    ImageUploadResponse upload(@RequestParam("file") MultipartFile file) throws IOException {
+    ImageUploadResponse upload(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             throw new ImageUploadException("File is empty");
         }
@@ -44,20 +43,11 @@ class ImageController {
             throw new ImageUploadException("Only JPEG, PNG, and WebP images are accepted");
         }
 
-        String url = imageStorageService.store(file.getBytes(), file.getOriginalFilename());
-        return new ImageUploadResponse(url);
-    }
-
-    @ExceptionHandler(ImageUploadException.class)
-    ProblemDetail handleImageUpload(ImageUploadException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
-        problem.setTitle("Invalid Image Upload");
-        return problem;
-    }
-
-    static class ImageUploadException extends RuntimeException {
-        ImageUploadException(String message) {
-            super(message);
+        try {
+            String url = imageStorageService.store(file.getBytes(), file.getOriginalFilename());
+            return new ImageUploadResponse(url);
+        } catch (IOException e) {
+            throw new ImageUploadException("Failed to read uploaded file", e);
         }
     }
 }

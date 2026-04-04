@@ -1,6 +1,10 @@
 package ch.ruppen.danceschool.shared.storage;
 
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -9,14 +13,22 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 @Slf4j
+@Service
+@Profile("!prod")
+@RequiredArgsConstructor
 class FilesystemImageStorageService implements ImageStorageService {
 
-    private final Path storageDir;
-    private final String baseUrl;
+    private final ImageStorageProperties props;
+    private Path storageDir;
+    private String baseUrl;
 
-    FilesystemImageStorageService(String directory, String baseUrl) {
+    @PostConstruct
+    void init() {
+        String directory = props.directory() != null ? props.directory()
+                : System.getProperty("java.io.tmpdir") + "/danceschool-uploads";
         this.storageDir = Path.of(directory);
-        this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+        this.baseUrl = stripTrailingSlash(
+                props.baseUrl() != null ? props.baseUrl() : "http://localhost:8080/uploads");
         try {
             Files.createDirectories(storageDir);
         } catch (IOException e) {
@@ -59,5 +71,9 @@ class FilesystemImageStorageService implements ImageStorageService {
     private String extractExtension(String filename) {
         int dot = filename.lastIndexOf('.');
         return dot >= 0 ? filename.substring(dot) : "";
+    }
+
+    private static String stripTrailingSlash(String url) {
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 }
