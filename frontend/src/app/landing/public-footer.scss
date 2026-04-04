@@ -34,8 +34,8 @@
 }
 
 .logo-icon {
-  width: 28px;
-  height: 28px;
+  width: var(--ds-spacing-8);
+  height: var(--ds-spacing-8);
   border-radius: var(--ds-radius-full);
   background: var(--ds-landing-logo-accent);
 }
