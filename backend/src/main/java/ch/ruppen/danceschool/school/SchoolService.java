@@ -46,23 +46,23 @@ public class SchoolService {
         return toDetailDto(saved);
     }
 
-    public boolean hasSchoolByOwner(Long userId) {
-        return schoolRepository.findByOwnerUserId(userId).isPresent();
+    public boolean hasSchoolByMember(Long userId) {
+        return schoolRepository.findByMemberUserId(userId).isPresent();
     }
 
-    public SchoolDetailDto getByOwnerUserId(Long userId) {
-        return toDetailDto(findSchoolByOwner(userId));
+    public SchoolDetailDto getByMemberUserId(Long userId) {
+        return toDetailDto(findSchoolByMember(userId));
     }
 
     public SchoolDetailDto updateSchool(Long userId, SchoolUpdateDto dto) {
-        School school = findSchoolByOwner(userId);
+        School school = findSchoolByMember(userId);
         deleteReplacedImages(school, dto);
         applyDto(school, dto);
         return toDetailDto(schoolRepository.save(school));
     }
 
-    public School findSchoolByOwner(Long userId) {
-        return schoolRepository.findByOwnerUserId(userId)
+    public School findSchoolByMember(Long userId) {
+        return schoolRepository.findByMemberUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("School", userId));
     }
 

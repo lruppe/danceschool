@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environment';
 export interface Membership {
   schoolId: number;
   schoolName: string;
-  role: 'OWNER' | 'USER';
+  role: 'OWNER' | 'TEACHER';
 }
 
 export interface User {

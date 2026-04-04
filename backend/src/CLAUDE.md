@@ -64,11 +64,11 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 ## Security
 
 ### Auth modes (controlled by `app.security.dev-auth` property)
-- **Dev** (`dev-auth: true`, default): form login with session auth. `DevDataSeeder` seeds users + school on startup. `@AuthenticationPrincipal AuthenticatedUser` works identically to prod.
+- **Dev** (`dev-auth: true`, default): form login with session auth. `DevDataSeeder` seeds two owners with separate schools on startup. `@AuthenticationPrincipal AuthenticatedUser` works identically to prod.
 - **Prod** (`dev-auth: false`): stateless Firebase JWT. First request auto-creates the user from token claims.
 
 ### Authorization
-- Roles are **scoped to a school**, not global — stored in `school_member` table (OWNER, USER)
+- Roles are **scoped to a school**, not global — stored in `school_member` table (OWNER, TEACHER)
 - A user with no memberships is in the "needs onboarding" state
 
 ### Configuration (env vars)

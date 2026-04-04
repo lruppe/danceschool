@@ -28,7 +28,7 @@ public class SchoolController {
 
     @GetMapping("/me")
     public SchoolDetailDto me(@AuthenticationPrincipal AuthenticatedUser principal) {
-        return schoolService.getByOwnerUserId(principal.userId());
+        return schoolService.getByMemberUserId(principal.userId());
     }
 
     @PutMapping("/me")

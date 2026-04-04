@@ -48,7 +48,7 @@ Angular 21 application using Angular Material for UI components.
 - Session-based auth — browser session cookie handles authentication automatically
 - `authInterceptor` adds `withCredentials: true` (no Bearer token)
 - Login page shows email/password form with quick-login buttons for Owner and User roles
-- Dev users: `owner@test.com` / `password` (OWNER), `user@test.com` / `password` (USER)
+- Dev users: `owner@test.com` / `password` (School 1), `owner2@test.com` / `password` (School 2)
 
 **Prod mode** (`useDevLogin: false` — set in `environment.prod.ts`):
 - Firebase SDK (`firebase` npm package) handles Google sign-in and token management

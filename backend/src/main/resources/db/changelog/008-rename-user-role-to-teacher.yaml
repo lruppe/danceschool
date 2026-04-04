@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-rename-user-role-to-teacher
+      author: lruppe
+      changes:
+        - update:
+            tableName: school_member
+            columns:
+              - column:
+                  name: role
+                  value: TEACHER
+            where: role = 'USER'
