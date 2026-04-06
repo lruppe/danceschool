@@ -29,7 +29,7 @@
             >
               <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
               <span matListItemTitle>{{ item.label }}</span>
-              <mat-icon class="nav-chevron" [class.chevron-expanded]="mySchoolExpanded()">expand_more</mat-icon>
+              <mat-icon matListItemMeta class="nav-chevron" [class.chevron-expanded]="mySchoolExpanded()">expand_more</mat-icon>
             </button>
 
             @if (mySchoolExpanded()) {
