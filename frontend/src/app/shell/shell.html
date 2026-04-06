@@ -22,13 +22,9 @@
         @if (item.children) {
           <!-- Collapsible section -->
           <div class="nav-section" [class.section-active]="isChildRouteActive(item)">
-            <button
-              mat-list-item
-              class="nav-item nav-parent"
-              (click)="toggleSection()"
-            >
-              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-              <span matListItemTitle>{{ item.label }}</span>
+            <button class="nav-parent" (click)="toggleSection()">
+              <mat-icon>{{ item.icon }}</mat-icon>
+              <span class="nav-parent-label">{{ item.label }}</span>
               <mat-icon class="nav-chevron" [class.chevron-expanded]="mySchoolExpanded()">expand_more</mat-icon>
             </button>
 
