@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-drop-enrollment-dates
+      author: claude
+      changes:
+        - dropColumn:
+            tableName: course
+            columns:
+              - column:
+                  name: enrollment_open_date
+              - column:
+                  name: enrollment_close_date
