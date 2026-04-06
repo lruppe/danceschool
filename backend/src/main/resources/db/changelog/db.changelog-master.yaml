@@ -17,3 +17,5 @@ databaseChangeLog:
       file: db/changelog/008-rename-user-role-to-teacher.yaml
   - include:
       file: db/changelog/009-create-course.yaml
+  - include:
+      file: db/changelog/010-drop-enrollment-dates.yaml

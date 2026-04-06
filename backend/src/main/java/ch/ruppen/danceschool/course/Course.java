@@ -70,10 +70,6 @@ public class Course {
 
     private boolean waitingListEnabled;
 
-    private String enrollmentOpenDate;
-
-    private String enrollmentCloseDate;
-
     private boolean requireRoleSelection;
 
     @Enumerated(EnumType.STRING)
