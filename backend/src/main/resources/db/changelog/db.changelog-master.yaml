@@ -15,3 +15,5 @@ databaseChangeLog:
       file: db/changelog/007-structured-address.yaml
   - include:
       file: db/changelog/008-rename-user-role-to-teacher.yaml
+  - include:
+      file: db/changelog/009-create-course.yaml
