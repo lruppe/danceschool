@@ -38,11 +38,11 @@ Always use these instead of creating inline frames:
 - **Select** — Dropdown with label + chevron.
 
 **Layout components:**
-- **Sidebar** — Logo area + divider + navigation items (Dashboard, Students, My School).
+- **Sidebar** — Logo area + divider + navigation: Dashboard, My School (collapsible parent with sub-items: Profile, Subscriptions, Students), Courses, Payments.
 - **App Bar** — School name + avatar.
 
 **Page components:**
-- **Students Page**, **My School Page**, **My School Edit Page** — full page content, used as instances in App Layouts.
+- **Students Page**, **Courses Page**, **Create Course Page**, **My School Page**, **My School Edit Page** — full page content, used as instances in App Layouts.
 
 **Card pattern (not a component — intentional):**
 Cards share a consistent style but vary too much in content to componentize. See `figma-design-system.md` > Card Pattern for the CSS implementation.
