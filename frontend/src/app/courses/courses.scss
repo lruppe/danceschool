@@ -11,6 +11,21 @@
   justify-content: space-between;
 }
 
+// Filter bar
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-4);
+}
+
+.filter-search {
+  flex: 1;
+}
+
+.filter-select {
+  width: 150px;
+}
+
 .title-group {
   display: flex;
   flex-direction: column;
