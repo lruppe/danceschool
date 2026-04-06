@@ -18,17 +18,50 @@
 
     <!-- Navigation -->
     <mat-nav-list class="sidenav-nav">
-      @for (item of navItems; track item.route) {
-        <a
-          mat-list-item
-          [routerLink]="item.route"
-          routerLinkActive="nav-active"
-          class="nav-item"
-          (click)="closeMobileSidenav()"
-        >
-          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
-          <span matListItemTitle>{{ item.label }}</span>
-        </a>
+      @for (item of navItems; track item.label) {
+        @if (item.children) {
+          <!-- Collapsible section -->
+          <div class="nav-section" [class.section-active]="isChildRouteActive(item)">
+            <button
+              mat-list-item
+              class="nav-item nav-parent"
+              (click)="toggleSection()"
+            >
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <span matListItemTitle>{{ item.label }}</span>
+              <mat-icon class="nav-chevron" [class.chevron-expanded]="mySchoolExpanded()">expand_more</mat-icon>
+            </button>
+
+            @if (mySchoolExpanded()) {
+              <div class="nav-children">
+                @for (child of item.children; track child.route) {
+                  <a
+                    mat-list-item
+                    [routerLink]="child.route"
+                    routerLinkActive="nav-child-active"
+                    class="nav-child"
+                    (click)="closeMobileSidenav()"
+                  >
+                    <span class="nav-child-dot"></span>
+                    <span>{{ child.label }}</span>
+                  </a>
+                }
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Simple nav item -->
+          <a
+            mat-list-item
+            [routerLink]="item.route"
+            routerLinkActive="nav-active"
+            class="nav-item"
+            (click)="closeMobileSidenav()"
+          >
+            <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+            <span matListItemTitle>{{ item.label }}</span>
+          </a>
+        }
       }
     </mat-nav-list>
   </mat-sidenav>

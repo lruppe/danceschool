@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -9,10 +9,16 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../shared/auth/auth.service';
 
+interface NavChild {
+  label: string;
+  route: string;
+}
+
 interface NavItem {
   label: string;
   icon: string;
-  route: string;
+  route?: string;
+  children?: NavChild[];
 }
 
 @Component({
@@ -35,16 +41,25 @@ export class ShellComponent {
   protected auth = inject(AuthService);
   protected user = this.auth.user;
 
+  private router = inject(Router);
   private breakpointObserver = inject(BreakpointObserver);
   private destroyRef = inject(DestroyRef);
   private sidenav = viewChild<MatSidenav>('sidenav');
 
   protected isDesktop = signal(true);
+  protected mySchoolExpanded = signal(true);
 
   protected navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: '/app/dashboard' },
-    { label: 'Students', icon: 'people', route: '/app/students' },
-    { label: 'My School', icon: 'business', route: '/app/my-school' },
+    {
+      label: 'My School', icon: 'business', children: [
+        { label: 'Profile', route: '/app/my-school' },
+        { label: 'Subscriptions', route: '/app/subscriptions' },
+        { label: 'Students', route: '/app/students' },
+      ],
+    },
+    { label: 'Courses', icon: 'school', route: '/app/courses' },
+    { label: 'Payments', icon: 'payments', route: '/app/payments' },
   ];
 
   constructor() {
@@ -53,6 +68,20 @@ export class ShellComponent {
     ).subscribe(result => {
       this.isDesktop.set(result.matches);
     });
+  }
+
+  protected toggleSection(): void {
+    this.mySchoolExpanded.update(v => !v);
+  }
+
+  protected isChildRouteActive(item: NavItem): boolean {
+    if (!item.children) return false;
+    return item.children.some(child => this.router.isActive(child.route, {
+      paths: 'subset',
+      queryParams: 'subset',
+      fragment: 'ignored',
+      matrixParams: 'ignored',
+    }));
   }
 
   protected closeMobileSidenav(): void {
