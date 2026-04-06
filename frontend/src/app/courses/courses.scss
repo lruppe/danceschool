@@ -1,17 +1,7 @@
-@use 'styles/mixins' as ds;
-
 :host {
   display: flex;
   flex-direction: column;
   gap: var(--ds-card-padding);
-}
-
-// Card pattern
-.card {
-  background: var(--mat-sys-surface);
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: var(--ds-radius-lg);
-  overflow: hidden;
 }
 
 // Page header
@@ -37,55 +27,6 @@
   font: var(--mat-sys-body-medium);
   color: var(--mat-sys-on-surface-variant);
   margin: 0;
-}
-
-// Chip styles
-.chip {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--ds-spacing-1) var(--ds-spacing-3);
-  border-radius: var(--ds-radius-md);
-  font: var(--mat-sys-label-medium);
-}
-
-.chip-success {
-  background: var(--ds-color-success-container);
-  color: var(--ds-color-success);
-}
-
-.chip-primary {
-  background: var(--mat-sys-primary-container);
-  color: var(--mat-sys-primary);
-}
-
-.chip-info {
-  background: var(--ds-color-info-container);
-  color: var(--ds-color-info);
-}
-
-.chip-default {
-  background: var(--mat-sys-surface-variant);
-  color: var(--mat-sys-on-surface-variant);
-}
-
-// Multi-line cell
-.cell-primary {
-  font: var(--mat-sys-body-medium);
-  color: var(--mat-sys-on-surface);
-}
-
-.cell-secondary {
-  font: var(--mat-sys-body-small);
-  color: var(--mat-sys-on-surface-variant);
-  margin-top: var(--ds-spacing-half);
-}
-
-// Table footer
-.table-footer {
-  padding: var(--ds-spacing-3) var(--ds-card-padding);
-  font: var(--mat-sys-body-small);
-  color: var(--mat-sys-on-surface-variant);
-  border-top: 1px solid var(--mat-sys-outline-variant);
 }
 
 // Empty state

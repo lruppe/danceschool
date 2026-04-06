@@ -1,0 +1,87 @@
+// Shared table styles — reusable across all table pages (Courses, Students, Subscriptions, Payments).
+// Import via: @use 'styles' as ds; then apply classes to your template.
+
+// ── Table card wrapper ──
+// White card with border, wraps the mat-table + footer.
+.ds-table-card {
+  background: var(--mat-sys-surface);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+}
+
+// ── Mat-table overrides ──
+// Applied inside .ds-table-card via Angular Material's mat-table directive.
+.ds-table-card {
+  .mat-mdc-header-row {
+    height: 44px;
+    border-bottom-color: var(--mat-sys-outline-variant);
+  }
+
+  .mat-mdc-header-cell {
+    font: var(--mat-sys-label-medium);
+    font-weight: 600;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .mat-mdc-row {
+    height: 48px;
+    border-bottom-color: var(--mat-sys-outline-variant);
+  }
+
+  .mat-mdc-cell {
+    font: var(--mat-sys-body-medium);
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+// ── Multi-line cell pattern ──
+// For cells that show a primary line + secondary detail (e.g., Schedule column).
+.ds-cell-primary {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface);
+}
+
+.ds-cell-secondary {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+  margin-top: var(--ds-spacing-half);
+}
+
+// ── Table footer ──
+.ds-table-footer {
+  padding: var(--ds-spacing-3) var(--ds-card-padding);
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+// ── Chip styles ──
+// Semantic colored chips for status, dance style, etc.
+.ds-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ds-spacing-1) var(--ds-spacing-3);
+  border-radius: var(--ds-radius-md);
+  font: var(--mat-sys-label-medium);
+}
+
+.ds-chip-success {
+  background: var(--ds-color-success-container);
+  color: var(--ds-color-success);
+}
+
+.ds-chip-primary {
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-primary);
+}
+
+.ds-chip-info {
+  background: var(--ds-color-info-container);
+  color: var(--ds-color-info);
+}
+
+.ds-chip-default {
+  background: var(--mat-sys-surface-variant);
+  color: var(--mat-sys-on-surface-variant);
+}
