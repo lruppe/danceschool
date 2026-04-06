@@ -5,6 +5,7 @@ import ch.ruppen.danceschool.school.SchoolService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final SchoolService schoolService;
 
+    @Transactional(readOnly = true)
     public List<CourseListDto> getCoursesByMember(Long userId) {
         School school = schoolService.findSchoolByMember(userId);
         return courseRepository.findAllBySchoolId(school.getId()).stream()
@@ -53,6 +55,7 @@ public class CourseService {
         courseRepository.save(course);
     }
 
+    @Transactional(readOnly = true)
     public boolean hasCoursesForMember(Long userId) {
         School school = schoolService.findSchoolByMember(userId);
         return !courseRepository.findAllBySchoolId(school.getId()).isEmpty();
