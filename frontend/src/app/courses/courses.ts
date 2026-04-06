@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CurrencyPipe, TitleCasePipe } from '@angular/common';
+import { CurrencyPipe, NgClass, TitleCasePipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,7 +8,7 @@ import { CourseListItem, CourseService } from './course.service';
 
 @Component({
   selector: 'app-courses',
-  imports: [MatTableModule, MatIconModule, MatButtonModule, CurrencyPipe, TitleCasePipe],
+  imports: [MatTableModule, MatIconModule, MatButtonModule, CurrencyPipe, TitleCasePipe, NgClass],
   templateUrl: './courses.html',
   styleUrl: './courses.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,21 +50,27 @@ export class CoursesComponent implements OnInit {
     return time.substring(0, 5);
   }
 
+  protected sessionDuration(startTime: string, endTime: string): number {
+    const [startH, startM] = startTime.split(':').map(Number);
+    const [endH, endM] = endTime.split(':').map(Number);
+    return (endH * 60 + endM) - (startH * 60 + startM);
+  }
+
   protected statusChipClass(status: string): string {
     switch (status) {
-      case 'ACTIVE': return 'chip-success';
-      case 'FULL': return 'chip-info';
-      case 'DRAFT': return 'chip-default';
-      case 'INACTIVE': return 'chip-default';
-      default: return 'chip-default';
+      case 'ACTIVE': return 'ds-chip-success';
+      case 'FULL': return 'ds-chip-default';
+      case 'DRAFT': return 'ds-chip-default';
+      case 'INACTIVE': return 'ds-chip-default';
+      default: return 'ds-chip-default';
     }
   }
 
   protected danceStyleChipClass(style: string): string {
     switch (style) {
-      case 'BACHATA': return 'chip-primary';
-      case 'SALSA': return 'chip-info';
-      default: return 'chip-default';
+      case 'BACHATA': return 'ds-chip-primary';
+      case 'SALSA': return 'ds-chip-info';
+      default: return 'ds-chip-default';
     }
   }
 }
