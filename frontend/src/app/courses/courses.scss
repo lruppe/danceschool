@@ -1,0 +1,139 @@
+@use 'styles/mixins' as ds;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-card-padding);
+}
+
+// Card pattern
+.card {
+  background: var(--mat-sys-surface);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+}
+
+// Page header
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.title-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-2);
+}
+
+.page-title {
+  font: var(--mat-sys-headline-small);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+}
+
+.page-subtitle {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+// Chip styles
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--ds-spacing-1) var(--ds-spacing-3);
+  border-radius: var(--ds-radius-md);
+  font: var(--mat-sys-label-medium);
+}
+
+.chip-success {
+  background: var(--ds-color-success-container);
+  color: var(--ds-color-success);
+}
+
+.chip-primary {
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-primary);
+}
+
+.chip-info {
+  background: var(--ds-color-info-container);
+  color: var(--ds-color-info);
+}
+
+.chip-default {
+  background: var(--mat-sys-surface-variant);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// Multi-line cell
+.cell-primary {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface);
+}
+
+.cell-secondary {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+  margin-top: var(--ds-spacing-half);
+}
+
+// Table footer
+.table-footer {
+  padding: var(--ds-spacing-3) var(--ds-card-padding);
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+
+// Empty state
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--ds-spacing-12) var(--ds-spacing-6);
+}
+
+.empty-state-icon {
+  font-size: var(--ds-spacing-16);
+  width: var(--ds-spacing-16);
+  height: var(--ds-spacing-16);
+  color: var(--mat-sys-on-surface-variant);
+  margin-bottom: var(--ds-spacing-4);
+}
+
+.empty-state-title {
+  font: var(--mat-sys-headline-small);
+  color: var(--mat-sys-on-surface);
+  margin: 0 0 var(--ds-spacing-2);
+}
+
+.empty-state-text {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 var(--ds-spacing-6);
+  max-width: 400px;
+}
+
+// Loading / error states
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--ds-spacing-12);
+
+  p {
+    font: var(--mat-sys-body-large);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.error-text {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-error);
+  text-align: center;
+  padding: var(--ds-spacing-12);
+}
