@@ -5,25 +5,52 @@
       <h1 class="page-title">Courses</h1>
       <p class="page-subtitle">Manage your dance courses, schedules, and enrollments</p>
     </div>
-    <button mat-flat-button disabled>
-      <mat-icon>add</mat-icon>
-      Add Course
-    </button>
   </div>
 
-  @if (courses().length > 0) {
+  @if (dataSource.data.length > 0) {
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <mat-form-field class="filter-search" appearance="outline" subscriptSizing="dynamic">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput placeholder="Search courses..." [(ngModel)]="searchText" (ngModelChange)="applyFilter()" />
+      </mat-form-field>
+
+      <mat-form-field class="filter-select" appearance="outline" subscriptSizing="dynamic">
+        <mat-select placeholder="Dance Type" [(ngModel)]="selectedDanceStyle" (ngModelChange)="applyFilter()">
+          <mat-option value="">All Types</mat-option>
+          @for (style of danceStyles; track style) {
+            <mat-option [value]="style">{{ style | titlecase }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="filter-select" appearance="outline" subscriptSizing="dynamic">
+        <mat-select placeholder="Level" [(ngModel)]="selectedLevel" (ngModelChange)="applyFilter()">
+          <mat-option value="">All Levels</mat-option>
+          @for (level of levels; track level) {
+            <mat-option [value]="level">{{ level | titlecase }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-flat-button disabled>
+        <mat-icon>add</mat-icon>
+        Add Course
+      </button>
+    </div>
+
     <!-- Table Card -->
     <div class="ds-table-card">
-      <table mat-table [dataSource]="courses()">
+      <table mat-table [dataSource]="dataSource" matSort>
         <!-- Course Name -->
         <ng-container matColumnDef="title">
-          <th mat-header-cell *matHeaderCellDef>Course Name</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Course Name</th>
           <td mat-cell *matCellDef="let course">{{ course.title }}</td>
         </ng-container>
 
         <!-- Type (Dance Style) -->
         <ng-container matColumnDef="danceStyle">
-          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
           <td mat-cell *matCellDef="let course">
             <span class="ds-chip" [ngClass]="danceStyleChipClass(course.danceStyle)">
               {{ course.danceStyle | titlecase }}
@@ -33,13 +60,13 @@
 
         <!-- Level -->
         <ng-container matColumnDef="level">
-          <th mat-header-cell *matHeaderCellDef>Level</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Level</th>
           <td mat-cell *matCellDef="let course">{{ course.level | titlecase }}</td>
         </ng-container>
 
         <!-- Schedule -->
         <ng-container matColumnDef="schedule">
-          <th mat-header-cell *matHeaderCellDef>Schedule</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Schedule</th>
           <td mat-cell *matCellDef="let course">
             <div class="ds-cell-primary">{{ formatDay(course.dayOfWeek) }}, {{ formatTime(course.startTime) }} – {{ formatTime(course.endTime) }}</div>
             <div class="ds-cell-secondary">{{ course.numberOfSessions }} sessions × {{ sessionDuration(course.startTime, course.endTime) }} min</div>
@@ -48,19 +75,19 @@
 
         <!-- Enrollment -->
         <ng-container matColumnDef="enrollment">
-          <th mat-header-cell *matHeaderCellDef>Enrollment</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="enrolledStudents">Enrollment</th>
           <td mat-cell *matCellDef="let course">{{ course.enrolledStudents }} / {{ course.maxParticipants }}</td>
         </ng-container>
 
         <!-- Price -->
         <ng-container matColumnDef="price">
-          <th mat-header-cell *matHeaderCellDef>Price</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Price</th>
           <td mat-cell *matCellDef="let course">{{ course.price | currency:'EUR' }}</td>
         </ng-container>
 
         <!-- Status -->
         <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
           <td mat-cell *matCellDef="let course">
             <span class="ds-chip" [ngClass]="statusChipClass(course.status)">
               {{ course.status | titlecase }}
@@ -73,7 +100,7 @@
       </table>
 
       <div class="ds-table-footer">
-        Showing {{ courses().length }} of {{ courses().length }} courses
+        Showing {{ dataSource.filteredData.length }} of {{ totalCount() }} courses
       </div>
     </div>
   } @else {
