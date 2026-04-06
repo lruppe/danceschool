@@ -36,10 +36,12 @@
 }
 
 // Nav
-.sidenav-nav { padding: var(--ds-spacing-3) var(--ds-spacing-4); }
+.sidenav-nav {
+  padding: var(--ds-spacing-3) var(--ds-spacing-4);
+}
 
 .nav-item {
-  border-radius: var(--ds-spacing-2) !important;
+  border-radius: var(--ds-radius-md) !important;
   margin-bottom: var(--ds-spacing-1);
   &.nav-active {
     background: var(--mat-sys-primary) !important;
@@ -48,6 +50,68 @@
   }
   mat-icon { color: var(--mat-sys-on-surface-variant); opacity: 0.6; }
   span[matListItemTitle] { font: var(--mat-sys-label-large); color: var(--mat-sys-on-surface); }
+}
+
+// Collapsible section
+.nav-section {
+  &.section-active > .nav-parent {
+    mat-icon:first-of-type { opacity: 1; }
+  }
+}
+
+.nav-parent {
+  cursor: pointer;
+}
+
+.nav-chevron {
+  transition: transform var(--ds-duration-fast) var(--ds-easing-standard);
+  opacity: 0.5 !important;
+  font-size: var(--ds-spacing-4) !important;
+  width: var(--ds-spacing-4) !important;
+  height: var(--ds-spacing-4) !important;
+
+  &.chevron-expanded {
+    transform: rotate(180deg);
+  }
+}
+
+// Sub-items
+.nav-children {
+  padding-top: var(--ds-spacing-half);
+}
+
+.nav-child {
+  // 44px = 12px parent padding + 20px icon + 12px gap
+  padding-left: calc(var(--ds-spacing-3) + var(--ds-spacing-5) + var(--ds-spacing-3)) !important;
+  padding-right: var(--ds-spacing-3) !important;
+  border-radius: var(--ds-radius-md) !important;
+  height: var(--ds-spacing-10) !important;
+
+  span:not(.nav-child-dot) {
+    font: var(--mat-sys-body-small);
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  &.nav-child-active {
+    span:not(.nav-child-dot) {
+      color: var(--mat-sys-primary);
+      font-weight: 600;
+    }
+    .nav-child-dot {
+      background: var(--mat-sys-primary);
+      opacity: 0.8;
+    }
+  }
+}
+
+.nav-child-dot {
+  width: var(--ds-spacing-1-5);
+  height: var(--ds-spacing-1-5);
+  border-radius: var(--ds-radius-sm);
+  background: var(--mat-sys-on-surface-variant);
+  opacity: 0.4;
+  flex-shrink: 0;
+  margin-right: var(--ds-spacing-3);
 }
 
 // Toolbar
