@@ -11,7 +11,7 @@
   justify-content: space-between;
   padding: var(--ds-spacing-4) var(--ds-spacing-20);
   position: relative;
-  z-index: 1;
+  z-index: 2;
 
   @include ds.bp-down(md) {
     padding: var(--ds-spacing-4) var(--ds-spacing-6);
@@ -146,7 +146,7 @@
   gap: var(--ds-spacing-4);
   padding: var(--ds-spacing-4) var(--ds-spacing-6) var(--ds-spacing-6);
   position: relative;
-  z-index: 1;
+  z-index: 2;
 
   a {
     font-weight: 500;
