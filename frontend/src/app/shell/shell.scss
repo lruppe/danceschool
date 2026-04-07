@@ -167,6 +167,47 @@
   line-height: 1;
 }
 
+// User menu
+.user-menu-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-spacing-1);
+  padding: var(--ds-spacing-4) var(--ds-spacing-6);
+}
+
+.user-menu-avatar {
+  width: var(--ds-spacing-12);
+  height: var(--ds-spacing-12);
+  border-radius: 50%;
+  background: var(--mat-sys-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--ds-spacing-1);
+
+  .avatar-letter {
+    font: var(--mat-sys-title-large);
+    color: var(--mat-sys-on-primary);
+    line-height: 1;
+  }
+}
+
+.user-menu-name {
+  font: var(--mat-sys-title-small);
+  color: var(--mat-sys-on-surface);
+}
+
+.user-menu-email {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.user-menu-school {
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-primary);
+}
+
 // Content
 .shell-content {
   background: var(--mat-sys-surface-variant);

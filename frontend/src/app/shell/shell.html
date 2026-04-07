@@ -74,9 +74,26 @@
       <span class="toolbar-spacer"></span>
       @if (user(); as u) {
         <span class="toolbar-user-name">{{ u.name || u.email }}</span>
-        <button mat-icon-button class="toolbar-avatar" (click)="auth.logout()" aria-label="Logout">
+        <button mat-icon-button class="toolbar-avatar" [matMenuTriggerFor]="userMenu" aria-label="User menu">
           <span class="avatar-letter">{{ (u.name || u.email).charAt(0).toUpperCase() }}</span>
         </button>
+        <mat-menu #userMenu="matMenu" xPosition="before" class="user-menu-panel">
+          <div class="user-menu-info" (click)="$event.stopPropagation()">
+            <div class="user-menu-avatar">
+              <span class="avatar-letter">{{ (u.name || u.email).charAt(0).toUpperCase() }}</span>
+            </div>
+            <span class="user-menu-name">{{ u.name || u.email }}</span>
+            <span class="user-menu-email">{{ u.email }}</span>
+            @if (u.memberships.length > 0) {
+              <span class="user-menu-school">{{ u.memberships[0].schoolName }}</span>
+            }
+          </div>
+          <mat-divider />
+          <button mat-menu-item (click)="auth.logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Log out</span>
+          </button>
+        </mat-menu>
       }
     </mat-toolbar>
 
