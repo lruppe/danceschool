@@ -1,0 +1,129 @@
+<!-- Header -->
+<div class="wizard-header">
+  <a class="back-link" routerLink="/app/courses">← Back to Courses</a>
+  <h1 class="wizard-title">Create New Course</h1>
+</div>
+
+<!-- Wizard Card -->
+<div class="wizard-card">
+  <!-- Stepper -->
+  <div class="stepper">
+    @for (step of steps; track step.label; let i = $index) {
+      @if (i > 0) {
+        <div class="stepper-connector"></div>
+      }
+      <button
+        class="stepper-step"
+        [class.active]="i === currentStep()"
+        [class.completed]="i < currentStep()"
+        [disabled]="i > currentStep()"
+        (click)="goToStep(i)"
+        type="button"
+      >
+        <span class="step-circle">{{ i + 1 }}</span>
+        <span class="step-label">{{ step.label }}</span>
+      </button>
+    }
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Step Content -->
+  <div class="step-content">
+    @switch (currentStep()) {
+      @case (0) {
+        <!-- Details Step -->
+        <div class="details-step" [formGroup]="detailsGroup">
+          <mat-form-field class="full-width" appearance="outline">
+            <mat-label>Course Title</mat-label>
+            <input matInput formControlName="title" placeholder="e.g. Bachata Fundamentals for Beginners" />
+            @if (detailsGroup.controls.title.hasError('required')) {
+              <mat-error>Course title is required</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="form-row">
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>Dance Style</mat-label>
+              <mat-select formControlName="danceStyle">
+                @for (style of danceStyles; track style.value) {
+                  <mat-option [value]="style.value">{{ style.label }}</mat-option>
+                }
+              </mat-select>
+              @if (detailsGroup.controls.danceStyle.hasError('required')) {
+                <mat-error>Dance style is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>Level</mat-label>
+              <mat-select formControlName="level">
+                @for (level of levels; track level.value) {
+                  <mat-option [value]="level.value">{{ level.label }}</mat-option>
+                }
+              </mat-select>
+              @if (detailsGroup.controls.level.hasError('required')) {
+                <mat-error>Level is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>Course Type</mat-label>
+              <mat-select formControlName="courseType">
+                @for (type of courseTypes; track type.value) {
+                  <mat-option [value]="type.value">{{ type.label }}</mat-option>
+                }
+              </mat-select>
+              @if (detailsGroup.controls.courseType.hasError('required')) {
+                <mat-error>Course type is required</mat-error>
+              }
+            </mat-form-field>
+            <div class="half-width"></div>
+          </div>
+
+          <mat-form-field class="full-width" appearance="outline">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="4"
+                      placeholder="Public description of the course..."></textarea>
+          </mat-form-field>
+        </div>
+      }
+      @case (1) {
+        <div class="placeholder-step">
+          <p>Schedule step — coming soon</p>
+        </div>
+      }
+      @case (2) {
+        <div class="placeholder-step">
+          <p>Registration step — coming soon</p>
+        </div>
+      }
+      @case (3) {
+        <div class="placeholder-step">
+          <p>Pricing step — coming soon</p>
+        </div>
+      }
+      @case (4) {
+        <div class="placeholder-step">
+          <p>Review step — coming soon</p>
+        </div>
+      }
+    }
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Navigation -->
+  <div class="wizard-nav">
+    @if (currentStep() > 0) {
+      <button mat-button (click)="back()" type="button">Back</button>
+    }
+    <span class="nav-spacer"></span>
+    <button mat-flat-button (click)="next()" type="button"
+            [disabled]="currentStep() === steps.length - 1">
+      Next
+    </button>
+  </div>
+</div>
