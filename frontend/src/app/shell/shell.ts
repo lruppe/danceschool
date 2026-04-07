@@ -7,6 +7,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../shared/auth/auth.service';
 
 interface NavChild {
@@ -32,6 +34,8 @@ interface NavItem {
     MatListModule,
     MatIconModule,
     MatButtonModule,
+    MatMenuModule,
+    MatDividerModule,
   ],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
