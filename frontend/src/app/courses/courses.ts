@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CourseListItem, CourseService } from './course.service';
+import { DANCE_STYLES, COURSE_LEVELS } from '../shared/course-constants';
 
 interface CourseFilter {
   text: string;
@@ -46,8 +47,8 @@ export class CoursesComponent implements OnInit {
   protected selectedDanceStyle = '';
   protected selectedLevel = '';
 
-  protected danceStyles: string[] = ['SALSA', 'BACHATA'];
-  protected levels: string[] = ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
+  protected danceStyles = DANCE_STYLES.map(d => d.value);
+  protected levels = COURSE_LEVELS.map(l => l.value);
 
   protected filteredCount = computed(() => this.dataSource.filteredData.length);
 
@@ -157,6 +158,11 @@ export class CoursesComponent implements OnInit {
     switch (style) {
       case 'BACHATA': return 'ds-chip-primary';
       case 'SALSA': return 'ds-chip-info';
+      case 'MERENGUE': return 'ds-chip-success';
+      case 'KIZOMBA': return 'ds-chip-primary';
+      case 'ZOUK': return 'ds-chip-info';
+      case 'AFRO': return 'ds-chip-success';
+      case 'OTHER': return 'ds-chip-default';
       default: return 'ds-chip-default';
     }
   }

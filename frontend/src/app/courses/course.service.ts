@@ -2,12 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { CourseLevel, CourseStatus, DanceStyle } from '../shared/course-constants';
 
 export interface CourseListItem {
   id: number;
   title: string;
-  danceStyle: 'SALSA' | 'BACHATA';
-  level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  danceStyle: DanceStyle;
+  level: CourseLevel;
   dayOfWeek: string;
   startTime: string;
   endTime: string;
@@ -15,7 +16,7 @@ export interface CourseListItem {
   enrolledStudents: number;
   maxParticipants: number;
   price: number;
-  status: 'DRAFT' | 'ACTIVE' | 'FULL' | 'INACTIVE';
+  status: CourseStatus;
 }
 
 @Injectable({ providedIn: 'root' })
