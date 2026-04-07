@@ -26,4 +26,8 @@ export class CourseService {
   getCourses(): Observable<CourseListItem[]> {
     return this.http.get<CourseListItem[]>(`${environment.apiUrl}/api/courses/me`);
   }
+
+  createCourse(dto: Record<string, unknown>): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>(`${environment.apiUrl}/api/courses`, dto);
+  }
 }

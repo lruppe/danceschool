@@ -27,6 +27,7 @@ export const routes: Routes = [
       },
       { path: 'my-school', loadComponent: () => import('./my-school/my-school').then(m => m.MySchoolComponent) },
       { path: 'subscriptions', loadComponent: () => import('./subscriptions/subscriptions').then(m => m.SubscriptionsComponent) },
+      { path: 'courses/create', loadComponent: () => import('./courses/create/course-create').then(m => m.CourseCreateComponent) },
       { path: 'courses', loadComponent: () => import('./courses/courses').then(m => m.CoursesComponent) },
       { path: 'payments', loadComponent: () => import('./payments/payments').then(m => m.PaymentsComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },

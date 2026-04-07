@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, OnInit,
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CurrencyPipe, NgClass, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,7 +29,7 @@ const DAY_ORDER: Record<string, number> = {
   imports: [
     MatTableModule, MatSortModule, MatIconModule, MatButtonModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    FormsModule, CurrencyPipe, TitleCasePipe, NgClass,
+    FormsModule, RouterLink, CurrencyPipe, TitleCasePipe, NgClass,
   ],
   templateUrl: './courses.html',
   styleUrl: './courses.scss',
