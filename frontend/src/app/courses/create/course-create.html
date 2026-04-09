@@ -1,7 +1,7 @@
 <!-- Header -->
 <div class="wizard-header">
   <a class="back-link" routerLink="/app/courses">← Back to Courses</a>
-  <h1 class="wizard-title">Create New Course</h1>
+  <h1 class="wizard-title">{{ isEditMode ? 'Edit Course' : 'Create New Course' }}</h1>
 </div>
 
 <!-- Wizard Card -->
@@ -16,7 +16,7 @@
         class="stepper-step"
         [class.active]="i === currentStep()"
         [class.completed]="i < currentStep()"
-        [disabled]="i > currentStep()"
+        [disabled]="!isEditMode && i > currentStep()"
         (click)="goToStep(i)"
         type="button"
       >
@@ -30,6 +30,11 @@
 
   <!-- Step Content -->
   <div class="step-content">
+    @if (loading()) {
+      <div class="placeholder-step">
+        <p>Loading course...</p>
+      </div>
+    } @else {
     @switch (currentStep()) {
       @case (0) {
         <!-- Details Step -->
@@ -393,6 +398,7 @@
         </div>
       }
     }
+    }
   </div>
 
   <div class="divider"></div>
@@ -407,7 +413,11 @@
       <button mat-flat-button (click)="next()" type="button">Next</button>
     } @else {
       <button mat-flat-button (click)="save()" type="button" [disabled]="saving()">
-        {{ isDraft ? 'Save as Draft' : 'Publish Now' }}
+        @if (isEditMode) {
+          Save Changes
+        } @else {
+          {{ isDraft ? 'Save as Draft' : 'Publish Now' }}
+        }
       </button>
     }
   </div>
