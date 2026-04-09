@@ -11,8 +11,23 @@ export class CourseFormService {
       courseType: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
       description: new FormControl('', { nonNullable: true }),
     }),
-    schedule: new FormGroup({}),
-    registration: new FormGroup({}),
+    schedule: new FormGroup({
+      startDate: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      recurrenceType: new FormControl('WEEKLY', { nonNullable: true, validators: [Validators.required] }),
+      dayOfWeek: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      numberOfSessions: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(1)] }),
+      startTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      endTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      location: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      teachers: new FormControl('', { nonNullable: true }),
+    }),
+    registration: new FormGroup({
+      maxParticipants: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(1)] }),
+      waitingListEnabled: new FormControl(false, { nonNullable: true }),
+      requireRoleSelection: new FormControl(false, { nonNullable: true }),
+      roleBalancingMode: new FormControl('', { nonNullable: true }),
+      roleBalanceThreshold: new FormControl<number | null>(null),
+    }),
     pricing: new FormGroup({}),
   });
 

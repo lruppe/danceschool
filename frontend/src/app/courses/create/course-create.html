@@ -91,13 +91,129 @@
         </div>
       }
       @case (1) {
-        <div class="placeholder-step">
-          <p>Schedule step — coming soon</p>
+        <!-- Schedule Step -->
+        <div class="schedule-step" [formGroup]="scheduleGroup">
+          <div class="form-row">
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>Start Date</mat-label>
+              <input matInput type="date" formControlName="startDate" />
+              @if (scheduleGroup.controls.startDate.hasError('required')) {
+                <mat-error>Start date is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>Recurrence</mat-label>
+              <mat-select formControlName="recurrenceType">
+                @for (type of recurrenceTypes; track type.value) {
+                  <mat-option [value]="type.value">{{ type.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>Day of Week</mat-label>
+              <mat-select formControlName="dayOfWeek">
+                @for (day of daysOfWeek; track day.value) {
+                  <mat-option [value]="day.value">{{ day.label }}</mat-option>
+                }
+              </mat-select>
+              @if (scheduleGroup.controls.dayOfWeek.hasError('required')) {
+                <mat-error>Day of week is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>Number of Sessions</mat-label>
+              <input matInput type="number" formControlName="numberOfSessions" min="1" />
+              @if (scheduleGroup.controls.numberOfSessions.hasError('required')) {
+                <mat-error>Number of sessions is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>Start Time</mat-label>
+              <input matInput type="time" formControlName="startTime" />
+              @if (scheduleGroup.controls.startTime.hasError('required')) {
+                <mat-error>Start time is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>End Time</mat-label>
+              <input matInput type="time" formControlName="endTime" />
+              @if (scheduleGroup.controls.endTime.hasError('required')) {
+                <mat-error>End time is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <mat-form-field class="full-width" appearance="outline">
+            <mat-label>Location</mat-label>
+            <input matInput formControlName="location" placeholder="e.g. Studio A, Main Building" />
+            @if (scheduleGroup.controls.location.hasError('required')) {
+              <mat-error>Location is required</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field class="full-width" appearance="outline">
+            <mat-label>Teachers</mat-label>
+            <input matInput formControlName="teachers" placeholder="e.g. Maria, Carlos" />
+          </mat-form-field>
         </div>
       }
       @case (2) {
-        <div class="placeholder-step">
-          <p>Registration step — coming soon</p>
+        <!-- Registration Step -->
+        <div class="registration-step" [formGroup]="registrationGroup">
+          <div class="form-row">
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>Max Participants</mat-label>
+              <input matInput type="number" formControlName="maxParticipants" min="1" />
+              @if (registrationGroup.controls.maxParticipants.hasError('required')) {
+                <mat-error>Max participants is required</mat-error>
+              }
+            </mat-form-field>
+            <div class="half-width toggle-field">
+              <mat-slide-toggle formControlName="waitingListEnabled">Enable Waiting List</mat-slide-toggle>
+            </div>
+          </div>
+
+          <div class="partner-settings" [class.disabled]="!isPartnerCourse">
+            <h3 class="section-title">Partner Course Settings</h3>
+            @if (!isPartnerCourse) {
+              <p class="section-hint">These settings apply only to Partner courses.</p>
+            }
+
+            <div class="form-row">
+              <div class="half-width toggle-field">
+                <mat-slide-toggle formControlName="requireRoleSelection" [disabled]="!isPartnerCourse">
+                  Require Role Selection
+                </mat-slide-toggle>
+              </div>
+              <div class="half-width"></div>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field class="half-width" appearance="outline">
+                <mat-label>Role Balancing Mode</mat-label>
+                <mat-select formControlName="roleBalancingMode" [disabled]="!isPartnerCourse">
+                  @for (mode of roleBalancingModes; track mode.value) {
+                    <mat-option [value]="mode.value">{{ mode.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field class="half-width" appearance="outline">
+                <mat-label>Role Balance Threshold</mat-label>
+                <input matInput type="number" formControlName="roleBalanceThreshold"
+                       [readonly]="!isPartnerCourse" min="0" />
+              </mat-form-field>
+            </div>
+          </div>
         </div>
       }
       @case (3) {
