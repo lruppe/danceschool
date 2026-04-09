@@ -85,3 +85,12 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 - Tenant isolation — only when an endpoint accepts an ID/parameter that could reference another tenant's data. `/me` pattern endpoints are isolated by design.
 
 **Style:** Integration tests over unit tests. Real Spring context, real database. Match existing pattern (`@SpringBootTest` + `MockMvc` + `EntityManager` for setup).
+
+### Test naming convention (Surefire vs Failsafe)
+
+- `*Test.java` — runs during `mvn test` (Surefire). Fast tests, no Docker required. Use for all standard unit and integration tests.
+- `*IT.java` — runs during `mvn verify` (Failsafe). Slow tests requiring Docker (e.g., testcontainers). CI runs `mvn verify` so these always execute in the pipeline.
+
+### Testcontainers (for external service integration tests)
+
+Use testcontainers with LocalStack when testing code that interacts with external services (e.g., AWS S3/Cloudflare R2). These tests must be named `*IT.java` so they only run during `mvn verify` (requires Docker). See `CloudflareR2ImageStorageServiceIT` for the pattern. Dependencies: `org.testcontainers:localstack` and `org.testcontainers:junit-jupiter`.
