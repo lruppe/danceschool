@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnDestroy, OnInit } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -31,7 +31,8 @@ interface StepDef {
   styleUrl: './course-create.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CourseCreateComponent implements OnDestroy {
+export class CourseCreateComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   protected formService = inject(CourseFormService);
@@ -39,6 +40,12 @@ export class CourseCreateComponent implements OnDestroy {
 
   protected currentStep = signal(0);
   protected saving = signal(false);
+  protected loading = signal(false);
+  protected editId = signal<number | null>(null);
+
+  protected get isEditMode(): boolean {
+    return this.editId() !== null;
+  }
 
   protected steps: StepDef[] = [
     { label: 'Details' },
@@ -89,6 +96,25 @@ export class CourseCreateComponent implements OnDestroy {
     return this.pricingGroup.controls.status.value === 'DRAFT';
   }
 
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.editId.set(+id);
+      this.loading.set(true);
+      this.courseService.getCourse(+id).subscribe({
+        next: (data) => {
+          this.formService.populate(data);
+          this.currentStep.set(4); // Start on Review step
+          this.loading.set(false);
+        },
+        error: () => {
+          this.snackBar.open('Failed to load course', 'Close', { duration: 3000 });
+          this.router.navigate(['/app/courses']);
+        },
+      });
+    }
+  }
+
   protected label(items: { value: string; label: string }[], value: string): string {
     return items.find(i => i.value === value)?.label ?? value;
   }
@@ -97,16 +123,22 @@ export class CourseCreateComponent implements OnDestroy {
     if (this.saving()) return;
     this.saving.set(true);
     const dto = this.formService.toDto();
-    this.courseService.createCourse(dto).subscribe({
-      next: () => {
-        this.snackBar.open('Course created successfully', 'Close', { duration: 3000 });
-        this.router.navigate(['/app/courses']);
-      },
-      error: () => {
-        this.saving.set(false);
-        this.snackBar.open('Failed to create course', 'Close', { duration: 3000 });
-      },
-    });
+    const id = this.editId();
+    const successMsg = id ? 'Course updated successfully' : 'Course created successfully';
+    const errorMsg = id ? 'Failed to update course' : 'Failed to create course';
+    const onSuccess = () => {
+      this.snackBar.open(successMsg, 'Close', { duration: 3000 });
+      this.router.navigate(['/app/courses']);
+    };
+    const onError = () => {
+      this.saving.set(false);
+      this.snackBar.open(errorMsg, 'Close', { duration: 3000 });
+    };
+    if (id) {
+      this.courseService.updateCourse(id, dto).subscribe({ next: onSuccess, error: onError });
+    } else {
+      this.courseService.createCourse(dto).subscribe({ next: onSuccess, error: onError });
+    }
   }
 
   protected next(): void {
@@ -126,8 +158,9 @@ export class CourseCreateComponent implements OnDestroy {
   }
 
   protected goToStep(index: number): void {
-    // Only allow navigating to completed steps or the current step
-    if (index <= this.currentStep()) {
+    // In edit mode, allow navigating to any step (all data is pre-populated)
+    // In create mode, only allow completed steps or the current step
+    if (this.isEditMode || index <= this.currentStep()) {
       this.currentStep.set(index);
     }
   }

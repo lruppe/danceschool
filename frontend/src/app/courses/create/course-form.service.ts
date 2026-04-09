@@ -57,6 +57,43 @@ export class CourseFormService {
     }
   }
 
+  populate(data: Record<string, unknown>): void {
+    this.form.patchValue({
+      details: {
+        title: data['title'] as string,
+        danceStyle: data['danceStyle'] as string,
+        level: data['level'] as string,
+        courseType: data['courseType'] as string,
+        description: (data['description'] as string) ?? '',
+      },
+      schedule: {
+        startDate: data['startDate'] as string,
+        recurrenceType: data['recurrenceType'] as string,
+        dayOfWeek: data['dayOfWeek'] as string,
+        numberOfSessions: data['numberOfSessions'] as number,
+        startTime: data['startTime'] as string,
+        endTime: data['endTime'] as string,
+        location: data['location'] as string,
+        teachers: (data['teachers'] as string) ?? '',
+      },
+      registration: {
+        maxParticipants: data['maxParticipants'] as number,
+        waitingListEnabled: data['waitingListEnabled'] as boolean,
+        requireRoleSelection: data['requireRoleSelection'] as boolean,
+        roleBalancingMode: (data['roleBalancingMode'] as string) ?? '',
+        roleBalanceThreshold: data['roleBalanceThreshold'] as number | null,
+      },
+      pricing: {
+        priceModel: data['priceModel'] as string,
+        price: data['price'] as number,
+        status: data['status'] as string,
+        publishDate: (data['publishDate'] as string) ?? '',
+      },
+    });
+    // Mark as pristine after loading — form is not "dirty" until user edits
+    this.form.markAsPristine();
+  }
+
   toDto(): Record<string, unknown> {
     const v = this.form.getRawValue();
     return {
