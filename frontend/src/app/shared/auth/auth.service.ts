@@ -166,11 +166,11 @@ export class AuthService {
       this._user.set(null);
       this._checked.set(true);
       this._loading.set(false);
-      this.router.navigate(['/login']);
+      this.router.navigate(['/']);
     } else if (this.firebaseAuth) {
       const { signOut } = await import('firebase/auth');
       await signOut(this.firebaseAuth);
-      this.router.navigate(['/login']);
+      this.router.navigate(['/']);
     }
   }
 }
