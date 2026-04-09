@@ -43,9 +43,9 @@ import { AuthService } from '../shared/auth/auth.service';
       padding: var(--ds-spacing-12) var(--ds-spacing-6);
     }
     .empty-state-icon {
-      font-size: 64px;
-      width: 64px;
-      height: 64px;
+      font-size: var(--ds-spacing-16);
+      width: var(--ds-spacing-16);
+      height: var(--ds-spacing-16);
       color: var(--mat-sys-on-surface-variant);
       margin-bottom: var(--ds-spacing-4);
     }
@@ -58,7 +58,7 @@ import { AuthService } from '../shared/auth/auth.service';
       font: var(--mat-sys-body-large);
       color: var(--mat-sys-on-surface-variant);
       margin-bottom: var(--ds-spacing-6);
-      max-width: 400px;
+      max-width: var(--ds-max-width-narrow);
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

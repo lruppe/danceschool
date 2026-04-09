@@ -57,40 +57,23 @@ public class CourseService {
         return toDetailDto(course);
     }
 
-    public void seedCourse(Long userId, String title, DanceStyle danceStyle, CourseLevel level,
-                           CourseType courseType, String description, java.time.LocalDate startDate,
-                           RecurrenceType recurrenceType, java.time.DayOfWeek dayOfWeek,
-                           int numberOfSessions, java.time.LocalTime startTime, java.time.LocalTime endTime,
-                           String location, String teachers, int maxParticipants, int enrolledStudents,
-                           PriceModel priceModel, java.math.BigDecimal price, CourseStatus status) {
+    /**
+     * Seeds a course for dev/test data. Skips domain validation (seed data may have past dates).
+     */
+    @Transactional
+    public void seedCourse(Long userId, CreateCourseDto dto, int enrolledStudents) {
         School school = schoolService.findSchoolByMember(userId);
         Course course = new Course();
         course.setSchool(school);
-        course.setTitle(title);
-        course.setDanceStyle(danceStyle);
-        course.setLevel(level);
-        course.setCourseType(courseType);
-        course.setDescription(description);
-        course.setStartDate(startDate);
-        course.setRecurrenceType(recurrenceType);
-        course.setDayOfWeek(dayOfWeek);
-        course.setNumberOfSessions(numberOfSessions);
-        course.setStartTime(startTime);
-        course.setEndTime(endTime);
-        course.setLocation(location);
-        course.setTeachers(teachers);
-        course.setMaxParticipants(maxParticipants);
+        applyDto(course, dto);
         course.setEnrolledStudents(enrolledStudents);
-        course.setPriceModel(priceModel);
-        course.setPrice(price);
-        course.setStatus(status);
         courseRepository.save(course);
     }
 
     @Transactional(readOnly = true)
     public boolean hasCoursesForMember(Long userId) {
         School school = schoolService.findSchoolByMember(userId);
-        return !courseRepository.findAllBySchoolId(school.getId()).isEmpty();
+        return courseRepository.existsBySchoolId(school.getId());
     }
 
     private void validateDomainRules(CreateCourseDto dto, boolean isCreate) {

@@ -50,7 +50,7 @@
 
 .stepper-connector {
   width: var(--ds-spacing-10);
-  height: 2px;
+  height: var(--ds-spacing-half);
   background: var(--mat-sys-outline-variant);
   flex-shrink: 0;
 }
@@ -75,8 +75,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: var(--ds-size-step-indicator);
+  height: var(--ds-size-step-indicator);
   border-radius: var(--ds-radius-full);
   font: var(--mat-sys-label-medium);
   flex-shrink: 0;
