@@ -9,5 +9,7 @@ interface CourseRepository extends JpaRepository<Course, Long> {
 
     List<Course> findAllBySchoolId(Long schoolId);
 
+    boolean existsBySchoolId(Long schoolId);
+
     Optional<Course> findByIdAndSchoolId(Long id, Long schoolId);
 }

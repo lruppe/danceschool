@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, OnDestroy, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -35,6 +36,7 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
   protected formService = inject(CourseFormService);
   private courseService = inject(CourseService);
 
@@ -101,7 +103,7 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
     if (id) {
       this.editId.set(+id);
       this.loading.set(true);
-      this.courseService.getCourse(+id).subscribe({
+      this.courseService.getCourse(+id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (data) => {
           this.formService.populate(data);
           this.currentStep.set(4); // Start on Review step
@@ -135,9 +137,9 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
       this.snackBar.open(errorMsg, 'Close', { duration: 3000 });
     };
     if (id) {
-      this.courseService.updateCourse(id, dto).subscribe({ next: onSuccess, error: onError });
+      this.courseService.updateCourse(id, dto).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: onSuccess, error: onError });
     } else {
-      this.courseService.createCourse(dto).subscribe({ next: onSuccess, error: onError });
+      this.courseService.createCourse(dto).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: onSuccess, error: onError });
     }
   }
 
