@@ -1,7 +1,10 @@
 import { CanDeactivateFn } from '@angular/router';
-import { MySchoolEditComponent } from './my-school-edit';
 
-export const unsavedChangesGuard: CanDeactivateFn<MySchoolEditComponent> = (component) => {
+export interface HasUnsavedChanges {
+  canDeactivate(): boolean;
+}
+
+export const unsavedChangesGuard: CanDeactivateFn<HasUnsavedChanges> = (component) => {
   if (component.canDeactivate()) {
     return true;
   }

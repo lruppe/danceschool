@@ -28,7 +28,12 @@ export class CourseFormService {
       roleBalancingMode: new FormControl('', { nonNullable: true }),
       roleBalanceThreshold: new FormControl<number | null>(null),
     }),
-    pricing: new FormGroup({}),
+    pricing: new FormGroup({
+      priceModel: new FormControl('FIXED_COURSE', { nonNullable: true, validators: [Validators.required] }),
+      price: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
+      status: new FormControl('DRAFT', { nonNullable: true, validators: [Validators.required] }),
+      publishDate: new FormControl('', { nonNullable: true }),
+    }),
   });
 
   private readonly stepGroups = [
@@ -50,6 +55,20 @@ export class CourseFormService {
     if (group) {
       group.markAllAsTouched();
     }
+  }
+
+  toDto(): Record<string, unknown> {
+    const v = this.form.getRawValue();
+    return {
+      ...v.details,
+      ...v.schedule,
+      ...v.registration,
+      roleBalancingMode: v.registration.roleBalancingMode || null,
+      priceModel: v.pricing.priceModel,
+      price: v.pricing.price,
+      status: v.pricing.status,
+      publishDate: v.pricing.publishDate || null,
+    };
   }
 
   isDirty(): boolean {

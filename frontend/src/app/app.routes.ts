@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './shared/auth/auth.guard';
 import { publicGuard } from './shared/auth/public.guard';
-import { unsavedChangesGuard } from './my-school/edit/unsaved-changes.guard';
+import { unsavedChangesGuard } from './shared/unsaved-changes.guard';
 
 export const routes: Routes = [
   {
@@ -27,7 +27,11 @@ export const routes: Routes = [
       },
       { path: 'my-school', loadComponent: () => import('./my-school/my-school').then(m => m.MySchoolComponent) },
       { path: 'subscriptions', loadComponent: () => import('./subscriptions/subscriptions').then(m => m.SubscriptionsComponent) },
-      { path: 'courses/create', loadComponent: () => import('./courses/create/course-create').then(m => m.CourseCreateComponent) },
+      {
+        path: 'courses/create',
+        loadComponent: () => import('./courses/create/course-create').then(m => m.CourseCreateComponent),
+        canDeactivate: [unsavedChangesGuard],
+      },
       { path: 'courses', loadComponent: () => import('./courses/courses').then(m => m.CoursesComponent) },
       { path: 'payments', loadComponent: () => import('./payments/payments').then(m => m.PaymentsComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
