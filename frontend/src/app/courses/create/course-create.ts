@@ -6,10 +6,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CourseFormService } from './course-form.service';
 import { CourseService } from '../course.service';
-import { DANCE_STYLES, COURSE_LEVELS, COURSE_TYPES } from '../../shared/course-constants';
+import { DANCE_STYLES, COURSE_LEVELS, COURSE_TYPES, RECURRENCE_TYPES, ROLE_BALANCING_MODES } from '../../shared/course-constants';
 
 interface StepDef {
   label: string;
@@ -20,7 +21,7 @@ interface StepDef {
   imports: [
     ReactiveFormsModule, RouterLink,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatButtonModule, MatIconModule,
+    MatButtonModule, MatIconModule, MatSlideToggleModule,
   ],
   providers: [CourseFormService],
   templateUrl: './course-create.html',
@@ -47,9 +48,32 @@ export class CourseCreateComponent implements OnDestroy {
   protected danceStyles = DANCE_STYLES;
   protected levels = COURSE_LEVELS;
   protected courseTypes = COURSE_TYPES;
+  protected recurrenceTypes = RECURRENCE_TYPES;
+  protected roleBalancingModes = ROLE_BALANCING_MODES;
+  protected daysOfWeek = [
+    { value: 'MONDAY', label: 'Monday' },
+    { value: 'TUESDAY', label: 'Tuesday' },
+    { value: 'WEDNESDAY', label: 'Wednesday' },
+    { value: 'THURSDAY', label: 'Thursday' },
+    { value: 'FRIDAY', label: 'Friday' },
+    { value: 'SATURDAY', label: 'Saturday' },
+    { value: 'SUNDAY', label: 'Sunday' },
+  ];
 
   protected get detailsGroup() {
     return this.formService.form.controls.details;
+  }
+
+  protected get scheduleGroup() {
+    return this.formService.form.controls.schedule;
+  }
+
+  protected get registrationGroup() {
+    return this.formService.form.controls.registration;
+  }
+
+  protected get isPartnerCourse(): boolean {
+    return this.formService.form.controls.details.controls.courseType.value === 'PARTNER';
   }
 
   protected next(): void {

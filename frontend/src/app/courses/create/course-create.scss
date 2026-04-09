@@ -140,6 +140,52 @@
   min-width: 0;
 }
 
+// Schedule step
+.schedule-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-5);
+}
+
+// Registration step
+.registration-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-5);
+}
+
+.toggle-field {
+  display: flex;
+  align-items: center;
+  padding-top: var(--ds-spacing-2);
+}
+
+.partner-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-5);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-spacing-6);
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.section-title {
+  font: var(--mat-sys-title-medium);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+}
+
+.section-hint {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
 .placeholder-step {
   display: flex;
   align-items: center;
