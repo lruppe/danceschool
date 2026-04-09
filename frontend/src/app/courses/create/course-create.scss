@@ -186,6 +186,80 @@
   margin: 0;
 }
 
+// Pricing step
+.pricing-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-5);
+}
+
+// Review step
+.review-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-5);
+}
+
+.review-card {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-spacing-6);
+}
+
+.review-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--ds-spacing-4);
+}
+
+.review-card-title {
+  font: var(--mat-sys-title-medium);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+}
+
+.edit-link {
+  color: var(--mat-sys-primary);
+}
+
+.review-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-3);
+}
+
+.review-field {
+  display: flex;
+  gap: var(--ds-spacing-4);
+
+  @include ds.bp-down(sm) {
+    flex-direction: column;
+    gap: var(--ds-spacing-1);
+  }
+}
+
+.review-label {
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+  min-width: var(--ds-spacing-24);
+  flex-shrink: 0;
+}
+
+.review-value {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface);
+}
+
+.publishing-settings {
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-spacing-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-5);
+}
+
 .placeholder-step {
   display: flex;
   align-items: center;

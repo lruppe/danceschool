@@ -217,13 +217,179 @@
         </div>
       }
       @case (3) {
-        <div class="placeholder-step">
-          <p>Pricing step — coming soon</p>
+        <!-- Pricing Step -->
+        <div class="pricing-step" [formGroup]="pricingGroup">
+          <div class="form-row">
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>Price Model</mat-label>
+              <mat-select formControlName="priceModel">
+                @for (model of priceModels; track model.value) {
+                  <mat-option [value]="model.value">{{ model.label }}</mat-option>
+                }
+              </mat-select>
+              @if (pricingGroup.controls.priceModel.hasError('required')) {
+                <mat-error>Price model is required</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field class="half-width" appearance="outline">
+              <mat-label>Price (CHF)</mat-label>
+              <input matInput type="number" formControlName="price" min="0" step="0.01" />
+              @if (pricingGroup.controls.price.hasError('required')) {
+                <mat-error>Price is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
         </div>
       }
       @case (4) {
-        <div class="placeholder-step">
-          <p>Review step — coming soon</p>
+        <!-- Review Step -->
+        <div class="review-step">
+          <!-- Details Card -->
+          <div class="review-card">
+            <div class="review-card-header">
+              <h3 class="review-card-title">Details</h3>
+              <button mat-button class="edit-link" (click)="goToStep(0)" type="button">Edit</button>
+            </div>
+            <div class="review-card-content">
+              <div class="review-field">
+                <span class="review-label">Course Title</span>
+                <span class="review-value">{{ detailsGroup.controls.title.value }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">Dance Style</span>
+                <span class="review-value">{{ label(danceStyles, detailsGroup.controls.danceStyle.value) }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">Level</span>
+                <span class="review-value">{{ label(levels, detailsGroup.controls.level.value) }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">Course Type</span>
+                <span class="review-value">{{ label(courseTypes, detailsGroup.controls.courseType.value) }}</span>
+              </div>
+              @if (detailsGroup.controls.description.value) {
+                <div class="review-field">
+                  <span class="review-label">Description</span>
+                  <span class="review-value">{{ detailsGroup.controls.description.value }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Schedule Card -->
+          <div class="review-card">
+            <div class="review-card-header">
+              <h3 class="review-card-title">Schedule</h3>
+              <button mat-button class="edit-link" (click)="goToStep(1)" type="button">Edit</button>
+            </div>
+            <div class="review-card-content">
+              <div class="review-field">
+                <span class="review-label">Start Date</span>
+                <span class="review-value">{{ scheduleGroup.controls.startDate.value }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">Recurrence</span>
+                <span class="review-value">{{ label(recurrenceTypes, scheduleGroup.controls.recurrenceType.value) }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">Day of Week</span>
+                <span class="review-value">{{ label(daysOfWeek, scheduleGroup.controls.dayOfWeek.value) }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">Sessions</span>
+                <span class="review-value">{{ scheduleGroup.controls.numberOfSessions.value }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">Time</span>
+                <span class="review-value">{{ scheduleGroup.controls.startTime.value }} – {{ scheduleGroup.controls.endTime.value }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">Location</span>
+                <span class="review-value">{{ scheduleGroup.controls.location.value }}</span>
+              </div>
+              @if (scheduleGroup.controls.teachers.value) {
+                <div class="review-field">
+                  <span class="review-label">Teachers</span>
+                  <span class="review-value">{{ scheduleGroup.controls.teachers.value }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Registration Card -->
+          <div class="review-card">
+            <div class="review-card-header">
+              <h3 class="review-card-title">Registration</h3>
+              <button mat-button class="edit-link" (click)="goToStep(2)" type="button">Edit</button>
+            </div>
+            <div class="review-card-content">
+              <div class="review-field">
+                <span class="review-label">Max Participants</span>
+                <span class="review-value">{{ registrationGroup.controls.maxParticipants.value }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">Waiting List</span>
+                <span class="review-value">{{ registrationGroup.controls.waitingListEnabled.value ? 'Enabled' : 'Disabled' }}</span>
+              </div>
+              @if (isPartnerCourse) {
+                <div class="review-field">
+                  <span class="review-label">Require Role Selection</span>
+                  <span class="review-value">{{ registrationGroup.controls.requireRoleSelection.value ? 'Yes' : 'No' }}</span>
+                </div>
+                @if (registrationGroup.controls.roleBalancingMode.value) {
+                  <div class="review-field">
+                    <span class="review-label">Role Balancing Mode</span>
+                    <span class="review-value">{{ label(roleBalancingModes, registrationGroup.controls.roleBalancingMode.value) }}</span>
+                  </div>
+                }
+                @if (registrationGroup.controls.roleBalanceThreshold.value) {
+                  <div class="review-field">
+                    <span class="review-label">Role Balance Threshold</span>
+                    <span class="review-value">{{ registrationGroup.controls.roleBalanceThreshold.value }}</span>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+
+          <!-- Pricing Card -->
+          <div class="review-card">
+            <div class="review-card-header">
+              <h3 class="review-card-title">Pricing</h3>
+              <button mat-button class="edit-link" (click)="goToStep(3)" type="button">Edit</button>
+            </div>
+            <div class="review-card-content">
+              <div class="review-field">
+                <span class="review-label">Price Model</span>
+                <span class="review-value">{{ label(priceModels, pricingGroup.controls.priceModel.value) }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">Price</span>
+                <span class="review-value">CHF {{ pricingGroup.controls.price.value }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Publishing Settings -->
+          <div class="publishing-settings" [formGroup]="pricingGroup">
+            <h3 class="section-title">Publishing Settings</h3>
+            <div class="form-row">
+              <mat-form-field class="half-width" appearance="outline">
+                <mat-label>Status</mat-label>
+                <mat-select formControlName="status">
+                  @for (status of courseStatuses; track status.value) {
+                    <mat-option [value]="status.value">{{ status.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field class="half-width" appearance="outline">
+                <mat-label>Publish Date</mat-label>
+                <input matInput type="date" formControlName="publishDate" />
+              </mat-form-field>
+            </div>
+          </div>
         </div>
       }
     }
@@ -237,9 +403,12 @@
       <button mat-button (click)="back()" type="button">Back</button>
     }
     <span class="nav-spacer"></span>
-    <button mat-flat-button (click)="next()" type="button"
-            [disabled]="currentStep() === steps.length - 1">
-      Next
-    </button>
+    @if (currentStep() < steps.length - 1) {
+      <button mat-flat-button (click)="next()" type="button">Next</button>
+    } @else {
+      <button mat-flat-button (click)="save()" type="button" [disabled]="saving()">
+        {{ isDraft ? 'Save as Draft' : 'Publish Now' }}
+      </button>
+    }
   </div>
 </div>
