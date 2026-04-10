@@ -89,7 +89,7 @@ Custom design tokens (`--ds-*`) extend Material's system tokens (`--mat-sys-*`).
 
 ## Testing
 
-No unit test convention for now. Components are thin Material wrappers. Visual verification via Playwright covers rendering regressions. Revisit when complexity in frontend grows.
+Write unit tests for business logic (calculations, derived values, data transformations). Pure UI/layout components are covered by visual verification via Playwright.
 
 ## Angular Rules
 
