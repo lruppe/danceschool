@@ -271,8 +271,8 @@
               <h3 class="review-card-title">Details</h3>
               <button mat-button class="edit-link" (click)="goToStep(0)" type="button">Edit</button>
             </div>
-            <div class="review-card-content">
-              <div class="review-field">
+            <div class="review-card-content review-card-content--grid">
+              <div class="review-field review-field--full">
                 <span class="review-label">Course Title</span>
                 <span class="review-value">{{ detailsGroup.controls.title.value }}</span>
               </div>
@@ -289,7 +289,7 @@
                 <span class="review-value">{{ label(courseTypes, detailsGroup.controls.courseType.value) }}</span>
               </div>
               @if (detailsGroup.controls.description.value) {
-                <div class="review-field">
+                <div class="review-field review-field--full">
                   <span class="review-label">Description</span>
                   <span class="review-value">{{ detailsGroup.controls.description.value }}</span>
                 </div>
@@ -303,22 +303,26 @@
               <h3 class="review-card-title">Schedule</h3>
               <button mat-button class="edit-link" (click)="goToStep(1)" type="button">Edit</button>
             </div>
-            <div class="review-card-content">
+            <div class="review-card-content review-card-content--grid">
               <div class="review-field">
                 <span class="review-label">Start Date</span>
                 <span class="review-value">{{ scheduleGroup.controls.startDate.value }}</span>
-              </div>
-              <div class="review-field">
-                <span class="review-label">Recurrence</span>
-                <span class="review-value">{{ label(recurrenceTypes, scheduleGroup.controls.recurrenceType.value) }}</span>
               </div>
               <div class="review-field">
                 <span class="review-label">Day of Week</span>
                 <span class="review-value">{{ derivedDayOfWeek }}</span>
               </div>
               <div class="review-field">
+                <span class="review-label">Recurrence</span>
+                <span class="review-value">{{ label(recurrenceTypes, scheduleGroup.controls.recurrenceType.value) }}</span>
+              </div>
+              <div class="review-field">
                 <span class="review-label">Sessions</span>
                 <span class="review-value">{{ scheduleGroup.controls.numberOfSessions.value }}</span>
+              </div>
+              <div class="review-field">
+                <span class="review-label">Time</span>
+                <span class="review-value">{{ scheduleGroup.controls.startTime.value }} – {{ scheduleGroup.controls.endTime.value }}</span>
               </div>
               @if (derivedEndDate) {
                 <div class="review-field">
@@ -326,16 +330,12 @@
                   <span class="review-value">{{ derivedEndDate }}</span>
                 </div>
               }
-              <div class="review-field">
-                <span class="review-label">Time</span>
-                <span class="review-value">{{ scheduleGroup.controls.startTime.value }} – {{ scheduleGroup.controls.endTime.value }}</span>
-              </div>
-              <div class="review-field">
+              <div class="review-field review-field--full">
                 <span class="review-label">Location</span>
                 <span class="review-value">{{ scheduleGroup.controls.location.value }}</span>
               </div>
               @if (scheduleGroup.controls.teachers.value) {
-                <div class="review-field">
+                <div class="review-field review-field--full">
                   <span class="review-label">Teachers</span>
                   <span class="review-value">{{ scheduleGroup.controls.teachers.value }}</span>
                 </div>
@@ -349,7 +349,7 @@
               <h3 class="review-card-title">Registration</h3>
               <button mat-button class="edit-link" (click)="goToStep(2)" type="button">Edit</button>
             </div>
-            <div class="review-card-content">
+            <div class="review-card-content review-card-content--grid">
               <div class="review-field">
                 <span class="review-label">Max Participants</span>
                 <span class="review-value">{{ registrationGroup.controls.maxParticipants.value }}</span>
@@ -360,8 +360,8 @@
               </div>
               @if (isPartnerCourse) {
                 <div class="review-field">
-                  <span class="review-label">Require Role Selection</span>
-                  <span class="review-value">{{ registrationGroup.controls.requireRoleSelection.value ? 'Yes' : 'No' }}</span>
+                  <span class="review-label">Role Selection</span>
+                  <span class="review-value">{{ registrationGroup.controls.requireRoleSelection.value ? 'Required' : 'Optional' }}</span>
                 </div>
                 @if (registrationGroup.controls.roleBalancingMode.value) {
                   <div class="review-field">
@@ -385,7 +385,7 @@
               <h3 class="review-card-title">Pricing</h3>
               <button mat-button class="edit-link" (click)="goToStep(3)" type="button">Edit</button>
             </div>
-            <div class="review-card-content">
+            <div class="review-card-content review-card-content--grid">
               <div class="review-field">
                 <span class="review-label">Price Model</span>
                 <span class="review-value">{{ label(priceModels, pricingGroup.controls.priceModel.value) }}</span>
@@ -400,6 +400,7 @@
           <!-- Publishing Settings -->
           <div class="publishing-settings" [formGroup]="pricingGroup">
             <h3 class="section-title">Publishing Settings</h3>
+            <p class="section-hint">Controls whether this course is visible to students. Draft courses are only visible to you.</p>
             <div class="form-row">
               <mat-form-field class="half-width" appearance="outline">
                 <mat-label>Status</mat-label>
