@@ -184,10 +184,16 @@
   gap: var(--ds-spacing-5);
 }
 
+.form-row--align-toggle {
+  align-items: flex-start;
+}
+
 .toggle-field {
   display: flex;
   align-items: center;
-  padding-top: var(--ds-spacing-2);
+  gap: var(--ds-spacing-1);
+  // Vertically center with mat-form-field input area (label + top padding)
+  margin-top: var(--ds-spacing-5);
 }
 
 .partner-settings {
