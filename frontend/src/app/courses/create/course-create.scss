@@ -263,23 +263,31 @@
   display: flex;
   flex-direction: column;
   gap: var(--ds-spacing-3);
+
+  &--grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ds-spacing-3) var(--ds-spacing-8);
+
+    @include ds.bp-down(sm) {
+      grid-template-columns: 1fr;
+    }
+  }
 }
 
 .review-field {
   display: flex;
-  gap: var(--ds-spacing-4);
+  flex-direction: column;
+  gap: var(--ds-spacing-1);
 
-  @include ds.bp-down(sm) {
-    flex-direction: column;
-    gap: var(--ds-spacing-1);
+  &--full {
+    grid-column: 1 / -1;
   }
 }
 
 .review-label {
-  font: var(--mat-sys-label-large);
+  font: var(--mat-sys-label-medium);
   color: var(--mat-sys-on-surface-variant);
-  min-width: var(--ds-spacing-24);
-  flex-shrink: 0;
 }
 
 .review-value {
