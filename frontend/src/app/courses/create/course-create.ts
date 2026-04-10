@@ -64,15 +64,7 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
   protected roleBalancingModes = ROLE_BALANCING_MODES;
   protected priceModels = PRICE_MODELS;
   protected courseStatuses = COURSE_STATUSES.filter(s => s.value === 'DRAFT' || s.value === 'ACTIVE');
-  protected daysOfWeek = [
-    { value: 'MONDAY', label: 'Monday' },
-    { value: 'TUESDAY', label: 'Tuesday' },
-    { value: 'WEDNESDAY', label: 'Wednesday' },
-    { value: 'THURSDAY', label: 'Thursday' },
-    { value: 'FRIDAY', label: 'Friday' },
-    { value: 'SATURDAY', label: 'Saturday' },
-    { value: 'SUNDAY', label: 'Sunday' },
-  ];
+  private static readonly DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   protected get detailsGroup() {
     return this.formService.form.controls.details;
@@ -96,6 +88,24 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
 
   protected get isDraft(): boolean {
     return this.pricingGroup.controls.status.value === 'DRAFT';
+  }
+
+  protected get derivedDayOfWeek(): string {
+    const startDate = this.scheduleGroup.controls.startDate.value;
+    if (!startDate) return '';
+    const date = new Date(startDate + 'T00:00:00');
+    return CourseCreateComponent.DAY_NAMES[date.getDay()];
+  }
+
+  protected get derivedEndDate(): string {
+    const startDate = this.scheduleGroup.controls.startDate.value;
+    const sessions = this.scheduleGroup.controls.numberOfSessions.value;
+    const recurrence = this.scheduleGroup.controls.recurrenceType.value;
+    if (!startDate || !sessions || sessions < 1) return '';
+    const date = new Date(startDate + 'T00:00:00');
+    const intervalWeeks = recurrence === 'WEEKLY' ? 1 : 1;
+    date.setDate(date.getDate() + (sessions - 1) * 7 * intervalWeeks);
+    return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   }
 
   ngOnInit(): void {

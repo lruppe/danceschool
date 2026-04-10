@@ -140,16 +140,18 @@ class CourseControllerIntegrationTest {
     private void createCourse(School s, String title, DanceStyle danceStyle, CourseLevel level,
                               DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime,
                               int sessions, int enrolled, int max, BigDecimal price, CourseStatus status) {
+        LocalDate startDate = LocalDate.of(2026, 4, 7);
         Course course = new Course();
         course.setSchool(s);
         course.setTitle(title);
         course.setDanceStyle(danceStyle);
         course.setLevel(level);
         course.setCourseType(CourseType.PARTNER);
-        course.setStartDate(LocalDate.of(2026, 4, 7));
+        course.setStartDate(startDate);
         course.setRecurrenceType(RecurrenceType.WEEKLY);
         course.setDayOfWeek(dayOfWeek);
         course.setNumberOfSessions(sessions);
+        course.setEndDate(startDate.plusWeeks(sessions - 1));
         course.setStartTime(startTime);
         course.setEndTime(endTime);
         course.setLocation("Studio A");

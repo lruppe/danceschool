@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -105,8 +106,9 @@ public class CourseService {
         course.setDescription(dto.description());
         course.setStartDate(dto.startDate());
         course.setRecurrenceType(dto.recurrenceType());
-        course.setDayOfWeek(dto.dayOfWeek());
+        course.setDayOfWeek(dto.startDate().getDayOfWeek());
         course.setNumberOfSessions(dto.numberOfSessions());
+        course.setEndDate(calculateEndDate(dto.startDate(), dto.recurrenceType(), dto.numberOfSessions()));
         course.setStartTime(dto.startTime());
         course.setEndTime(dto.endTime());
         course.setLocation(dto.location());
@@ -122,6 +124,13 @@ public class CourseService {
         course.setPublishDate(dto.publishDate());
     }
 
+    private LocalDate calculateEndDate(LocalDate startDate, RecurrenceType recurrenceType, int numberOfSessions) {
+        int intervalWeeks = switch (recurrenceType) {
+            case WEEKLY -> 1;
+        };
+        return startDate.plusWeeks((long) (numberOfSessions - 1) * intervalWeeks);
+    }
+
     private CourseListDto toListDto(Course course) {
         return new CourseListDto(
                 course.getId(),
@@ -132,6 +141,7 @@ public class CourseService {
                 course.getStartTime(),
                 course.getEndTime(),
                 course.getNumberOfSessions(),
+                course.getEndDate(),
                 course.getEnrolledStudents(),
                 course.getMaxParticipants(),
                 course.getPrice(),
@@ -151,6 +161,7 @@ public class CourseService {
                 course.getRecurrenceType(),
                 course.getDayOfWeek(),
                 course.getNumberOfSessions(),
+                course.getEndDate(),
                 course.getStartTime(),
                 course.getEndTime(),
                 course.getLocation(),

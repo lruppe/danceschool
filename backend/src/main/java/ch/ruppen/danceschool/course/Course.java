@@ -58,6 +58,8 @@ public class Course {
 
     private int numberOfSessions;
 
+    private LocalDate endDate;
+
     private LocalTime startTime;
 
     private LocalTime endTime;
