@@ -9,12 +9,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CourseFormService } from './course-form.service';
 import { CourseService } from '../course.service';
 import {
   DANCE_STYLES, COURSE_LEVELS, COURSE_TYPES, RECURRENCE_TYPES,
   ROLE_BALANCING_MODES, PRICE_MODELS, COURSE_STATUSES,
 } from '../../shared/course-constants';
+import { FieldHelpComponent } from '../../shared/field-help/field-help';
 
 interface StepDef {
   label: string;
@@ -25,7 +27,8 @@ interface StepDef {
   imports: [
     ReactiveFormsModule, RouterLink,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatButtonModule, MatIconModule, MatSlideToggleModule,
+    MatButtonModule, MatIconModule, MatSlideToggleModule, MatTooltipModule,
+    FieldHelpComponent,
   ],
   providers: [CourseFormService],
   templateUrl: './course-create.html',
