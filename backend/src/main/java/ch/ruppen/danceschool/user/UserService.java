@@ -4,12 +4,14 @@ import ch.ruppen.danceschool.schoolmember.MembershipDto;
 import ch.ruppen.danceschool.schoolmember.SchoolMemberService;
 import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -29,7 +31,9 @@ public class UserService {
                     user.setFirebaseUid(firebaseUid);
                     user.setEmail(email);
                     user.setName(name);
-                    return userRepository.save(user);
+                    AppUser saved = userRepository.save(user);
+                    log.info("BUSINESS | UserOnboarded | userId={} email=\"{}\"", saved.getId(), email);
+                    return saved;
                 });
     }
 

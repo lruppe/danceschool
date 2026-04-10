@@ -4,6 +4,7 @@ import ch.ruppen.danceschool.school.School;
 import ch.ruppen.danceschool.school.SchoolService;
 import ch.ruppen.danceschool.shared.error.DomainRuleViolationException;
 import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
+import ch.ruppen.danceschool.shared.logging.BusinessOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class CourseService {
     }
 
     @Transactional
+    @BusinessOperation(event = "CourseCreated")
     public Long createCourse(Long userId, CreateCourseDto dto) {
         validateDomainRules(dto, true);
         School school = schoolService.findSchoolByMember(userId);
@@ -41,6 +43,7 @@ public class CourseService {
     }
 
     @Transactional
+    @BusinessOperation(event = "CourseUpdated")
     public CourseDetailDto updateCourse(Long userId, Long courseId, CreateCourseDto dto) {
         validateDomainRules(dto, false);
         School school = schoolService.findSchoolByMember(userId);
