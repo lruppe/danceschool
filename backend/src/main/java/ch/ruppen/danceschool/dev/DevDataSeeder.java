@@ -72,7 +72,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     CourseType.SOLO, "Learn the basics of Salsa, Merengue, and Bachata in solo style.",
                     LocalDate.of(2026, 4, 10), RecurrenceType.WEEKLY,
                     6, LocalTime.of(19, 30), LocalTime.of(20, 45),
-                    "Studio A", "Maria", 12, false, false, null, null,
+                    "Studio A", "Maria", 12, false, null,
                     PriceModel.FIXED_COURSE, new BigDecimal("166.50"), CourseStatus.ACTIVE, null), 8);
 
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
@@ -80,7 +80,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     CourseType.PARTNER, "Take your Bachata to the next level with partner work and musicality.",
                     LocalDate.of(2026, 4, 7), RecurrenceType.WEEKLY,
                     8, LocalTime.of(19, 0), LocalTime.of(20, 0),
-                    "Studio B", "Carlos", 15, false, false, null, null,
+                    "Studio B", "Carlos", 15, true, 3,
                     PriceModel.FIXED_COURSE, new BigDecimal("220.00"), CourseStatus.ACTIVE, null), 12);
 
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
@@ -88,7 +88,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     CourseType.PARTNER, "Advanced Salsa patterns, styling, and performance preparation.",
                     LocalDate.of(2026, 4, 8), RecurrenceType.WEEKLY,
                     10, LocalTime.of(20, 0), LocalTime.of(21, 15),
-                    "Studio A", "Maria, Carlos", 10, false, false, null, null,
+                    "Studio A", "Maria, Carlos", 10, true, 2,
                     PriceModel.FIXED_COURSE, new BigDecimal("310.00"), CourseStatus.FULL, null), 10);
 
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
@@ -96,7 +96,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     CourseType.PARTNER, "Start your Bachata journey with the fundamentals of partner dancing.",
                     LocalDate.of(2026, 4, 6), RecurrenceType.WEEKLY,
                     6, LocalTime.of(18, 30), LocalTime.of(19, 45),
-                    "Studio B", "Carlos", 16, false, false, null, null,
+                    "Studio B", "Carlos", 16, true, null,
                     PriceModel.FIXED_COURSE, new BigDecimal("166.50"), CourseStatus.ACTIVE, null), 14);
         }
 
@@ -106,7 +106,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     CourseType.PARTNER, "Introduction to Salsa for complete beginners.",
                     LocalDate.of(2026, 4, 9), RecurrenceType.WEEKLY,
                     8, LocalTime.of(18, 0), LocalTime.of(19, 0),
-                    "Main Hall", "Ana", 20, false, false, null, null,
+                    "Main Hall", "Ana", 20, true, null,
                     PriceModel.FIXED_COURSE, new BigDecimal("180.00"), CourseStatus.ACTIVE, null), 5);
 
             courseService.seedCourse(owner2.getId(), new CreateCourseDto(
@@ -114,7 +114,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     CourseType.PARTNER, "Explore Bachata Sensual technique and musicality.",
                     LocalDate.of(2026, 4, 11), RecurrenceType.WEEKLY,
                     6, LocalTime.of(14, 0), LocalTime.of(15, 30),
-                    "Main Hall", "Ana, Luis", 12, false, false, null, null,
+                    "Main Hall", "Ana, Luis", 12, true, null,
                     PriceModel.FIXED_COURSE, new BigDecimal("200.00"), CourseStatus.ACTIVE, null), 8);
         }
     }

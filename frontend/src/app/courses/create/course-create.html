@@ -180,60 +180,43 @@
       @case (2) {
         <!-- Registration Step -->
         <div class="registration-step" [formGroup]="registrationGroup">
-          <div class="form-row form-row--align-toggle">
-            <mat-form-field class="half-width" appearance="outline">
-              <mat-label>Max Participants</mat-label>
-              <input matInput type="number" formControlName="maxParticipants" min="1" />
-              @if (registrationGroup.controls.maxParticipants.hasError('required')) {
-                <mat-error>Max participants is required</mat-error>
-              }
-            </mat-form-field>
-            <div class="half-width toggle-field">
-              <mat-slide-toggle formControlName="waitingListEnabled">
-                Enable Waiting List
-              </mat-slide-toggle>
-              <app-field-help text="When enabled, students beyond the max participant limit are placed on a waiting list and automatically promoted when a spot opens." />
-            </div>
-          </div>
-
-          <div class="partner-settings" [class.disabled]="!isPartnerCourse">
-            <h3 class="section-title">Partner Course Settings</h3>
-            @if (!isPartnerCourse) {
-              <p class="section-hint">These settings apply only to Partner courses.</p>
+          <mat-form-field appearance="outline">
+            <mat-label>Max Participants</mat-label>
+            <input matInput type="number" formControlName="maxParticipants" min="1" />
+            @if (registrationGroup.controls.maxParticipants.hasError('required')) {
+              <mat-error>Max participants is required</mat-error>
             }
+            <mat-hint>When this limit is reached, new students are placed on a waiting list.</mat-hint>
+          </mat-form-field>
 
-            <div class="form-row">
-              <div class="half-width toggle-field">
-                <mat-slide-toggle formControlName="requireRoleSelection" [disabled]="!isPartnerCourse">
-                  Require Role Selection
+          @if (isPartnerCourse) {
+            <div class="role-balancing-section">
+              <h3 class="section-title">Partner Course Settings</h3>
+
+              <div class="toggle-field">
+                <mat-slide-toggle formControlName="roleBalancingEnabled">
+                  Require Role Balancing
                 </mat-slide-toggle>
               </div>
-              <div class="half-width"></div>
-            </div>
 
-            <div class="form-row">
-              <mat-form-field class="half-width" appearance="outline">
-                <mat-label>
-                  Partner Balancing
-                  <app-field-help text="Controls how leader/follower roles are balanced in partner dance courses." />
-                </mat-label>
-                <mat-select formControlName="roleBalancingMode" [disabled]="!isPartnerCourse">
-                  @for (mode of roleBalancingModes; track mode.value) {
-                    <mat-option [value]="mode.value">{{ mode.label }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
+              @if (registrationGroup.controls.roleBalancingEnabled.value) {
+                <p class="field-hint">
+                  Ensures an even split between leaders and followers. When the imbalance exceeds the threshold, new students of the over-represented role are placed on the waiting list.
+                </p>
 
-              <mat-form-field class="half-width" appearance="outline">
-                <mat-label>
-                  Max Imbalance
-                  <app-field-help text="The maximum allowed imbalance between leaders and followers before new sign-ups are waitlisted." />
-                </mat-label>
-                <input matInput type="number" formControlName="roleBalanceThreshold"
-                       [readonly]="!isPartnerCourse" min="0" />
-              </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Max Imbalance</mat-label>
+                  <input matInput type="number" formControlName="roleBalanceThreshold" min="0" />
+                  <mat-hint>Maximum allowed difference between leaders and followers before the waiting list activates for the over-represented role.</mat-hint>
+                </mat-form-field>
+              } @else {
+                <div class="balancing-warning">
+                  <mat-icon class="warning-icon">error</mat-icon>
+                  <span class="warning-text">Without role balancing, all spots could be filled by one role — e.g., 20 followers and 0 leaders.</span>
+                </div>
+              }
             </div>
-          </div>
+          }
         </div>
       }
       @case (3) {
@@ -354,22 +337,12 @@
                 <span class="review-label">Max Participants</span>
                 <span class="review-value">{{ registrationGroup.controls.maxParticipants.value }}</span>
               </div>
-              <div class="review-field">
-                <span class="review-label">Waiting List</span>
-                <span class="review-value">{{ registrationGroup.controls.waitingListEnabled.value ? 'Enabled' : 'Disabled' }}</span>
-              </div>
               @if (isPartnerCourse) {
                 <div class="review-field">
-                  <span class="review-label">Role Selection</span>
-                  <span class="review-value">{{ registrationGroup.controls.requireRoleSelection.value ? 'Required' : 'Optional' }}</span>
+                  <span class="review-label">Role Balancing</span>
+                  <span class="review-value">{{ registrationGroup.controls.roleBalancingEnabled.value ? 'Enabled' : 'Disabled' }}</span>
                 </div>
-                @if (registrationGroup.controls.roleBalancingMode.value) {
-                  <div class="review-field">
-                    <span class="review-label">Partner Balancing</span>
-                    <span class="review-value">{{ label(roleBalancingModes, registrationGroup.controls.roleBalancingMode.value) }}</span>
-                  </div>
-                }
-                @if (registrationGroup.controls.roleBalanceThreshold.value) {
+                @if (registrationGroup.controls.roleBalancingEnabled.value && registrationGroup.controls.roleBalanceThreshold.value) {
                   <div class="review-field">
                     <span class="review-label">Max Imbalance</span>
                     <span class="review-value">{{ registrationGroup.controls.roleBalanceThreshold.value }}</span>

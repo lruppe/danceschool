@@ -22,9 +22,7 @@ export class CourseFormService {
     }),
     registration: new FormGroup({
       maxParticipants: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(1)] }),
-      waitingListEnabled: new FormControl(false, { nonNullable: true }),
-      requireRoleSelection: new FormControl(false, { nonNullable: true }),
-      roleBalancingMode: new FormControl('', { nonNullable: true }),
+      roleBalancingEnabled: new FormControl(false, { nonNullable: true }),
       roleBalanceThreshold: new FormControl<number | null>(null),
     }),
     pricing: new FormGroup({
@@ -76,9 +74,7 @@ export class CourseFormService {
       },
       registration: {
         maxParticipants: data['maxParticipants'] as number,
-        waitingListEnabled: data['waitingListEnabled'] as boolean,
-        requireRoleSelection: data['requireRoleSelection'] as boolean,
-        roleBalancingMode: (data['roleBalancingMode'] as string) ?? '',
+        roleBalancingEnabled: data['roleBalancingEnabled'] as boolean,
         roleBalanceThreshold: data['roleBalanceThreshold'] as number | null,
       },
       pricing: {
@@ -98,7 +94,7 @@ export class CourseFormService {
       ...v.details,
       ...v.schedule,
       ...v.registration,
-      roleBalancingMode: v.registration.roleBalancingMode || null,
+      roleBalanceThreshold: v.registration.roleBalancingEnabled ? v.registration.roleBalanceThreshold : null,
       priceModel: v.pricing.priceModel,
       price: v.pricing.price,
       status: v.pricing.status,
