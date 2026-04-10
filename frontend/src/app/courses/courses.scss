@@ -75,6 +75,12 @@
   max-width: var(--ds-max-width-narrow);
 }
 
+// Actions column
+.mat-column-actions {
+  width: var(--ds-spacing-12);
+  text-align: center;
+}
+
 // Loading / error states
 .loading {
   display: flex;
