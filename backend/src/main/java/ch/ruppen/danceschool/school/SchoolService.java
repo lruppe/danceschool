@@ -4,6 +4,7 @@ import ch.ruppen.danceschool.schoolmember.MemberRole;
 import ch.ruppen.danceschool.schoolmember.SchoolMember;
 import ch.ruppen.danceschool.schoolmember.SchoolMemberService;
 import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
+import ch.ruppen.danceschool.shared.logging.BusinessOperation;
 import ch.ruppen.danceschool.shared.storage.ImageStorageService;
 import ch.ruppen.danceschool.user.AppUser;
 import ch.ruppen.danceschool.user.UserService;
@@ -29,6 +30,7 @@ public class SchoolService {
     private final UserService userService;
 
     @Transactional
+    @BusinessOperation(event = "SchoolCreated")
     public SchoolDetailDto createSchool(SchoolUpdateDto dto, Long userId) {
         AppUser user = userService.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
@@ -54,6 +56,7 @@ public class SchoolService {
         return toDetailDto(findSchoolByMember(userId));
     }
 
+    @BusinessOperation(event = "SchoolUpdated")
     public SchoolDetailDto updateSchool(Long userId, SchoolUpdateDto dto) {
         School school = findSchoolByMember(userId);
         deleteReplacedImages(school, dto);
