@@ -12,9 +12,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CourseFormService } from './course-form.service';
 import { CourseService } from '../course.service';
+import { deriveDayOfWeek, deriveEndDate } from './schedule-utils';
 import {
   DANCE_STYLES, COURSE_LEVELS, COURSE_TYPES, RECURRENCE_TYPES,
   ROLE_BALANCING_MODES, PRICE_MODELS, COURSE_STATUSES,
+  RecurrenceType,
 } from '../../shared/course-constants';
 import { FieldHelpComponent } from '../../shared/field-help/field-help';
 
@@ -67,7 +69,6 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
   protected roleBalancingModes = ROLE_BALANCING_MODES;
   protected priceModels = PRICE_MODELS;
   protected courseStatuses = COURSE_STATUSES.filter(s => s.value === 'DRAFT' || s.value === 'ACTIVE');
-  private static readonly DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   protected get detailsGroup() {
     return this.formService.form.controls.details;
@@ -94,21 +95,15 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
   }
 
   protected get derivedDayOfWeek(): string {
-    const startDate = this.scheduleGroup.controls.startDate.value;
-    if (!startDate) return '';
-    const date = new Date(startDate + 'T00:00:00');
-    return CourseCreateComponent.DAY_NAMES[date.getDay()];
+    return deriveDayOfWeek(this.scheduleGroup.controls.startDate.value);
   }
 
   protected get derivedEndDate(): string {
-    const startDate = this.scheduleGroup.controls.startDate.value;
-    const sessions = this.scheduleGroup.controls.numberOfSessions.value;
-    const recurrence = this.scheduleGroup.controls.recurrenceType.value;
-    if (!startDate || !sessions || sessions < 1) return '';
-    const date = new Date(startDate + 'T00:00:00');
-    const intervalWeeks = recurrence === 'WEEKLY' ? 1 : 1;
-    date.setDate(date.getDate() + (sessions - 1) * 7 * intervalWeeks);
-    return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    return deriveEndDate(
+      this.scheduleGroup.controls.startDate.value,
+      this.scheduleGroup.controls.numberOfSessions.value,
+      this.scheduleGroup.controls.recurrenceType.value as RecurrenceType,
+    );
   }
 
   ngOnInit(): void {
