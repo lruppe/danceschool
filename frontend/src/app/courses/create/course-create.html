@@ -119,25 +119,31 @@
 
           <div class="form-row">
             <mat-form-field class="half-width" appearance="outline">
-              <mat-label>Day of Week</mat-label>
-              <mat-select formControlName="dayOfWeek">
-                @for (day of daysOfWeek; track day.value) {
-                  <mat-option [value]="day.value">{{ day.label }}</mat-option>
-                }
-              </mat-select>
-              @if (scheduleGroup.controls.dayOfWeek.hasError('required')) {
-                <mat-error>Day of week is required</mat-error>
-              }
-            </mat-form-field>
-
-            <mat-form-field class="half-width" appearance="outline">
               <mat-label>Number of Sessions</mat-label>
               <input matInput type="number" formControlName="numberOfSessions" min="1" />
               @if (scheduleGroup.controls.numberOfSessions.hasError('required')) {
                 <mat-error>Number of sessions is required</mat-error>
               }
             </mat-form-field>
+            <div class="half-width"></div>
           </div>
+
+          @if (derivedDayOfWeek || derivedEndDate) {
+            <div class="derived-fields">
+              @if (derivedDayOfWeek) {
+                <div class="derived-field">
+                  <span class="derived-label">Day of Week</span>
+                  <span class="derived-value">{{ derivedDayOfWeek }}</span>
+                </div>
+              }
+              @if (derivedEndDate) {
+                <div class="derived-field">
+                  <span class="derived-label">End Date</span>
+                  <span class="derived-value">{{ derivedEndDate }}</span>
+                </div>
+              }
+            </div>
+          }
 
           <div class="form-row">
             <mat-form-field class="half-width" appearance="outline">
@@ -299,12 +305,18 @@
               </div>
               <div class="review-field">
                 <span class="review-label">Day of Week</span>
-                <span class="review-value">{{ label(daysOfWeek, scheduleGroup.controls.dayOfWeek.value) }}</span>
+                <span class="review-value">{{ derivedDayOfWeek }}</span>
               </div>
               <div class="review-field">
                 <span class="review-label">Sessions</span>
                 <span class="review-value">{{ scheduleGroup.controls.numberOfSessions.value }}</span>
               </div>
+              @if (derivedEndDate) {
+                <div class="review-field">
+                  <span class="review-label">End Date</span>
+                  <span class="review-value">{{ derivedEndDate }}</span>
+                </div>
+              }
               <div class="review-field">
                 <span class="review-label">Time</span>
                 <span class="review-value">{{ scheduleGroup.controls.startTime.value }} – {{ scheduleGroup.controls.endTime.value }}</span>

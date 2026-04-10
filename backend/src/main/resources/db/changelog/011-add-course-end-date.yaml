@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 011-add-course-end-date
+      author: claude
+      changes:
+        - addColumn:
+            tableName: course
+            columns:
+              - column:
+                  name: end_date
+                  type: DATE

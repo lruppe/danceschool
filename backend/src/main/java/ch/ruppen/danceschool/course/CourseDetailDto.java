@@ -16,6 +16,7 @@ public record CourseDetailDto(
         RecurrenceType recurrenceType,
         DayOfWeek dayOfWeek,
         int numberOfSessions,
+        LocalDate endDate,
         LocalTime startTime,
         LocalTime endTime,
         String location,

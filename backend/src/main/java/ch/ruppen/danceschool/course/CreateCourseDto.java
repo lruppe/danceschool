@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -19,7 +18,6 @@ public record CreateCourseDto(
         @Size(max = 4000) String description,
         @NotNull LocalDate startDate,
         @NotNull RecurrenceType recurrenceType,
-        @NotNull DayOfWeek dayOfWeek,
         @Min(1) int numberOfSessions,
         @NotNull LocalTime startTime,
         @NotNull LocalTime endTime,

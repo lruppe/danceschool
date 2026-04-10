@@ -72,7 +72,6 @@ class CourseCrudIntegrationTest {
                   "description": "Learn the basics of Salsa",
                   "startDate": "%s",
                   "recurrenceType": "WEEKLY",
-                  "dayOfWeek": "MONDAY",
                   "numberOfSessions": 8,
                   "startTime": "19:00",
                   "endTime": "20:00",
@@ -186,8 +185,9 @@ class CourseCrudIntegrationTest {
                     .andExpect(jsonPath("$.courseType").value("PARTNER"))
                     .andExpect(jsonPath("$.startDate").exists())
                     .andExpect(jsonPath("$.recurrenceType").value("WEEKLY"))
-                    .andExpect(jsonPath("$.dayOfWeek").value("WEDNESDAY"))
+                    .andExpect(jsonPath("$.dayOfWeek").exists())
                     .andExpect(jsonPath("$.numberOfSessions").value(10))
+                    .andExpect(jsonPath("$.endDate").exists())
                     .andExpect(jsonPath("$.startTime").value("20:00:00"))
                     .andExpect(jsonPath("$.endTime").value("21:15:00"))
                     .andExpect(jsonPath("$.location").value("Studio A"))
@@ -376,16 +376,18 @@ class CourseCrudIntegrationTest {
     }
 
     private Course createCourse(School school, String title) {
+        LocalDate startDate = LocalDate.now().plusDays(30);
         Course course = new Course();
         course.setSchool(school);
         course.setTitle(title);
         course.setDanceStyle(DanceStyle.BACHATA);
         course.setLevel(CourseLevel.ADVANCED);
         course.setCourseType(CourseType.PARTNER);
-        course.setStartDate(LocalDate.now().plusDays(30));
+        course.setStartDate(startDate);
         course.setRecurrenceType(RecurrenceType.WEEKLY);
-        course.setDayOfWeek(DayOfWeek.WEDNESDAY);
+        course.setDayOfWeek(startDate.getDayOfWeek());
         course.setNumberOfSessions(10);
+        course.setEndDate(startDate.plusWeeks(9));
         course.setStartTime(LocalTime.of(20, 0));
         course.setEndTime(LocalTime.of(21, 15));
         course.setLocation("Studio A");

@@ -14,7 +14,6 @@ export class CourseFormService {
     schedule: new FormGroup({
       startDate: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
       recurrenceType: new FormControl('WEEKLY', { nonNullable: true, validators: [Validators.required] }),
-      dayOfWeek: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
       numberOfSessions: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(1)] }),
       startTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
       endTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -69,7 +68,6 @@ export class CourseFormService {
       schedule: {
         startDate: data['startDate'] as string,
         recurrenceType: data['recurrenceType'] as string,
-        dayOfWeek: data['dayOfWeek'] as string,
         numberOfSessions: data['numberOfSessions'] as number,
         startTime: data['startTime'] as string,
         endTime: data['endTime'] as string,
