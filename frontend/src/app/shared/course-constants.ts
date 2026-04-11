@@ -42,3 +42,7 @@ export const PRICE_MODELS: { value: PriceModel; label: string }[] = [
   { value: 'FIXED_COURSE', label: 'Fixed Course' },
 ];
 
+export function labelOf(items: { value: string; label: string }[], value: string): string {
+  return items.find(i => i.value === value)?.label ?? value;
+}
+

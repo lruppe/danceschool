@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CourseListItem, CourseService } from './course.service';
+import { formatDayShort, formatTime as stripSeconds } from './shared/format-utils';
 import { DANCE_STYLES, COURSE_LEVELS } from '../shared/course-constants';
 
 interface CourseFilter {
@@ -128,15 +129,11 @@ export class CoursesComponent implements OnInit {
   }
 
   protected formatDay(dayOfWeek: string): string {
-    const days: Record<string, string> = {
-      MONDAY: 'Mon', TUESDAY: 'Tue', WEDNESDAY: 'Wed',
-      THURSDAY: 'Thu', FRIDAY: 'Fri', SATURDAY: 'Sat', SUNDAY: 'Sun',
-    };
-    return days[dayOfWeek] ?? dayOfWeek;
+    return formatDayShort(dayOfWeek);
   }
 
   protected formatTime(time: string): string {
-    return time.substring(0, 5);
+    return stripSeconds(time);
   }
 
   protected sessionDuration(startTime: string, endTime: string): number {

@@ -20,6 +20,32 @@ export interface CourseListItem {
   status: CourseStatus;
 }
 
+export interface CourseDetail {
+  id: number;
+  title: string;
+  danceStyle: DanceStyle;
+  level: CourseLevel;
+  courseType: string;
+  description: string | null;
+  startDate: string;
+  dayOfWeek: string;
+  recurrenceType: string;
+  numberOfSessions: number;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  teachers: string | null;
+  maxParticipants: number;
+  roleBalancingEnabled: boolean;
+  roleBalanceThreshold: number | null;
+  priceModel: string;
+  price: number;
+  status: CourseStatus;
+  publishDate: string | null;
+  enrolledStudents: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CourseService {
   private http = inject(HttpClient);
@@ -28,8 +54,8 @@ export class CourseService {
     return this.http.get<CourseListItem[]>(`${environment.apiUrl}/api/courses/me`);
   }
 
-  getCourse(id: number): Observable<Record<string, unknown>> {
-    return this.http.get<Record<string, unknown>>(`${environment.apiUrl}/api/courses/${id}`);
+  getCourse(id: number): Observable<CourseDetail> {
+    return this.http.get<CourseDetail>(`${environment.apiUrl}/api/courses/${id}`);
   }
 
   createCourse(dto: Record<string, unknown>): Observable<{ id: number }> {

@@ -14,6 +14,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CourseFormService } from './course-form.service';
 import { extractErrorMessage } from '../../shared/error-utils';
 import { CourseService } from '../course.service';
+import { CourseSummaryComponent, CourseSummaryData } from '../shared/course-summary';
 import { deriveDayOfWeek, deriveEndDate } from './schedule-utils';
 import {
   DANCE_STYLES, COURSE_LEVELS, COURSE_TYPES, RECURRENCE_TYPES,
@@ -31,6 +32,7 @@ interface StepDef {
     ReactiveFormsModule, RouterLink,
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatButtonModule, MatIconModule, MatSlideToggleModule, MatTooltipModule,
+    CourseSummaryComponent,
   ],
   providers: [CourseFormService],
   templateUrl: './course-create.html',
@@ -93,6 +95,31 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
     return this.pricingGroup.controls.status.value === 'DRAFT';
   }
 
+  protected get reviewData(): CourseSummaryData {
+    return {
+      title: this.detailsGroup.controls.title.value,
+      danceStyle: this.detailsGroup.controls.danceStyle.value,
+      level: this.detailsGroup.controls.level.value,
+      courseType: this.detailsGroup.controls.courseType.value,
+      description: this.detailsGroup.controls.description.value || null,
+      startDate: this.scheduleGroup.controls.startDate.value,
+      dayOfWeek: this.derivedDayOfWeek,
+      recurrenceType: this.scheduleGroup.controls.recurrenceType.value,
+      numberOfSessions: this.scheduleGroup.controls.numberOfSessions.value ?? 0,
+      endDate: this.derivedEndDate || null,
+      startTime: this.scheduleGroup.controls.startTime.value,
+      endTime: this.scheduleGroup.controls.endTime.value,
+      location: this.scheduleGroup.controls.location.value,
+      teachers: this.scheduleGroup.controls.teachers.value || null,
+      maxParticipants: this.registrationGroup.controls.maxParticipants.value ?? 0,
+      roleBalancingEnabled: this.registrationGroup.controls.roleBalancingEnabled.value,
+      roleBalanceThreshold: this.registrationGroup.controls.roleBalanceThreshold.value,
+      priceModel: this.pricingGroup.controls.priceModel.value,
+      price: this.pricingGroup.controls.price.value ?? 0,
+      isPartnerCourse: this.isPartnerCourse,
+    };
+  }
+
   protected get derivedDayOfWeek(): string {
     return deriveDayOfWeek(this.scheduleGroup.controls.startDate.value);
   }
@@ -113,8 +140,10 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
       this.formService.clearFutureDateValidator();
       this.courseService.getCourse(+id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (data) => {
-          this.formService.populate(data);
-          this.currentStep.set(4); // Start on Review step
+          this.formService.populate(data as unknown as Record<string, unknown>);
+          const stepParam = this.route.snapshot.queryParamMap.get('step');
+          const step = stepParam !== null ? +stepParam : 4;
+          this.currentStep.set(step >= 0 && step < this.steps.length ? step : 4);
           this.loading.set(false);
         },
         error: (err: HttpErrorResponse) => {
@@ -147,7 +176,7 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
     const errorMsg = id ? 'Failed to update course' : 'Failed to create course';
     const onSuccess = () => {
       this.snackBar.open(successMsg, 'Close', { duration: 3000, panelClass: 'snackbar-success' });
-      this.router.navigate(['/app/courses']);
+      this.router.navigate(id ? ['/app/courses', id] : ['/app/courses']);
     };
     const onError = (err: HttpErrorResponse) => {
       this.saving.set(false);

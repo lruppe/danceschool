@@ -1,0 +1,25 @@
+@if (!loading()) {
+  @let c = course();
+  @if (c && summaryData) {
+    <!-- Header -->
+    <div class="overview-header">
+      <a class="back-link" routerLink="/app/courses">← Back to Courses</a>
+      <div class="title-row">
+        <h1 class="overview-title">{{ c.title }}</h1>
+        <span class="ds-chip" [ngClass]="statusChipClass(c.status)">
+          {{ c.status | titlecase }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+      <h2 class="content-card-title">Course Summary</h2>
+      <app-course-summary [data]="summaryData" (edit)="onEdit($event)" />
+    </div>
+  }
+} @else {
+  <div class="loading">
+    <p>Loading course...</p>
+  </div>
+}

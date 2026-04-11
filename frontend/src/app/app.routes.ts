@@ -37,6 +37,10 @@ export const routes: Routes = [
         loadComponent: () => import('./courses/create/course-create').then(m => m.CourseCreateComponent),
         canDeactivate: [unsavedChangesGuard],
       },
+      {
+        path: 'courses/:id',
+        loadComponent: () => import('./courses/overview/course-overview').then(m => m.CourseOverviewComponent),
+      },
       { path: 'courses', loadComponent: () => import('./courses/courses').then(m => m.CoursesComponent) },
       { path: 'payments', loadComponent: () => import('./payments/payments').then(m => m.PaymentsComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
