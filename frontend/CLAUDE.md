@@ -26,7 +26,7 @@ Use MCP tools for the develop → verify loop:
 ### Playwright MCP tips
 - Use `browser_snapshot` over `browser_take_screenshot` when you need to interact with elements (click, fill, etc.)
 - Use `browser_take_screenshot` to visually verify layout and styling
-- Use sidebar links to navigate between pages (direct URL navigation can lose the session)
+- **Never use `browser_navigate` / `page.goto()` after the initial login** — direct URL navigation reloads the page and loses the Angular auth session. Always navigate via sidebar links and in-app buttons instead. The only `browser_navigate` call should be to the login page.
 
 ## Architecture
 
