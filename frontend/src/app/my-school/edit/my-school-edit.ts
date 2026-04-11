@@ -9,8 +9,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgOptimizedImage } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { GalleryImage, SchoolDetail, SchoolService, SchoolUpdateRequest } from '../school.service';
 import { AuthService } from '../../shared/auth/auth.service';
+import { extractErrorMessage } from '../../shared/error-utils';
 
 @Component({
   selector: 'app-my-school-edit',
@@ -84,9 +86,9 @@ export class MySchoolEditComponent implements OnInit {
         this.patchForm(school);
         this.loading.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        this.snackBar.open('Could not load school data', 'Dismiss', { duration: 5000 });
+        this.snackBar.open(extractErrorMessage(err, 'Could not load school data'), 'Dismiss', { duration: 5000, panelClass: 'snackbar-error' });
       },
     });
   }
@@ -99,7 +101,7 @@ export class MySchoolEditComponent implements OnInit {
 
     const invalidVideos = this.youtubeVideos().some(url => url.trim() && !this.isValidYoutubeUrl(url));
     if (invalidVideos) {
-      this.snackBar.open('Please enter valid YouTube URLs', 'Dismiss', { duration: 5000 });
+      this.snackBar.open('Please enter valid YouTube URLs', 'Dismiss', { duration: 5000, panelClass: 'snackbar-error' });
       return;
     }
 
@@ -121,12 +123,12 @@ export class MySchoolEditComponent implements OnInit {
         }
         this.router.navigate(['/app/my-school']);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.saving.set(false);
         if (err.status === 400 && err.error?.fieldErrors) {
           this.applyServerErrors(err.error.fieldErrors);
         } else {
-          this.snackBar.open('Failed to save changes. Please try again.', 'Dismiss', { duration: 5000 });
+          this.snackBar.open(extractErrorMessage(err, 'Failed to save changes. Please try again.'), 'Dismiss', { duration: 5000, panelClass: 'snackbar-error' });
         }
       },
     });
@@ -199,8 +201,8 @@ export class MySchoolEditComponent implements OnInit {
         this.imagesDirty.set(true);
         uploading.set(false);
       },
-      error: () => {
-        this.snackBar.open(errorMsg, 'Dismiss', { duration: 5000 });
+      error: (err: HttpErrorResponse) => {
+        this.snackBar.open(extractErrorMessage(err, errorMsg), 'Dismiss', { duration: 5000, panelClass: 'snackbar-error' });
         uploading.set(false);
       },
     });

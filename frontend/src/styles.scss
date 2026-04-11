@@ -44,3 +44,22 @@ body {
 .field-help-tooltip .mdc-tooltip__surface {
   max-width: 280px;
 }
+
+// ── Snackbar variants ──
+.snackbar-error .mdc-snackbar__surface {
+  background: var(--ds-color-error) !important;
+  color: var(--ds-color-on-error) !important;
+}
+
+.snackbar-error .mdc-snackbar__surface .mat-mdc-button {
+  color: var(--ds-color-on-error) !important;
+}
+
+.snackbar-success .mdc-snackbar__surface {
+  background: var(--ds-color-success) !important;
+  color: var(--ds-color-on-success) !important;
+}
+
+.snackbar-success .mdc-snackbar__surface .mat-mdc-button {
+  color: var(--ds-color-on-success) !important;
+}

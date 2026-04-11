@@ -10,7 +10,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CourseFormService } from './course-form.service';
+import { extractErrorMessage } from '../../shared/error-utils';
 import { CourseService } from '../course.service';
 import { deriveDayOfWeek, deriveEndDate } from './schedule-utils';
 import {
@@ -114,8 +116,8 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
           this.currentStep.set(4); // Start on Review step
           this.loading.set(false);
         },
-        error: () => {
-          this.snackBar.open('Failed to load course', 'Close', { duration: 3000 });
+        error: (err: HttpErrorResponse) => {
+          this.snackBar.open(extractErrorMessage(err, 'Failed to load course'), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
           this.router.navigate(['/app/courses']);
         },
       });
@@ -143,12 +145,12 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
     const successMsg = id ? 'Course updated successfully' : 'Course created successfully';
     const errorMsg = id ? 'Failed to update course' : 'Failed to create course';
     const onSuccess = () => {
-      this.snackBar.open(successMsg, 'Close', { duration: 3000 });
+      this.snackBar.open(successMsg, 'Close', { duration: 3000, panelClass: 'snackbar-success' });
       this.router.navigate(['/app/courses']);
     };
-    const onError = () => {
+    const onError = (err: HttpErrorResponse) => {
       this.saving.set(false);
-      this.snackBar.open(errorMsg, 'Close', { duration: 3000 });
+      this.snackBar.open(extractErrorMessage(err, errorMsg), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
     };
     if (id) {
       this.courseService.updateCourse(id, dto).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: onSuccess, error: onError });
