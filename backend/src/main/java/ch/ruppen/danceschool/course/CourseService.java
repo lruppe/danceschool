@@ -192,7 +192,6 @@ public class CourseService {
         course.setRoleBalanceThreshold(dto.roleBalanceThreshold());
         course.setPriceModel(dto.priceModel());
         course.setPrice(dto.price());
-        // status and publishDate from DTO are ignored — publishedAt is managed via publish endpoint
     }
 
     private LocalDate calculateEndDate(LocalDate startDate, RecurrenceType recurrenceType, int numberOfSessions) {

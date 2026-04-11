@@ -75,7 +75,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     today.minusWeeks(1), RecurrenceType.WEEKLY,
                     6, LocalTime.of(19, 30), LocalTime.of(20, 45),
                     "Studio A", "Maria", 12, false, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("166.50"), null, null), 8, today.minusWeeks(2));
+                    PriceModel.FIXED_COURSE, new BigDecimal("166.50")), 8, today.minusWeeks(2));
 
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
                     "Bachata Intermediate", DanceStyle.BACHATA, CourseLevel.INTERMEDIATE,
@@ -83,7 +83,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     today.minusWeeks(2), RecurrenceType.WEEKLY,
                     8, LocalTime.of(19, 0), LocalTime.of(20, 0),
                     "Studio B", "Carlos", 15, true, 3,
-                    PriceModel.FIXED_COURSE, new BigDecimal("220.00"), null, null), 12, today.minusWeeks(3));
+                    PriceModel.FIXED_COURSE, new BigDecimal("220.00")), 12, today.minusWeeks(3));
 
             // --- OPEN courses (published, start in the future) ---
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
@@ -92,7 +92,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     today.plusWeeks(4), RecurrenceType.WEEKLY,
                     10, LocalTime.of(20, 0), LocalTime.of(21, 15),
                     "Studio A", "Maria, Carlos", 10, true, 2,
-                    PriceModel.FIXED_COURSE, new BigDecimal("310.00"), null, null), 7, today.minusDays(5));
+                    PriceModel.FIXED_COURSE, new BigDecimal("310.00")), 7, today.minusDays(5));
 
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
                     "Bachata Beginners", DanceStyle.BACHATA, CourseLevel.BEGINNER,
@@ -100,7 +100,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     today.plusWeeks(5), RecurrenceType.WEEKLY,
                     6, LocalTime.of(18, 30), LocalTime.of(19, 45),
                     "Studio B", "Carlos", 16, true, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("166.50"), null, null), 5, today.minusDays(3));
+                    PriceModel.FIXED_COURSE, new BigDecimal("166.50")), 5, today.minusDays(3));
 
             // --- DRAFT courses (not published) ---
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
@@ -109,7 +109,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     today.plusWeeks(8), RecurrenceType.WEEKLY,
                     8, LocalTime.of(19, 0), LocalTime.of(20, 0),
                     "Studio A", "Maria", 20, false, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("220.00"), null, null), 0, null);
+                    PriceModel.FIXED_COURSE, new BigDecimal("220.00")), 0, null);
 
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
                     "Bachata Sensual", DanceStyle.BACHATA, CourseLevel.ADVANCED,
@@ -117,7 +117,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     today.plusWeeks(10), RecurrenceType.WEEKLY,
                     6, LocalTime.of(14, 0), LocalTime.of(15, 30),
                     "Studio B", "Carlos, Ana", 12, true, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("310.00"), null, null), 0, null);
+                    PriceModel.FIXED_COURSE, new BigDecimal("310.00")), 0, null);
 
             // --- FINISHED course (end date in the past) ---
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
@@ -126,7 +126,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     today.minusWeeks(12), RecurrenceType.WEEKLY,
                     8, LocalTime.of(20, 0), LocalTime.of(21, 0),
                     "Studio A", "Luis", 14, true, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("180.00"), null, null), 11, today.minusWeeks(14));
+                    PriceModel.FIXED_COURSE, new BigDecimal("180.00")), 11, today.minusWeeks(14));
         }
 
         if (!courseService.hasCoursesForMember(owner2.getId())) {
@@ -136,7 +136,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     today.minusWeeks(1), RecurrenceType.WEEKLY,
                     8, LocalTime.of(18, 0), LocalTime.of(19, 0),
                     "Main Hall", "Ana", 20, true, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("180.00"), null, null), 5, today.minusWeeks(2));
+                    PriceModel.FIXED_COURSE, new BigDecimal("180.00")), 5, today.minusWeeks(2));
 
             courseService.seedCourse(owner2.getId(), new CreateCourseDto(
                     "Bachata Sensual", DanceStyle.BACHATA, CourseLevel.ADVANCED,
@@ -144,7 +144,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     today.plusWeeks(3), RecurrenceType.WEEKLY,
                     6, LocalTime.of(14, 0), LocalTime.of(15, 30),
                     "Main Hall", "Ana, Luis", 12, true, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("200.00"), null, null), 8, today.minusDays(2));
+                    PriceModel.FIXED_COURSE, new BigDecimal("200.00")), 8, today.minusDays(2));
         }
     }
 }
