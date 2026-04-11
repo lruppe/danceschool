@@ -124,16 +124,18 @@ class CourseTenantIsolationTest {
     }
 
     private void createCourse(School school, String title) {
+        LocalDate startDate = LocalDate.of(2026, 4, 7);
         Course course = new Course();
         course.setSchool(school);
         course.setTitle(title);
         course.setDanceStyle(DanceStyle.SALSA);
         course.setLevel(CourseLevel.BEGINNER);
         course.setCourseType(CourseType.PARTNER);
-        course.setStartDate(LocalDate.of(2026, 4, 7));
+        course.setStartDate(startDate);
         course.setRecurrenceType(RecurrenceType.WEEKLY);
         course.setDayOfWeek(DayOfWeek.MONDAY);
         course.setNumberOfSessions(8);
+        course.setEndDate(startDate.plusWeeks(7));
         course.setStartTime(LocalTime.of(19, 0));
         course.setEndTime(LocalTime.of(20, 0));
         course.setLocation("Studio A");

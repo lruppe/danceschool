@@ -2,6 +2,7 @@ package ch.ruppen.danceschool.course;
 
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 public record CourseListDto(
@@ -13,6 +14,7 @@ public record CourseListDto(
         LocalTime startTime,
         LocalTime endTime,
         int numberOfSessions,
+        LocalDate endDate,
         int enrolledStudents,
         int maxParticipants,
         BigDecimal price,

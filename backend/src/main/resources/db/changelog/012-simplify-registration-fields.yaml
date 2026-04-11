@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-simplify-registration-fields
+      author: claude
+      changes:
+        - dropColumn:
+            tableName: course
+            columnName: waiting_list_enabled
+        - dropColumn:
+            tableName: course
+            columnName: require_role_selection
+        - dropColumn:
+            tableName: course
+            columnName: role_balancing_mode
+        - addColumn:
+            tableName: course
+            columns:
+              - column:
+                  name: role_balancing_enabled
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
