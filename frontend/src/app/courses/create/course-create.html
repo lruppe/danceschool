@@ -119,25 +119,31 @@
 
           <div class="form-row">
             <mat-form-field class="half-width" appearance="outline">
-              <mat-label>Day of Week</mat-label>
-              <mat-select formControlName="dayOfWeek">
-                @for (day of daysOfWeek; track day.value) {
-                  <mat-option [value]="day.value">{{ day.label }}</mat-option>
-                }
-              </mat-select>
-              @if (scheduleGroup.controls.dayOfWeek.hasError('required')) {
-                <mat-error>Day of week is required</mat-error>
-              }
-            </mat-form-field>
-
-            <mat-form-field class="half-width" appearance="outline">
               <mat-label>Number of Sessions</mat-label>
               <input matInput type="number" formControlName="numberOfSessions" min="1" />
               @if (scheduleGroup.controls.numberOfSessions.hasError('required')) {
                 <mat-error>Number of sessions is required</mat-error>
               }
             </mat-form-field>
+            <div class="half-width"></div>
           </div>
+
+          @if (derivedDayOfWeek || derivedEndDate) {
+            <div class="derived-fields">
+              @if (derivedDayOfWeek) {
+                <div class="derived-field">
+                  <span class="derived-label">Day of Week</span>
+                  <span class="derived-value">{{ derivedDayOfWeek }}</span>
+                </div>
+              }
+              @if (derivedEndDate) {
+                <div class="derived-field">
+                  <span class="derived-label">End Date</span>
+                  <span class="derived-value">{{ derivedEndDate }}</span>
+                </div>
+              }
+            </div>
+          }
 
           <div class="form-row">
             <mat-form-field class="half-width" appearance="outline">
@@ -174,51 +180,43 @@
       @case (2) {
         <!-- Registration Step -->
         <div class="registration-step" [formGroup]="registrationGroup">
-          <div class="form-row">
-            <mat-form-field class="half-width" appearance="outline">
-              <mat-label>Max Participants</mat-label>
-              <input matInput type="number" formControlName="maxParticipants" min="1" />
-              @if (registrationGroup.controls.maxParticipants.hasError('required')) {
-                <mat-error>Max participants is required</mat-error>
-              }
-            </mat-form-field>
-            <div class="half-width toggle-field">
-              <mat-slide-toggle formControlName="waitingListEnabled">Enable Waiting List</mat-slide-toggle>
-            </div>
-          </div>
-
-          <div class="partner-settings" [class.disabled]="!isPartnerCourse">
-            <h3 class="section-title">Partner Course Settings</h3>
-            @if (!isPartnerCourse) {
-              <p class="section-hint">These settings apply only to Partner courses.</p>
+          <mat-form-field appearance="outline">
+            <mat-label>Max Participants</mat-label>
+            <input matInput type="number" formControlName="maxParticipants" min="1" />
+            @if (registrationGroup.controls.maxParticipants.hasError('required')) {
+              <mat-error>Max participants is required</mat-error>
             }
+            <mat-hint>When this limit is reached, new students are placed on a waiting list.</mat-hint>
+          </mat-form-field>
 
-            <div class="form-row">
-              <div class="half-width toggle-field">
-                <mat-slide-toggle formControlName="requireRoleSelection" [disabled]="!isPartnerCourse">
-                  Require Role Selection
+          @if (isPartnerCourse) {
+            <div class="role-balancing-section">
+              <h3 class="section-title">Partner Course Settings</h3>
+
+              <div class="toggle-field">
+                <mat-slide-toggle formControlName="roleBalancingEnabled">
+                  Require Role Balancing
                 </mat-slide-toggle>
               </div>
-              <div class="half-width"></div>
-            </div>
 
-            <div class="form-row">
-              <mat-form-field class="half-width" appearance="outline">
-                <mat-label>Role Balancing Mode</mat-label>
-                <mat-select formControlName="roleBalancingMode" [disabled]="!isPartnerCourse">
-                  @for (mode of roleBalancingModes; track mode.value) {
-                    <mat-option [value]="mode.value">{{ mode.label }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
+              @if (registrationGroup.controls.roleBalancingEnabled.value) {
+                <p class="field-hint">
+                  Ensures an even split between leaders and followers. When the imbalance exceeds the threshold, new students of the over-represented role are placed on the waiting list.
+                </p>
 
-              <mat-form-field class="half-width" appearance="outline">
-                <mat-label>Role Balance Threshold</mat-label>
-                <input matInput type="number" formControlName="roleBalanceThreshold"
-                       [readonly]="!isPartnerCourse" min="0" />
-              </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Max Imbalance</mat-label>
+                  <input matInput type="number" formControlName="roleBalanceThreshold" min="0" />
+                  <mat-hint>Maximum allowed difference between leaders and followers before the waiting list activates for the over-represented role.</mat-hint>
+                </mat-form-field>
+              } @else {
+                <div class="balancing-warning">
+                  <mat-icon class="warning-icon">error</mat-icon>
+                  <span class="warning-text">Without role balancing, all spots could be filled by one role — e.g., 20 followers and 0 leaders.</span>
+                </div>
+              }
             </div>
-          </div>
+          }
         </div>
       }
       @case (3) {
@@ -256,8 +254,8 @@
               <h3 class="review-card-title">Details</h3>
               <button mat-button class="edit-link" (click)="goToStep(0)" type="button">Edit</button>
             </div>
-            <div class="review-card-content">
-              <div class="review-field">
+            <div class="review-card-content review-card-content--grid">
+              <div class="review-field review-field--full">
                 <span class="review-label">Course Title</span>
                 <span class="review-value">{{ detailsGroup.controls.title.value }}</span>
               </div>
@@ -274,7 +272,7 @@
                 <span class="review-value">{{ label(courseTypes, detailsGroup.controls.courseType.value) }}</span>
               </div>
               @if (detailsGroup.controls.description.value) {
-                <div class="review-field">
+                <div class="review-field review-field--full">
                   <span class="review-label">Description</span>
                   <span class="review-value">{{ detailsGroup.controls.description.value }}</span>
                 </div>
@@ -288,18 +286,18 @@
               <h3 class="review-card-title">Schedule</h3>
               <button mat-button class="edit-link" (click)="goToStep(1)" type="button">Edit</button>
             </div>
-            <div class="review-card-content">
+            <div class="review-card-content review-card-content--grid">
               <div class="review-field">
                 <span class="review-label">Start Date</span>
                 <span class="review-value">{{ scheduleGroup.controls.startDate.value }}</span>
               </div>
               <div class="review-field">
-                <span class="review-label">Recurrence</span>
-                <span class="review-value">{{ label(recurrenceTypes, scheduleGroup.controls.recurrenceType.value) }}</span>
+                <span class="review-label">Day of Week</span>
+                <span class="review-value">{{ derivedDayOfWeek }}</span>
               </div>
               <div class="review-field">
-                <span class="review-label">Day of Week</span>
-                <span class="review-value">{{ label(daysOfWeek, scheduleGroup.controls.dayOfWeek.value) }}</span>
+                <span class="review-label">Recurrence</span>
+                <span class="review-value">{{ label(recurrenceTypes, scheduleGroup.controls.recurrenceType.value) }}</span>
               </div>
               <div class="review-field">
                 <span class="review-label">Sessions</span>
@@ -309,12 +307,18 @@
                 <span class="review-label">Time</span>
                 <span class="review-value">{{ scheduleGroup.controls.startTime.value }} – {{ scheduleGroup.controls.endTime.value }}</span>
               </div>
-              <div class="review-field">
+              @if (derivedEndDate) {
+                <div class="review-field">
+                  <span class="review-label">End Date</span>
+                  <span class="review-value">{{ derivedEndDate }}</span>
+                </div>
+              }
+              <div class="review-field review-field--full">
                 <span class="review-label">Location</span>
                 <span class="review-value">{{ scheduleGroup.controls.location.value }}</span>
               </div>
               @if (scheduleGroup.controls.teachers.value) {
-                <div class="review-field">
+                <div class="review-field review-field--full">
                   <span class="review-label">Teachers</span>
                   <span class="review-value">{{ scheduleGroup.controls.teachers.value }}</span>
                 </div>
@@ -328,29 +332,19 @@
               <h3 class="review-card-title">Registration</h3>
               <button mat-button class="edit-link" (click)="goToStep(2)" type="button">Edit</button>
             </div>
-            <div class="review-card-content">
+            <div class="review-card-content review-card-content--grid">
               <div class="review-field">
                 <span class="review-label">Max Participants</span>
                 <span class="review-value">{{ registrationGroup.controls.maxParticipants.value }}</span>
               </div>
-              <div class="review-field">
-                <span class="review-label">Waiting List</span>
-                <span class="review-value">{{ registrationGroup.controls.waitingListEnabled.value ? 'Enabled' : 'Disabled' }}</span>
-              </div>
               @if (isPartnerCourse) {
                 <div class="review-field">
-                  <span class="review-label">Require Role Selection</span>
-                  <span class="review-value">{{ registrationGroup.controls.requireRoleSelection.value ? 'Yes' : 'No' }}</span>
+                  <span class="review-label">Role Balancing</span>
+                  <span class="review-value">{{ registrationGroup.controls.roleBalancingEnabled.value ? 'Enabled' : 'Disabled' }}</span>
                 </div>
-                @if (registrationGroup.controls.roleBalancingMode.value) {
+                @if (registrationGroup.controls.roleBalancingEnabled.value && registrationGroup.controls.roleBalanceThreshold.value) {
                   <div class="review-field">
-                    <span class="review-label">Role Balancing Mode</span>
-                    <span class="review-value">{{ label(roleBalancingModes, registrationGroup.controls.roleBalancingMode.value) }}</span>
-                  </div>
-                }
-                @if (registrationGroup.controls.roleBalanceThreshold.value) {
-                  <div class="review-field">
-                    <span class="review-label">Role Balance Threshold</span>
+                    <span class="review-label">Max Imbalance</span>
                     <span class="review-value">{{ registrationGroup.controls.roleBalanceThreshold.value }}</span>
                   </div>
                 }
@@ -364,7 +358,7 @@
               <h3 class="review-card-title">Pricing</h3>
               <button mat-button class="edit-link" (click)="goToStep(3)" type="button">Edit</button>
             </div>
-            <div class="review-card-content">
+            <div class="review-card-content review-card-content--grid">
               <div class="review-field">
                 <span class="review-label">Price Model</span>
                 <span class="review-value">{{ label(priceModels, pricingGroup.controls.priceModel.value) }}</span>
@@ -379,6 +373,7 @@
           <!-- Publishing Settings -->
           <div class="publishing-settings" [formGroup]="pricingGroup">
             <h3 class="section-title">Publishing Settings</h3>
+            <p class="section-hint">Controls whether this course is visible to students. Draft courses are only visible to you.</p>
             <div class="form-row">
               <mat-form-field class="half-width" appearance="outline">
                 <mat-label>Status</mat-label>

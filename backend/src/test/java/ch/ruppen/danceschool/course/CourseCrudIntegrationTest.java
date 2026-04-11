@@ -72,15 +72,13 @@ class CourseCrudIntegrationTest {
                   "description": "Learn the basics of Salsa",
                   "startDate": "%s",
                   "recurrenceType": "WEEKLY",
-                  "dayOfWeek": "MONDAY",
                   "numberOfSessions": 8,
                   "startTime": "19:00",
                   "endTime": "20:00",
                   "location": "Studio A",
                   "teachers": "Maria",
                   "maxParticipants": 15,
-                  "waitingListEnabled": false,
-                  "requireRoleSelection": false,
+                  "roleBalancingEnabled": false,
                   "priceModel": "FIXED_COURSE",
                   "price": 180.00,
                   "status": "DRAFT"
@@ -186,14 +184,14 @@ class CourseCrudIntegrationTest {
                     .andExpect(jsonPath("$.courseType").value("PARTNER"))
                     .andExpect(jsonPath("$.startDate").exists())
                     .andExpect(jsonPath("$.recurrenceType").value("WEEKLY"))
-                    .andExpect(jsonPath("$.dayOfWeek").value("WEDNESDAY"))
+                    .andExpect(jsonPath("$.dayOfWeek").exists())
                     .andExpect(jsonPath("$.numberOfSessions").value(10))
+                    .andExpect(jsonPath("$.endDate").exists())
                     .andExpect(jsonPath("$.startTime").value("20:00:00"))
                     .andExpect(jsonPath("$.endTime").value("21:15:00"))
                     .andExpect(jsonPath("$.location").value("Studio A"))
                     .andExpect(jsonPath("$.maxParticipants").value(12))
-                    .andExpect(jsonPath("$.waitingListEnabled").value(false))
-                    .andExpect(jsonPath("$.requireRoleSelection").value(false))
+                    .andExpect(jsonPath("$.roleBalancingEnabled").value(false))
                     .andExpect(jsonPath("$.priceModel").value("FIXED_COURSE"))
                     .andExpect(jsonPath("$.price").value(310.00))
                     .andExpect(jsonPath("$.status").value("ACTIVE"))
@@ -311,21 +309,7 @@ class CourseCrudIntegrationTest {
         }
 
         @Test
-        void rejects_whenPartnerCourseRequiresRoleButNoMode() throws Exception {
-            String json = validCourseJson()
-                    .replace("\"requireRoleSelection\": false", "\"requireRoleSelection\": true");
-
-            mockMvc.perform(post("/api/courses")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(json)
-                            .with(authentication(authToken(ownerA))))
-                    .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.detail").value(
-                            "Role balancing mode is required when role selection is enabled for partner courses"));
-        }
-
-        @Test
-        void rejects_whenThresholdSetWithoutMode() throws Exception {
+        void rejects_whenThresholdSetWithoutBalancingEnabled() throws Exception {
             String json = validCourseJson()
                     .replace("\"priceModel\"", "\"roleBalanceThreshold\": 3, \"priceModel\"");
 
@@ -335,14 +319,14 @@ class CourseCrudIntegrationTest {
                             .with(authentication(authToken(ownerA))))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.detail").value(
-                            "Role balance threshold requires a role balancing mode"));
+                            "Role balance threshold requires role balancing to be enabled"));
         }
 
         @Test
-        void accepts_validPartnerCourseWithRoleSettings() throws Exception {
+        void accepts_partnerCourseWithRoleBalancingEnabled() throws Exception {
             String json = validCourseJson()
-                    .replace("\"requireRoleSelection\": false",
-                            "\"requireRoleSelection\": true, \"roleBalancingMode\": \"WARN\", \"roleBalanceThreshold\": 3");
+                    .replace("\"roleBalancingEnabled\": false",
+                            "\"roleBalancingEnabled\": true, \"roleBalanceThreshold\": 3");
 
             mockMvc.perform(post("/api/courses")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -376,16 +360,18 @@ class CourseCrudIntegrationTest {
     }
 
     private Course createCourse(School school, String title) {
+        LocalDate startDate = LocalDate.now().plusDays(30);
         Course course = new Course();
         course.setSchool(school);
         course.setTitle(title);
         course.setDanceStyle(DanceStyle.BACHATA);
         course.setLevel(CourseLevel.ADVANCED);
         course.setCourseType(CourseType.PARTNER);
-        course.setStartDate(LocalDate.now().plusDays(30));
+        course.setStartDate(startDate);
         course.setRecurrenceType(RecurrenceType.WEEKLY);
-        course.setDayOfWeek(DayOfWeek.WEDNESDAY);
+        course.setDayOfWeek(startDate.getDayOfWeek());
         course.setNumberOfSessions(10);
+        course.setEndDate(startDate.plusWeeks(9));
         course.setStartTime(LocalTime.of(20, 0));
         course.setEndTime(LocalTime.of(21, 15));
         course.setLocation("Studio A");

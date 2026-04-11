@@ -10,6 +10,7 @@ DDD-style glossary. Canonical naming for code, APIs, and conversation.
 | **Teacher**    | A member role (future). Can manage classes but not school settings.                                  |
 | **Class**      | A dance class offered by a school (e.g., "Salsa Beginners, Monday 19:00"). Created by Owner/Teacher.|
 | **Student**    | An end user of the student-facing apps (future). Browses schools, views classes, enrolls.           |
+| **PricingPlan** | A subscription product template defined by a school. Has a lifecycle: DRAFT → ACTIVE → ARCHIVED. Students purchase plans to get access to classes. |
 | **Enrollment** | A student signing up for a class (future).                                                          |
 
 ## Bounded Contexts
