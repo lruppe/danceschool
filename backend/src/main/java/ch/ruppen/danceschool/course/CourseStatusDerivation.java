@@ -6,6 +6,32 @@ import java.time.temporal.TemporalAdjusters;
 
 /**
  * Pure functions for deriving course lifecycle status and session progress from date fields.
+ *
+ * <h2>Derived Status Model</h2>
+ * Course lifecycle status is never stored — it is computed from three fields:
+ * <ul>
+ *   <li>{@code publishedAt} (nullable) — when the owner published the course</li>
+ *   <li>{@code startDate} — first session date</li>
+ *   <li>{@code endDate} — last session date</li>
+ * </ul>
+ *
+ * <h3>Derivation rules</h3>
+ * <pre>
+ * publishedAt == null                              → DRAFT
+ * publishedAt != null  AND  today &lt; startDate      → OPEN
+ * publishedAt != null  AND  startDate &lt;= today &lt;= endDate → RUNNING
+ * today &gt; endDate                                  → FINISHED
+ * </pre>
+ *
+ * <h3>Where the rules live (important!)</h3>
+ * These same rules are duplicated in {@link CourseRepository} as JPQL queries for
+ * database-level filtering ({@code findDraftBySchoolId}, {@code findOpenBySchoolId}, etc.).
+ * If you change the derivation logic here, you <b>must</b> update the corresponding repository
+ * queries and their integration tests in {@code CourseFilterIntegrationTest}.
+ *
+ * <h3>Design rationale</h3>
+ * Time moves forward and the status follows — no manual transitions to forget, no inconsistent
+ * states. The pattern extends naturally: {@code cancelledAt}, {@code archivedAt}, etc.
  */
 public final class CourseStatusDerivation {
 
