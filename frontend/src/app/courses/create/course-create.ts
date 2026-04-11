@@ -69,7 +69,7 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
   protected courseTypes = COURSE_TYPES;
   protected recurrenceTypes = RECURRENCE_TYPES;
   protected priceModels = PRICE_MODELS;
-  protected courseStatuses = COURSE_STATUSES.filter(s => s.value === 'DRAFT' || s.value === 'ACTIVE');
+  protected courseStatuses = COURSE_STATUSES.filter(s => s.value === 'DRAFT' || s.value === 'OPEN');
 
   protected get detailsGroup() {
     return this.formService.form.controls.details;

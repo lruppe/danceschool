@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,8 +26,9 @@ public class CourseController {
     private final CourseService courseService;
 
     @GetMapping("/me")
-    public List<CourseListDto> me(@AuthenticationPrincipal AuthenticatedUser principal) {
-        return courseService.getCoursesByMember(principal.userId());
+    public List<CourseListDto> me(@AuthenticationPrincipal AuthenticatedUser principal,
+                                 @RequestParam(required = false) CourseLifecycleStatus status) {
+        return courseService.getCoursesByMember(principal.userId(), status);
     }
 
     @PostMapping

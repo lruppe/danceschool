@@ -14,10 +14,12 @@ public record CourseListDto(
         LocalTime startTime,
         LocalTime endTime,
         int numberOfSessions,
+        LocalDate startDate,
         LocalDate endDate,
         int enrolledStudents,
         int maxParticipants,
         BigDecimal price,
-        CourseStatus status
+        CourseLifecycleStatus status,
+        int completedSessions
 ) {
 }

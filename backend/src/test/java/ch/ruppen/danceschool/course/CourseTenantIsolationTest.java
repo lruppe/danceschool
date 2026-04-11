@@ -142,7 +142,7 @@ class CourseTenantIsolationTest {
         course.setMaxParticipants(15);
         course.setPriceModel(PriceModel.FIXED_COURSE);
         course.setPrice(new BigDecimal("180.00"));
-        course.setStatus(CourseStatus.ACTIVE);
+        course.setPublishedAt(LocalDate.of(2026, 3, 1));
         entityManager.persist(course);
     }
 

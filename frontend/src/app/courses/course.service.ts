@@ -13,11 +13,13 @@ export interface CourseListItem {
   startTime: string;
   endTime: string;
   numberOfSessions: number;
+  startDate: string;
   endDate: string;
   enrolledStudents: number;
   maxParticipants: number;
   price: number;
   status: CourseStatus;
+  completedSessions: number;
 }
 
 export interface CourseDetail {
@@ -42,8 +44,9 @@ export interface CourseDetail {
   priceModel: string;
   price: number;
   status: CourseStatus;
-  publishDate: string | null;
+  publishedAt: string | null;
   enrolledStudents: number;
+  completedSessions: number;
 }
 
 @Injectable({ providedIn: 'root' })

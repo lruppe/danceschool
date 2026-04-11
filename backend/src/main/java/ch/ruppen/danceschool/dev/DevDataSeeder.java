@@ -2,7 +2,6 @@ package ch.ruppen.danceschool.dev;
 
 import ch.ruppen.danceschool.course.CourseLevel;
 import ch.ruppen.danceschool.course.CourseService;
-import ch.ruppen.danceschool.course.CourseStatus;
 import ch.ruppen.danceschool.course.CourseType;
 import ch.ruppen.danceschool.course.CreateCourseDto;
 import ch.ruppen.danceschool.course.DanceStyle;
@@ -66,6 +65,8 @@ public class DevDataSeeder implements ApplicationRunner {
     }
 
     private void seedCourses(AppUser owner, AppUser owner2) {
+        LocalDate today = LocalDate.now();
+
         if (!courseService.hasCoursesForMember(owner.getId())) {
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
                     "Salsa, Merengue, Bachata Solo", DanceStyle.SALSA, CourseLevel.BEGINNER,
@@ -73,7 +74,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     LocalDate.of(2026, 4, 10), RecurrenceType.WEEKLY,
                     6, LocalTime.of(19, 30), LocalTime.of(20, 45),
                     "Studio A", "Maria", 12, false, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("166.50"), CourseStatus.ACTIVE, null), 8);
+                    PriceModel.FIXED_COURSE, new BigDecimal("166.50"), null, null), 8, today);
 
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
                     "Bachata Intermediate", DanceStyle.BACHATA, CourseLevel.INTERMEDIATE,
@@ -81,7 +82,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     LocalDate.of(2026, 4, 7), RecurrenceType.WEEKLY,
                     8, LocalTime.of(19, 0), LocalTime.of(20, 0),
                     "Studio B", "Carlos", 15, true, 3,
-                    PriceModel.FIXED_COURSE, new BigDecimal("220.00"), CourseStatus.ACTIVE, null), 12);
+                    PriceModel.FIXED_COURSE, new BigDecimal("220.00"), null, null), 12, today);
 
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
                     "Salsa Advanced", DanceStyle.SALSA, CourseLevel.ADVANCED,
@@ -89,7 +90,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     LocalDate.of(2026, 4, 8), RecurrenceType.WEEKLY,
                     10, LocalTime.of(20, 0), LocalTime.of(21, 15),
                     "Studio A", "Maria, Carlos", 10, true, 2,
-                    PriceModel.FIXED_COURSE, new BigDecimal("310.00"), CourseStatus.FULL, null), 10);
+                    PriceModel.FIXED_COURSE, new BigDecimal("310.00"), null, null), 10, today);
 
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
                     "Bachata Beginners", DanceStyle.BACHATA, CourseLevel.BEGINNER,
@@ -97,7 +98,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     LocalDate.of(2026, 4, 6), RecurrenceType.WEEKLY,
                     6, LocalTime.of(18, 30), LocalTime.of(19, 45),
                     "Studio B", "Carlos", 16, true, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("166.50"), CourseStatus.ACTIVE, null), 14);
+                    PriceModel.FIXED_COURSE, new BigDecimal("166.50"), null, null), 14, today);
         }
 
         if (!courseService.hasCoursesForMember(owner2.getId())) {
@@ -107,7 +108,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     LocalDate.of(2026, 4, 9), RecurrenceType.WEEKLY,
                     8, LocalTime.of(18, 0), LocalTime.of(19, 0),
                     "Main Hall", "Ana", 20, true, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("180.00"), CourseStatus.ACTIVE, null), 5);
+                    PriceModel.FIXED_COURSE, new BigDecimal("180.00"), null, null), 5, today);
 
             courseService.seedCourse(owner2.getId(), new CreateCourseDto(
                     "Bachata Sensual", DanceStyle.BACHATA, CourseLevel.ADVANCED,
@@ -115,7 +116,7 @@ public class DevDataSeeder implements ApplicationRunner {
                     LocalDate.of(2026, 4, 11), RecurrenceType.WEEKLY,
                     6, LocalTime.of(14, 0), LocalTime.of(15, 30),
                     "Main Hall", "Ana, Luis", 12, true, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("200.00"), CourseStatus.ACTIVE, null), 8);
+                    PriceModel.FIXED_COURSE, new BigDecimal("200.00"), null, null), 8, today);
         }
     }
 }

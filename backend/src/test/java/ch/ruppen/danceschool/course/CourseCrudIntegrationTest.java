@@ -80,8 +80,7 @@ class CourseCrudIntegrationTest {
                   "maxParticipants": 15,
                   "roleBalancingEnabled": false,
                   "priceModel": "FIXED_COURSE",
-                  "price": 180.00,
-                  "status": "DRAFT"
+                  "price": 180.00
                 }
                 """.formatted(LocalDate.now().plusDays(30));
     }
@@ -194,8 +193,9 @@ class CourseCrudIntegrationTest {
                     .andExpect(jsonPath("$.roleBalancingEnabled").value(false))
                     .andExpect(jsonPath("$.priceModel").value("FIXED_COURSE"))
                     .andExpect(jsonPath("$.price").value(310.00))
-                    .andExpect(jsonPath("$.status").value("ACTIVE"))
-                    .andExpect(jsonPath("$.enrolledStudents").value(0));
+                    .andExpect(jsonPath("$.status").value("OPEN"))
+                    .andExpect(jsonPath("$.enrolledStudents").value(0))
+                    .andExpect(jsonPath("$.completedSessions").value(0));
         }
 
         @Test
@@ -294,21 +294,6 @@ class CourseCrudIntegrationTest {
         }
 
         @Test
-        void rejects_whenPublishDateAfterStartDate() throws Exception {
-            LocalDate startDate = LocalDate.now().plusDays(30);
-            String json = validCourseJson().replace(
-                    "\"status\": \"DRAFT\"",
-                    "\"status\": \"DRAFT\", \"publishDate\": \"%s\"".formatted(startDate.plusDays(5)));
-
-            mockMvc.perform(post("/api/courses")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(json)
-                            .with(authentication(authToken(ownerA))))
-                    .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.detail").value("Publish date must not be after start date"));
-        }
-
-        @Test
         void rejects_whenThresholdSetWithoutBalancingEnabled() throws Exception {
             String json = validCourseJson()
                     .replace("\"priceModel\"", "\"roleBalanceThreshold\": 3, \"priceModel\"");
@@ -378,7 +363,7 @@ class CourseCrudIntegrationTest {
         course.setMaxParticipants(12);
         course.setPriceModel(PriceModel.FIXED_COURSE);
         course.setPrice(new BigDecimal("310.00"));
-        course.setStatus(CourseStatus.ACTIVE);
+        course.setPublishedAt(LocalDate.now());
         entityManager.persist(course);
         return course;
     }
