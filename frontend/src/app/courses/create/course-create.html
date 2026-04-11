@@ -117,33 +117,27 @@
             </mat-form-field>
           </div>
 
-          <div class="form-row">
-            <mat-form-field class="half-width" appearance="outline">
+          <div class="form-row sessions-row">
+            <mat-form-field class="third-width" appearance="outline">
               <mat-label>Number of Sessions</mat-label>
               <input matInput type="number" formControlName="numberOfSessions" min="1" />
               @if (scheduleGroup.controls.numberOfSessions.hasError('required')) {
                 <mat-error>Number of sessions is required</mat-error>
               }
             </mat-form-field>
-            <div class="half-width"></div>
+            @if (derivedDayOfWeek) {
+              <div class="derived-field third-width">
+                <span class="derived-label">Day of Week</span>
+                <span class="derived-value">{{ derivedDayOfWeek }}</span>
+              </div>
+            }
+            @if (derivedEndDate) {
+              <div class="derived-field third-width">
+                <span class="derived-label">End Date</span>
+                <span class="derived-value">{{ derivedEndDate }}</span>
+              </div>
+            }
           </div>
-
-          @if (derivedDayOfWeek || derivedEndDate) {
-            <div class="derived-fields">
-              @if (derivedDayOfWeek) {
-                <div class="derived-field">
-                  <span class="derived-label">Day of Week</span>
-                  <span class="derived-value">{{ derivedDayOfWeek }}</span>
-                </div>
-              }
-              @if (derivedEndDate) {
-                <div class="derived-field">
-                  <span class="derived-label">End Date</span>
-                  <span class="derived-value">{{ derivedEndDate }}</span>
-                </div>
-              }
-            </div>
-          }
 
           <div class="form-row">
             <mat-form-field class="half-width" appearance="outline">

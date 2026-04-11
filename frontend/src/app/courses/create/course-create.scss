@@ -147,24 +147,23 @@
   gap: var(--ds-spacing-5);
 }
 
-// Derived fields (read-only computed values shown in schedule step)
-.derived-fields {
-  display: flex;
-  gap: var(--ds-spacing-8);
-  padding: var(--ds-spacing-4) var(--ds-spacing-5);
-  background: var(--mat-sys-surface-variant);
-  border-radius: var(--ds-radius-md);
+// Sessions row with inline derived fields
+.sessions-row {
+  align-items: center;
+}
 
-  @include ds.bp-down(sm) {
-    flex-direction: column;
-    gap: var(--ds-spacing-3);
-  }
+.third-width {
+  flex: 1;
+  min-width: 0;
 }
 
 .derived-field {
   display: flex;
   flex-direction: column;
   gap: var(--ds-spacing-1);
+  padding: var(--ds-spacing-3) var(--ds-spacing-4);
+  background: var(--mat-sys-surface-variant);
+  border-radius: var(--ds-radius-md);
 }
 
 .derived-label {
