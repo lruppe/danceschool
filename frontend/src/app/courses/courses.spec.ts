@@ -94,14 +94,11 @@ describe('CoursesComponent', () => {
 
     const tabs = el.querySelectorAll('.tab');
     expect(tabs.length).toBe(4);
-    expect(tabs[0].textContent?.trim()).toContain('Running');
-    expect(tabs[0].textContent).toContain('(2)');
-    expect(tabs[1].textContent?.trim()).toContain('Open');
-    expect(tabs[1].textContent).toContain('(1)');
-    expect(tabs[2].textContent?.trim()).toContain('Draft');
-    expect(tabs[2].textContent).toContain('(0)');
-    expect(tabs[3].textContent?.trim()).toContain('Finished');
-    expect(tabs[3].textContent).toContain('(1)');
+    // Order: Draft, Open, Running, Finished
+    expect(tabs[0].textContent?.trim()).toBe('Draft (0)');
+    expect(tabs[1].textContent?.trim()).toBe('Open (1)');
+    expect(tabs[2].textContent?.trim()).toBe('Running (2)');
+    expect(tabs[3].textContent?.trim()).toBe('Finished (1)');
   });
 
   it('should show Running tab columns by default', () => {

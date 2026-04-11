@@ -75,16 +75,15 @@
   max-width: var(--ds-max-width-narrow);
 }
 
-// Tab bar
+// Tab bar (sits between filter bar and table card)
 .tab-bar {
   display: flex;
   gap: var(--ds-spacing-4);
   border-bottom: 1px solid var(--mat-sys-outline-variant);
-  padding: 0 var(--ds-card-padding);
 }
 
 .tab {
-  padding: var(--ds-spacing-3) var(--ds-spacing-4);
+  padding: var(--ds-spacing-3) 0;
   border: none;
   background: none;
   cursor: pointer;
@@ -96,8 +95,8 @@
               border-color var(--ds-duration-fast) var(--ds-easing-standard);
 
   &.active {
-    color: var(--mat-sys-primary);
-    border-bottom-color: var(--mat-sys-primary);
+    color: var(--mat-sys-on-surface);
+    border-bottom-color: var(--mat-sys-on-surface);
     font-weight: 600;
   }
 

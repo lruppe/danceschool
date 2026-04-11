@@ -24,16 +24,17 @@ interface CourseFilter {
 interface TabConfig {
   status: CourseStatus;
   label: string;
-  emoji: string;
   columns: string[];
 }
 
 const TAB_CONFIGS: TabConfig[] = [
-  { status: 'RUNNING', label: 'Running', emoji: '🔵', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'progress', 'participants'] },
-  { status: 'OPEN', label: 'Open', emoji: '🟢', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'enrollment', 'startsIn'] },
-  { status: 'DRAFT', label: 'Draft', emoji: '🟡', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'price', 'readiness'] },
-  { status: 'FINISHED', label: 'Finished', emoji: '⚫', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'participants'] },
+  { status: 'DRAFT', label: 'Draft', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'price', 'readiness'] },
+  { status: 'OPEN', label: 'Open', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'enrollment', 'startsIn'] },
+  { status: 'RUNNING', label: 'Running', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'progress', 'participants'] },
+  { status: 'FINISHED', label: 'Finished', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'participants'] },
 ];
+
+const DEFAULT_TAB_INDEX = 2; // Running tab
 
 const DAY_ORDER: Record<string, number> = {
   MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3,
@@ -56,7 +57,7 @@ export class CoursesComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   protected tabs = TAB_CONFIGS;
-  protected activeTabIndex = signal(0);
+  protected activeTabIndex = signal(DEFAULT_TAB_INDEX);
   protected loaded = signal(false);
   protected error = signal(false);
   protected hasAnyCourses = signal(false);
