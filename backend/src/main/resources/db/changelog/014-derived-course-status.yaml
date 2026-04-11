@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-1-add-published-at
+      author: lruppe
+      changes:
+        - addColumn:
+            tableName: course
+            columns:
+              - column:
+                  name: published_at
+                  type: DATE
+
+  - changeSet:
+      id: 013-2-migrate-published-at
+      author: lruppe
+      changes:
+        - sql:
+            sql: >
+              UPDATE course SET published_at = COALESCE(publish_date, CURRENT_DATE)
+              WHERE status IN ('ACTIVE', 'FULL')
+
+  - changeSet:
+      id: 013-3-drop-status
+      author: lruppe
+      changes:
+        - dropColumn:
+            tableName: course
+            columnName: status
+
+  - changeSet:
+      id: 013-4-drop-publish-date
+      author: lruppe
+      changes:
+        - dropColumn:
+            tableName: course
+            columnName: publish_date
