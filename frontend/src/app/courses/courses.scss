@@ -1,7 +1,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-card-padding);
+  gap: var(--ds-spacing-4);
 }
 
 // Page header
@@ -15,7 +15,15 @@
 .filter-bar {
   display: flex;
   align-items: center;
-  gap: var(--ds-spacing-4);
+  gap: var(--ds-spacing-3);
+
+  // Compact form fields — reduce Material's default density and match table font
+  .mat-mdc-form-field {
+    --mat-form-field-container-height: 40px;
+    --mat-form-field-container-vertical-padding: 8px;
+    --mdc-outlined-text-field-label-text-size: 14px;
+    --mdc-outlined-text-field-input-text-size: 14px;
+  }
 }
 
 .filter-search {
@@ -26,21 +34,9 @@
   width: var(--ds-size-filter-select);
 }
 
-.title-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-spacing-2);
-}
-
 .page-title {
   font: var(--mat-sys-headline-small);
   color: var(--mat-sys-on-surface);
-  margin: 0;
-}
-
-.page-subtitle {
-  font: var(--mat-sys-body-medium);
-  color: var(--mat-sys-on-surface-variant);
   margin: 0;
 }
 
@@ -78,16 +74,16 @@
 // Tab bar (sits between filter bar and table card)
 .tab-bar {
   display: flex;
-  gap: var(--ds-spacing-4);
+  gap: var(--ds-spacing-6);
   border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 
 .tab {
-  padding: var(--ds-spacing-3) 0;
+  padding: var(--ds-spacing-4) var(--ds-spacing-1);
   border: none;
   background: none;
   cursor: pointer;
-  font: var(--mat-sys-label-large);
+  font: var(--mat-sys-title-medium);
   color: var(--mat-sys-on-surface-variant);
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;

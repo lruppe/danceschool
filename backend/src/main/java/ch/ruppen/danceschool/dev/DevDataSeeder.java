@@ -68,55 +68,83 @@ public class DevDataSeeder implements ApplicationRunner {
         LocalDate today = LocalDate.now();
 
         if (!courseService.hasCoursesForMember(owner.getId())) {
+            // --- RUNNING courses (published, start in the past, end in the future) ---
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
                     "Salsa, Merengue, Bachata Solo", DanceStyle.SALSA, CourseLevel.BEGINNER,
                     CourseType.SOLO, "Learn the basics of Salsa, Merengue, and Bachata in solo style.",
-                    LocalDate.of(2026, 4, 10), RecurrenceType.WEEKLY,
+                    today.minusWeeks(1), RecurrenceType.WEEKLY,
                     6, LocalTime.of(19, 30), LocalTime.of(20, 45),
                     "Studio A", "Maria", 12, false, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("166.50"), null, null), 8, today);
+                    PriceModel.FIXED_COURSE, new BigDecimal("166.50"), null, null), 8, today.minusWeeks(2));
 
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
                     "Bachata Intermediate", DanceStyle.BACHATA, CourseLevel.INTERMEDIATE,
                     CourseType.PARTNER, "Take your Bachata to the next level with partner work and musicality.",
-                    LocalDate.of(2026, 4, 7), RecurrenceType.WEEKLY,
+                    today.minusWeeks(2), RecurrenceType.WEEKLY,
                     8, LocalTime.of(19, 0), LocalTime.of(20, 0),
                     "Studio B", "Carlos", 15, true, 3,
-                    PriceModel.FIXED_COURSE, new BigDecimal("220.00"), null, null), 12, today);
+                    PriceModel.FIXED_COURSE, new BigDecimal("220.00"), null, null), 12, today.minusWeeks(3));
 
+            // --- OPEN courses (published, start in the future) ---
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
                     "Salsa Advanced", DanceStyle.SALSA, CourseLevel.ADVANCED,
                     CourseType.PARTNER, "Advanced Salsa patterns, styling, and performance preparation.",
-                    LocalDate.of(2026, 4, 8), RecurrenceType.WEEKLY,
+                    today.plusWeeks(4), RecurrenceType.WEEKLY,
                     10, LocalTime.of(20, 0), LocalTime.of(21, 15),
                     "Studio A", "Maria, Carlos", 10, true, 2,
-                    PriceModel.FIXED_COURSE, new BigDecimal("310.00"), null, null), 10, today);
+                    PriceModel.FIXED_COURSE, new BigDecimal("310.00"), null, null), 7, today.minusDays(5));
 
             courseService.seedCourse(owner.getId(), new CreateCourseDto(
                     "Bachata Beginners", DanceStyle.BACHATA, CourseLevel.BEGINNER,
                     CourseType.PARTNER, "Start your Bachata journey with the fundamentals of partner dancing.",
-                    LocalDate.of(2026, 4, 6), RecurrenceType.WEEKLY,
+                    today.plusWeeks(5), RecurrenceType.WEEKLY,
                     6, LocalTime.of(18, 30), LocalTime.of(19, 45),
                     "Studio B", "Carlos", 16, true, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("166.50"), null, null), 14, today);
+                    PriceModel.FIXED_COURSE, new BigDecimal("166.50"), null, null), 5, today.minusDays(3));
+
+            // --- DRAFT courses (not published) ---
+            courseService.seedCourse(owner.getId(), new CreateCourseDto(
+                    "Salsa Social Dancing", DanceStyle.SALSA, CourseLevel.INTERMEDIATE,
+                    CourseType.PARTNER, "Social dancing techniques and floor craft.",
+                    today.plusWeeks(8), RecurrenceType.WEEKLY,
+                    8, LocalTime.of(19, 0), LocalTime.of(20, 0),
+                    "Studio A", "Maria", 20, false, null,
+                    PriceModel.FIXED_COURSE, new BigDecimal("220.00"), null, null), 0, null);
+
+            courseService.seedCourse(owner.getId(), new CreateCourseDto(
+                    "Bachata Sensual", DanceStyle.BACHATA, CourseLevel.ADVANCED,
+                    CourseType.PARTNER, "Explore Bachata Sensual technique and musicality.",
+                    today.plusWeeks(10), RecurrenceType.WEEKLY,
+                    6, LocalTime.of(14, 0), LocalTime.of(15, 30),
+                    "Studio B", "Carlos, Ana", 12, true, null,
+                    PriceModel.FIXED_COURSE, new BigDecimal("310.00"), null, null), 0, null);
+
+            // --- FINISHED course (end date in the past) ---
+            courseService.seedCourse(owner.getId(), new CreateCourseDto(
+                    "Kizomba Fundamentals", DanceStyle.KIZOMBA, CourseLevel.BEGINNER,
+                    CourseType.PARTNER, "Introduction to Kizomba connection and movement.",
+                    today.minusWeeks(12), RecurrenceType.WEEKLY,
+                    8, LocalTime.of(20, 0), LocalTime.of(21, 0),
+                    "Studio A", "Luis", 14, true, null,
+                    PriceModel.FIXED_COURSE, new BigDecimal("180.00"), null, null), 11, today.minusWeeks(14));
         }
 
         if (!courseService.hasCoursesForMember(owner2.getId())) {
             courseService.seedCourse(owner2.getId(), new CreateCourseDto(
                     "Salsa Beginners", DanceStyle.SALSA, CourseLevel.BEGINNER,
                     CourseType.PARTNER, "Introduction to Salsa for complete beginners.",
-                    LocalDate.of(2026, 4, 9), RecurrenceType.WEEKLY,
+                    today.minusWeeks(1), RecurrenceType.WEEKLY,
                     8, LocalTime.of(18, 0), LocalTime.of(19, 0),
                     "Main Hall", "Ana", 20, true, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("180.00"), null, null), 5, today);
+                    PriceModel.FIXED_COURSE, new BigDecimal("180.00"), null, null), 5, today.minusWeeks(2));
 
             courseService.seedCourse(owner2.getId(), new CreateCourseDto(
                     "Bachata Sensual", DanceStyle.BACHATA, CourseLevel.ADVANCED,
                     CourseType.PARTNER, "Explore Bachata Sensual technique and musicality.",
-                    LocalDate.of(2026, 4, 11), RecurrenceType.WEEKLY,
+                    today.plusWeeks(3), RecurrenceType.WEEKLY,
                     6, LocalTime.of(14, 0), LocalTime.of(15, 30),
                     "Main Hall", "Ana, Luis", 12, true, null,
-                    PriceModel.FIXED_COURSE, new BigDecimal("200.00"), null, null), 8, today);
+                    PriceModel.FIXED_COURSE, new BigDecimal("200.00"), null, null), 8, today.minusDays(2));
         }
     }
 }
