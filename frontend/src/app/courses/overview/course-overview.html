@@ -5,10 +5,17 @@
     <div class="overview-header">
       <a class="back-link" routerLink="/app/courses">← Back to Courses</a>
       <div class="title-row">
-        <h1 class="overview-title">{{ c.title }}</h1>
-        <span class="ds-chip" [ngClass]="statusChipClass(c.status)">
-          {{ c.status | titlecase }}
-        </span>
+        <div class="title-row-left">
+          <h1 class="overview-title">{{ c.title }}</h1>
+          <span class="ds-chip" [ngClass]="statusChipClass(c.status)">
+            {{ c.status | titlecase }}
+          </span>
+        </div>
+        @if (c.status === 'DRAFT') {
+          <button mat-flat-button class="publish-button" (click)="onPublish()" [disabled]="publishing()">
+            Publish
+          </button>
+        }
       </div>
     </div>
 

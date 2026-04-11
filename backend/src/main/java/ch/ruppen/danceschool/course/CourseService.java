@@ -3,6 +3,7 @@ package ch.ruppen.danceschool.course;
 import ch.ruppen.danceschool.school.School;
 import ch.ruppen.danceschool.school.SchoolService;
 import ch.ruppen.danceschool.shared.error.DomainRuleViolationException;
+import ch.ruppen.danceschool.shared.error.PublishValidationException;
 import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
 import ch.ruppen.danceschool.shared.logging.BusinessOperation;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -62,6 +65,65 @@ public class CourseService {
         Course course = courseRepository.findByIdAndSchoolId(courseId, school.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
         return toDetailDto(course, LocalDate.now(clock));
+    }
+
+    @Transactional
+    @BusinessOperation(event = "CoursePublished")
+    public CourseDetailDto publishCourse(Long userId, Long courseId) {
+        School school = schoolService.findSchoolByMember(userId);
+        Course course = courseRepository.findByIdAndSchoolId(courseId, school.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
+
+        // Idempotent: already published → return current state
+        if (course.getPublishedAt() != null) {
+            return toDetailDto(course, LocalDate.now(clock));
+        }
+
+        validatePublishReadiness(course);
+
+        course.setPublishedAt(LocalDate.now(clock));
+        return toDetailDto(course, LocalDate.now(clock));
+    }
+
+    private void validatePublishReadiness(Course course) {
+        Map<String, String> errors = new LinkedHashMap<>();
+
+        if (course.getTitle() == null || course.getTitle().isBlank()) {
+            errors.put("title", "must not be blank");
+        }
+        if (course.getDanceStyle() == null) {
+            errors.put("danceStyle", "must not be null");
+        }
+        if (course.getLevel() == null) {
+            errors.put("level", "must not be null");
+        }
+        if (course.getCourseType() == null) {
+            errors.put("courseType", "must not be null");
+        }
+        if (course.getStartDate() == null) {
+            errors.put("startDate", "must not be null");
+        } else if (!course.getStartDate().isAfter(LocalDate.now(clock))) {
+            errors.put("startDate", "must be in the future");
+        }
+        if (course.getStartTime() == null) {
+            errors.put("startTime", "must not be null");
+        }
+        if (course.getEndTime() == null) {
+            errors.put("endTime", "must not be null");
+        }
+        if (course.getNumberOfSessions() < 1) {
+            errors.put("numberOfSessions", "must be at least 1");
+        }
+        if (course.getMaxParticipants() < 1) {
+            errors.put("maxParticipants", "must be at least 1");
+        }
+        if (course.getPrice() == null) {
+            errors.put("price", "must not be null");
+        }
+
+        if (!errors.isEmpty()) {
+            throw new PublishValidationException(errors);
+        }
     }
 
     /**

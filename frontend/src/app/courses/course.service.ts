@@ -74,4 +74,8 @@ export class CourseService {
   updateCourse(id: number, dto: Record<string, unknown>): Observable<void> {
     return this.http.put<void>(`${environment.apiUrl}/api/courses/${id}`, dto);
   }
+
+  publishCourse(id: number): Observable<CourseDetail> {
+    return this.http.post<CourseDetail>(`${environment.apiUrl}/api/courses/${id}/publish`, null);
+  }
 }
