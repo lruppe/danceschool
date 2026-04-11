@@ -19,7 +19,9 @@ function makeCourse(overrides: Partial<CourseListItem> = {}): CourseListItem {
     enrolledStudents: 12,
     maxParticipants: 20,
     price: 166.5,
-    status: 'ACTIVE',
+    status: 'OPEN',
+    startDate: '2026-04-11',
+    completedSessions: 0,
     ...overrides,
   };
 }
@@ -169,9 +171,10 @@ describe('CoursesComponent', () => {
   describe('helper methods', () => {
     it('should return correct status chip class', () => {
       const component = fixture.componentInstance as any;
-      expect(component.statusChipClass('ACTIVE')).toBe('ds-chip-success');
+      expect(component.statusChipClass('OPEN')).toBe('ds-chip-success');
+      expect(component.statusChipClass('RUNNING')).toBe('ds-chip-primary');
       expect(component.statusChipClass('DRAFT')).toBe('ds-chip-default');
-      expect(component.statusChipClass('INACTIVE')).toBe('ds-chip-default');
+      expect(component.statusChipClass('FINISHED')).toBe('ds-chip-default');
     });
 
     it('should return correct dance style chip class', () => {
