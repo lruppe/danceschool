@@ -9,7 +9,7 @@
 }
 
 .login-card {
-  max-width: 400px;
+  max-width: var(--ds-max-width-narrow);
   width: 100%;
   padding: var(--ds-card-padding);
 }
