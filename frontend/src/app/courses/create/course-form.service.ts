@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 
 @Injectable()
 export class CourseFormService {
@@ -12,7 +12,7 @@ export class CourseFormService {
       description: new FormControl('', { nonNullable: true }),
     }),
     schedule: new FormGroup({
-      startDate: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      startDate: new FormControl('', { nonNullable: true, validators: [Validators.required, futureDateValidator] }),
       recurrenceType: new FormControl('WEEKLY', { nonNullable: true, validators: [Validators.required] }),
       numberOfSessions: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(1)] }),
       startTime: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -106,7 +106,21 @@ export class CourseFormService {
     return this.form.dirty;
   }
 
+  clearFutureDateValidator(): void {
+    this.form.controls.schedule.controls.startDate.removeValidators(futureDateValidator);
+    this.form.controls.schedule.controls.startDate.updateValueAndValidity();
+  }
+
   reset(): void {
     this.form.reset();
   }
+}
+
+export function futureDateValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  if (!value) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selected = new Date(value + 'T00:00:00');
+  return selected > today ? null : { futureDate: true };
 }

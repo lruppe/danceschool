@@ -110,6 +110,7 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
     if (id) {
       this.editId.set(+id);
       this.loading.set(true);
+      this.formService.clearFutureDateValidator();
       this.courseService.getCourse(+id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (data) => {
           this.formService.populate(data);
