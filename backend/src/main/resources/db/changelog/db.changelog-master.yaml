@@ -23,3 +23,5 @@ databaseChangeLog:
       file: db/changelog/011-add-course-end-date.yaml
   - include:
       file: db/changelog/012-simplify-registration-fields.yaml
+  - include:
+      file: db/changelog/013-index-school-member-school-id.yaml
