@@ -7,7 +7,7 @@
     </div>
   </div>
 
-  @if (dataSource.data.length > 0) {
+  @if (hasAnyCourses()) {
     <!-- Filter Bar -->
     <div class="filter-bar">
       <mat-form-field class="filter-search" appearance="outline" subscriptSizing="dynamic">
@@ -39,9 +39,33 @@
       </button>
     </div>
 
-    <!-- Table Card -->
+    <!-- Tabbed Table Card -->
     <div class="ds-table-card">
-      <table mat-table [dataSource]="dataSource" matSort>
+      <!-- Tab Bar -->
+      <div class="tab-bar">
+        @for (tab of tabs; track tab.status; let i = $index) {
+          <button
+            class="tab"
+            [class.active]="activeTabIndex() === i"
+            (click)="selectTab(i)"
+          >
+            {{ tab.emoji }} {{ tab.label }} ({{ tabCounts()[i] }})
+          </button>
+        }
+      </div>
+
+      <!-- Table -->
+      <table mat-table [dataSource]="activeDataSource()" matSort>
+        <!-- Status -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let course">
+            <span class="ds-chip" [ngClass]="statusChipClass(course.status)">
+              {{ statusEmoji(course.status) }} {{ course.status | titlecase }}
+            </span>
+          </td>
+        </ng-container>
+
         <!-- Course Name -->
         <ng-container matColumnDef="title">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Course Name</th>
@@ -73,34 +97,50 @@
           </td>
         </ng-container>
 
-        <!-- Enrollment -->
-        <ng-container matColumnDef="enrollment">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header="enrolledStudents">Enrollment</th>
-          <td mat-cell *matCellDef="let course">{{ course.enrolledStudents }} / {{ course.maxParticipants }}</td>
-        </ng-container>
-
-        <!-- Price -->
+        <!-- Price (Draft tab) -->
         <ng-container matColumnDef="price">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Price</th>
           <td mat-cell *matCellDef="let course">{{ course.price | currency:'CHF' }}</td>
         </ng-container>
 
-        <!-- Status -->
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+        <!-- Readiness (Draft tab) -->
+        <ng-container matColumnDef="readiness">
+          <th mat-header-cell *matHeaderCellDef>Readiness</th>
           <td mat-cell *matCellDef="let course">
-            <span class="ds-chip" [ngClass]="statusChipClass(course.status)">
-              {{ course.status | titlecase }}
-            </span>
+            <span class="readiness-ready">Ready</span>
           </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;" [routerLink]="['/app/courses', row.id]" class="clickable-row"></tr>
+        <!-- Enrollment (Open tab) -->
+        <ng-container matColumnDef="enrollment">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="enrolledStudents">Enrollment</th>
+          <td mat-cell *matCellDef="let course">{{ course.enrolledStudents }} / {{ course.maxParticipants }}</td>
+        </ng-container>
+
+        <!-- Starts In (Open tab) -->
+        <ng-container matColumnDef="startsIn">
+          <th mat-header-cell *matHeaderCellDef>Starts In</th>
+          <td mat-cell *matCellDef="let course">{{ startsIn(course.startDate) }}</td>
+        </ng-container>
+
+        <!-- Progress (Running tab) -->
+        <ng-container matColumnDef="progress">
+          <th mat-header-cell *matHeaderCellDef>Progress</th>
+          <td mat-cell *matCellDef="let course">Session {{ course.completedSessions }}/{{ course.numberOfSessions }}</td>
+        </ng-container>
+
+        <!-- Participants (Running/Finished tabs) -->
+        <ng-container matColumnDef="participants">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="enrolledStudents">Participants</th>
+          <td mat-cell *matCellDef="let course">{{ course.enrolledStudents }}</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="activeTab().columns"></tr>
+        <tr mat-row *matRowDef="let row; columns: activeTab().columns;" [routerLink]="['/app/courses', row.id]" class="clickable-row"></tr>
       </table>
 
       <div class="ds-table-footer">
-        Showing {{ dataSource.filteredData.length }} of {{ totalCount() }} courses
+        Showing {{ activeDataSource().filteredData.length }} of {{ tabCounts()[activeTabIndex()] }} courses
       </div>
     </div>
   } @else {

@@ -10,15 +10,30 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { forkJoin } from 'rxjs';
 import { CourseListItem, CourseService } from './course.service';
 import { formatDayShort, formatTime as stripSeconds } from './shared/format-utils';
-import { DANCE_STYLES, COURSE_LEVELS } from '../shared/course-constants';
+import { CourseStatus, DANCE_STYLES, COURSE_LEVELS } from '../shared/course-constants';
 
 interface CourseFilter {
   text: string;
   danceStyle: string;
   level: string;
 }
+
+interface TabConfig {
+  status: CourseStatus;
+  label: string;
+  emoji: string;
+  columns: string[];
+}
+
+const TAB_CONFIGS: TabConfig[] = [
+  { status: 'RUNNING', label: 'Running', emoji: '🔵', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'progress', 'participants'] },
+  { status: 'OPEN', label: 'Open', emoji: '🟢', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'enrollment', 'startsIn'] },
+  { status: 'DRAFT', label: 'Draft', emoji: '🟡', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'price', 'readiness'] },
+  { status: 'FINISHED', label: 'Finished', emoji: '⚫', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'participants'] },
+];
 
 const DAY_ORDER: Record<string, number> = {
   MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3,
@@ -40,10 +55,15 @@ export class CoursesComponent implements OnInit {
   private courseService = inject(CourseService);
   private destroyRef = inject(DestroyRef);
 
-  protected dataSource = new MatTableDataSource<CourseListItem>([]);
-  protected totalCount = signal(0);
+  protected tabs = TAB_CONFIGS;
+  protected activeTabIndex = signal(0);
   protected loaded = signal(false);
   protected error = signal(false);
+  protected hasAnyCourses = signal(false);
+
+  // Per-tab data
+  protected tabData: MatTableDataSource<CourseListItem>[] = TAB_CONFIGS.map(() => new MatTableDataSource<CourseListItem>([]));
+  protected tabCounts = signal<number[]>([0, 0, 0, 0]);
 
   protected searchText = '';
   protected selectedDanceStyle = '';
@@ -52,31 +72,35 @@ export class CoursesComponent implements OnInit {
   protected danceStyles = DANCE_STYLES.map(d => d.value);
   protected levels = COURSE_LEVELS.map(l => l.value);
 
-  protected filteredCount = computed(() => this.dataSource.filteredData.length);
-
-  protected displayedColumns = [
-    'title', 'danceStyle', 'level', 'schedule', 'enrollment', 'price', 'status',
-  ];
+  protected activeDataSource = computed(() => this.tabData[this.activeTabIndex()]);
+  protected activeTab = computed(() => TAB_CONFIGS[this.activeTabIndex()]);
 
   @ViewChild(MatSort) set sort(sort: MatSort) {
     if (sort) {
-      this.dataSource.sort = sort;
+      this.tabData[this.activeTabIndex()].sort = sort;
     }
   }
 
   ngOnInit(): void {
-    this.dataSource.filterPredicate = this.createFilterPredicate();
-    this.dataSource.sortingDataAccessor = (course, column) => {
-      if (column === 'schedule') {
-        return DAY_ORDER[course.dayOfWeek] ?? 0;
-      }
-      return (course as unknown as Record<string, string | number>)[column];
-    };
+    this.tabData.forEach(ds => {
+      ds.filterPredicate = this.createFilterPredicate();
+      ds.sortingDataAccessor = (course, column) => {
+        if (column === 'schedule') return DAY_ORDER[course.dayOfWeek] ?? 0;
+        return (course as unknown as Record<string, string | number>)[column];
+      };
+    });
 
-    this.courseService.getCourses().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (courses) => {
-        this.dataSource.data = courses;
-        this.totalCount.set(courses.length);
+    forkJoin(
+      TAB_CONFIGS.map(tab => this.courseService.getCoursesByStatus(tab.status))
+    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (results) => {
+        const counts: number[] = [];
+        results.forEach((courses, i) => {
+          this.tabData[i].data = courses;
+          counts.push(courses.length);
+        });
+        this.tabCounts.set(counts);
+        this.hasAnyCourses.set(counts.some(c => c > 0));
         this.loaded.set(true);
       },
       error: () => {
@@ -86,44 +110,29 @@ export class CoursesComponent implements OnInit {
     });
   }
 
+  protected selectTab(index: number): void {
+    this.activeTabIndex.set(index);
+  }
+
   protected applyFilter(): void {
     const filter: CourseFilter = {
       text: this.searchText.trim().toLowerCase(),
       danceStyle: this.selectedDanceStyle,
       level: this.selectedLevel,
     };
-    // MatTableDataSource.filter is a string — serialize the filter object
-    this.dataSource.filter = JSON.stringify(filter);
+    const serialized = JSON.stringify(filter);
+    this.tabData.forEach(ds => ds.filter = serialized);
   }
 
   private createFilterPredicate(): (data: CourseListItem, filter: string) => boolean {
     return (data: CourseListItem, filter: string): boolean => {
       const f: CourseFilter = JSON.parse(filter);
-
-      // Dance style dropdown filter
-      if (f.danceStyle && data.danceStyle !== f.danceStyle) {
-        return false;
-      }
-
-      // Level dropdown filter
-      if (f.level && data.level !== f.level) {
-        return false;
-      }
-
-      // Free-text search across text columns
+      if (f.danceStyle && data.danceStyle !== f.danceStyle) return false;
+      if (f.level && data.level !== f.level) return false;
       if (f.text) {
-        const searchable = [
-          data.title,
-          data.danceStyle,
-          data.level,
-          data.status,
-          data.dayOfWeek,
-        ].join(' ').toLowerCase();
-        if (!searchable.includes(f.text)) {
-          return false;
-        }
+        const searchable = [data.title, data.danceStyle, data.level, data.dayOfWeek].join(' ').toLowerCase();
+        if (!searchable.includes(f.text)) return false;
       }
-
       return true;
     };
   }
@@ -142,6 +151,16 @@ export class CoursesComponent implements OnInit {
     return (endH * 60 + endM) - (startH * 60 + startM);
   }
 
+  protected startsIn(startDate: string): string {
+    const start = new Date(startDate + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const days = Math.ceil((start.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (days <= 0) return 'Today';
+    if (days === 1) return '1 day';
+    return `${days} days`;
+  }
+
   protected statusChipClass(status: string): string {
     switch (status) {
       case 'OPEN': return 'ds-chip-success';
@@ -149,6 +168,16 @@ export class CoursesComponent implements OnInit {
       case 'DRAFT': return 'ds-chip-default';
       case 'FINISHED': return 'ds-chip-default';
       default: return 'ds-chip-default';
+    }
+  }
+
+  protected statusEmoji(status: string): string {
+    switch (status) {
+      case 'DRAFT': return '🟡';
+      case 'OPEN': return '🟢';
+      case 'RUNNING': return '🔵';
+      case 'FINISHED': return '⚫';
+      default: return '';
     }
   }
 

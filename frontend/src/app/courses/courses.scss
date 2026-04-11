@@ -75,6 +75,44 @@
   max-width: var(--ds-max-width-narrow);
 }
 
+// Tab bar
+.tab-bar {
+  display: flex;
+  gap: var(--ds-spacing-4);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  padding: 0 var(--ds-card-padding);
+}
+
+.tab {
+  padding: var(--ds-spacing-3) var(--ds-spacing-4);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--ds-duration-fast) var(--ds-easing-standard),
+              border-color var(--ds-duration-fast) var(--ds-easing-standard);
+
+  &.active {
+    color: var(--mat-sys-primary);
+    border-bottom-color: var(--mat-sys-primary);
+    font-weight: 600;
+  }
+
+  &:hover:not(.active) {
+    color: var(--mat-sys-on-surface);
+  }
+}
+
+// Readiness column
+.readiness-ready {
+  color: var(--ds-color-success);
+  font: var(--mat-sys-label-large);
+  font-weight: 500;
+}
+
 // Clickable table rows
 .clickable-row {
   cursor: pointer;

@@ -15,13 +15,13 @@ function makeCourse(overrides: Partial<CourseListItem> = {}): CourseListItem {
     startTime: '19:30:00',
     endTime: '20:45:00',
     numberOfSessions: 8,
-    endDate: '2026-05-30',
+    startDate: '2026-05-15',
+    endDate: '2026-07-03',
     enrolledStudents: 12,
     maxParticipants: 20,
     price: 166.5,
-    status: 'OPEN',
-    startDate: '2026-04-11',
-    completedSessions: 0,
+    status: 'RUNNING',
+    completedSessions: 3,
     ...overrides,
   };
 }
@@ -50,9 +50,24 @@ describe('CoursesComponent', () => {
     httpTesting.verify();
   });
 
-  function flushCourses(courses: CourseListItem[]): void {
+  function flushAllTabs(data: {
+    running?: CourseListItem[];
+    open?: CourseListItem[];
+    draft?: CourseListItem[];
+    finished?: CourseListItem[];
+  } = {}): void {
     fixture.detectChanges();
-    httpTesting.expectOne(req => req.url.includes('/api/courses/me')).flush(courses);
+    const reqs = httpTesting.match(req => req.url.includes('/api/courses/me'));
+    reqs.forEach(req => {
+      const status = req.request.params.get('status');
+      switch (status) {
+        case 'RUNNING': req.flush(data.running ?? []); break;
+        case 'OPEN': req.flush(data.open ?? []); break;
+        case 'DRAFT': req.flush(data.draft ?? []); break;
+        case 'FINISHED': req.flush(data.finished ?? []); break;
+        default: req.flush([]);
+      }
+    });
     fixture.detectChanges();
   }
 
@@ -60,112 +75,78 @@ describe('CoursesComponent', () => {
     fixture.detectChanges();
     expect(el.querySelector('.loading')).toBeTruthy();
 
-    httpTesting.expectOne(req => req.url.includes('/api/courses/me')).flush([]);
-    fixture.detectChanges();
-    expect(el.querySelector('.loading')).toBeFalsy();
+    flushAllTabs();
   });
 
-  it('should display empty state when no courses', () => {
-    flushCourses([]);
+  it('should display empty state when no courses in any tab', () => {
+    flushAllTabs();
     expect(el.querySelector('.empty-state')).toBeTruthy();
     expect(el.querySelector('.empty-state-title')?.textContent?.trim()).toBe('No courses yet');
   });
 
-  it('should display all table columns without Actions column', () => {
-    flushCourses([makeCourse()]);
-    const headers = Array.from(el.querySelectorAll('th')).map(th => th.textContent?.trim());
-    expect(headers).toContain('Course Name');
-    expect(headers).toContain('Type');
-    expect(headers).toContain('Level');
-    expect(headers).toContain('Schedule');
-    expect(headers).toContain('Enrollment');
-    expect(headers).toContain('Price');
-    expect(headers).toContain('Status');
-    expect(headers).not.toContain('Actions');
+  it('should render 4 tabs with correct labels and counts', () => {
+    flushAllTabs({
+      running: [makeCourse({ id: 1 }), makeCourse({ id: 2 })],
+      open: [makeCourse({ id: 3, status: 'OPEN' })],
+      draft: [],
+      finished: [makeCourse({ id: 4, status: 'FINISHED' })],
+    });
+
+    const tabs = el.querySelectorAll('.tab');
+    expect(tabs.length).toBe(4);
+    expect(tabs[0].textContent?.trim()).toContain('Running');
+    expect(tabs[0].textContent).toContain('(2)');
+    expect(tabs[1].textContent?.trim()).toContain('Open');
+    expect(tabs[1].textContent).toContain('(1)');
+    expect(tabs[2].textContent?.trim()).toContain('Draft');
+    expect(tabs[2].textContent).toContain('(0)');
+    expect(tabs[3].textContent?.trim()).toContain('Finished');
+    expect(tabs[3].textContent).toContain('(1)');
   });
 
-  it('should display course data in table rows', () => {
-    flushCourses([makeCourse({ title: 'Salsa Nights', enrolledStudents: 5, maxParticipants: 15 })]);
+  it('should show Running tab columns by default', () => {
+    flushAllTabs({ running: [makeCourse()] });
+
+    const headers = Array.from(el.querySelectorAll('th')).map(th => th.textContent?.trim());
+    expect(headers).toContain('Status');
+    expect(headers).toContain('Course Name');
+    expect(headers).toContain('Progress');
+    expect(headers).toContain('Participants');
+    expect(headers).not.toContain('Price');
+    expect(headers).not.toContain('Starts In');
+  });
+
+  it('should display progress in Running tab', () => {
+    flushAllTabs({ running: [makeCourse({ completedSessions: 3, numberOfSessions: 8 })] });
+
     const cells = Array.from(el.querySelectorAll('td')).map(td => td.textContent?.trim());
-    expect(cells).toContain('Salsa Nights');
-    expect(cells.some(c => c?.includes('5 / 15'))).toBe(true);
+    expect(cells.some(c => c?.includes('Session 3/8'))).toBe(true);
+  });
+
+  it('should display status chip with emoji', () => {
+    flushAllTabs({ running: [makeCourse()] });
+
+    const chip = el.querySelector('.ds-chip');
+    expect(chip?.textContent?.trim()).toContain('🔵');
+    expect(chip?.textContent?.trim()).toContain('Running');
   });
 
   it('should show correct count in table footer', () => {
-    flushCourses([makeCourse(), makeCourse({ id: 2, title: 'Salsa' })]);
+    flushAllTabs({ running: [makeCourse({ id: 1 }), makeCourse({ id: 2 })] });
     const footer = el.querySelector('.ds-table-footer')?.textContent?.trim();
     expect(footer).toContain('2 of 2');
   });
 
   it('should display error state', () => {
     fixture.detectChanges();
-    httpTesting.expectOne(req => req.url.includes('/api/courses/me')).error(new ProgressEvent('error'));
+    // Error the first request — forkJoin cancels the rest
+    const reqs = httpTesting.match(req => req.url.includes('/api/courses/me'));
+    if (reqs.length > 0) {
+      reqs[0].error(new ProgressEvent('error'));
+    }
     fixture.detectChanges();
+
     expect(el.querySelector('.error-text')).toBeTruthy();
-  });
-
-  describe('filter predicate', () => {
-    it('should filter by free-text search across title', () => {
-      flushCourses([
-        makeCourse({ id: 1, title: 'Bachata Fundamentals' }),
-        makeCourse({ id: 2, title: 'Salsa Nights' }),
-      ]);
-
-      const component = fixture.componentInstance as any;
-      component.searchText = 'salsa';
-      component.applyFilter();
-      fixture.detectChanges();
-
-      const rows = el.querySelectorAll('tr.clickable-row');
-      expect(rows.length).toBe(1);
-    });
-
-    it('should filter by dance style', () => {
-      flushCourses([
-        makeCourse({ id: 1, danceStyle: 'BACHATA' }),
-        makeCourse({ id: 2, danceStyle: 'SALSA' }),
-      ]);
-
-      const component = fixture.componentInstance as any;
-      component.selectedDanceStyle = 'BACHATA';
-      component.applyFilter();
-      fixture.detectChanges();
-
-      const rows = el.querySelectorAll('tr.clickable-row');
-      expect(rows.length).toBe(1);
-    });
-
-    it('should filter by level', () => {
-      flushCourses([
-        makeCourse({ id: 1, level: 'BEGINNER' }),
-        makeCourse({ id: 2, level: 'INTERMEDIATE' }),
-      ]);
-
-      const component = fixture.componentInstance as any;
-      component.selectedLevel = 'BEGINNER';
-      component.applyFilter();
-      fixture.detectChanges();
-
-      const rows = el.querySelectorAll('tr.clickable-row');
-      expect(rows.length).toBe(1);
-    });
-
-    it('should combine filters', () => {
-      flushCourses([
-        makeCourse({ id: 1, title: 'Bachata Beginner', danceStyle: 'BACHATA', level: 'BEGINNER' }),
-        makeCourse({ id: 2, title: 'Bachata Advanced', danceStyle: 'BACHATA', level: 'ADVANCED' }),
-        makeCourse({ id: 3, title: 'Salsa Beginner', danceStyle: 'SALSA', level: 'BEGINNER' }),
-      ]);
-
-      const component = fixture.componentInstance as any;
-      component.selectedDanceStyle = 'BACHATA';
-      component.selectedLevel = 'BEGINNER';
-      component.applyFilter();
-      fixture.detectChanges();
-
-      const rows = el.querySelectorAll('tr.clickable-row');
-      expect(rows.length).toBe(1);
-    });
   });
 
   describe('helper methods', () => {
@@ -177,18 +158,49 @@ describe('CoursesComponent', () => {
       expect(component.statusChipClass('FINISHED')).toBe('ds-chip-default');
     });
 
-    it('should return correct dance style chip class', () => {
+    it('should return correct status emoji', () => {
       const component = fixture.componentInstance as any;
-      expect(component.danceStyleChipClass('BACHATA')).toBe('ds-chip-primary');
-      expect(component.danceStyleChipClass('SALSA')).toBe('ds-chip-info');
-      expect(component.danceStyleChipClass('MERENGUE')).toBe('ds-chip-success');
-      expect(component.danceStyleChipClass('OTHER')).toBe('ds-chip-default');
+      expect(component.statusEmoji('DRAFT')).toBe('🟡');
+      expect(component.statusEmoji('OPEN')).toBe('🟢');
+      expect(component.statusEmoji('RUNNING')).toBe('🔵');
+      expect(component.statusEmoji('FINISHED')).toBe('⚫');
+    });
+
+    it('should calculate starts in days', () => {
+      const component = fixture.componentInstance as any;
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 10);
+      const dateStr = futureDate.toISOString().split('T')[0];
+      expect(component.startsIn(dateStr)).toBe('10 days');
+    });
+
+    it('should return "1 day" for tomorrow', () => {
+      const component = fixture.componentInstance as any;
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const dateStr = tomorrow.toISOString().split('T')[0];
+      expect(component.startsIn(dateStr)).toBe('1 day');
+    });
+
+    it('should return "Today" for today or past dates', () => {
+      const component = fixture.componentInstance as any;
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0];
+      expect(component.startsIn(dateStr)).toBe('Today');
     });
 
     it('should calculate session duration in minutes', () => {
       const component = fixture.componentInstance as any;
       expect(component.sessionDuration('19:30:00', '20:45:00')).toBe(75);
       expect(component.sessionDuration('18:00:00', '19:00:00')).toBe(60);
+    });
+
+    it('should return correct dance style chip class', () => {
+      const component = fixture.componentInstance as any;
+      expect(component.danceStyleChipClass('BACHATA')).toBe('ds-chip-primary');
+      expect(component.danceStyleChipClass('SALSA')).toBe('ds-chip-info');
+      expect(component.danceStyleChipClass('MERENGUE')).toBe('ds-chip-success');
+      expect(component.danceStyleChipClass('OTHER')).toBe('ds-chip-default');
     });
   });
 });

@@ -57,6 +57,12 @@ export class CourseService {
     return this.http.get<CourseListItem[]>(`${environment.apiUrl}/api/courses/me`);
   }
 
+  getCoursesByStatus(status: CourseStatus): Observable<CourseListItem[]> {
+    return this.http.get<CourseListItem[]>(`${environment.apiUrl}/api/courses/me`, {
+      params: { status },
+    });
+  }
+
   getCourse(id: number): Observable<CourseDetail> {
     return this.http.get<CourseDetail>(`${environment.apiUrl}/api/courses/${id}`);
   }
