@@ -34,6 +34,10 @@
   --ds-content-max-width: 960px;
   --ds-max-width-narrow: 400px;
 
+  // ── Page background ──
+  // Warm off-white instead of Material's cold surface-variant grey.
+  --ds-page-background: #f7f5f2;
+
   // ── Semantic size tokens ──
   --ds-size-step-indicator: 28px;
   --ds-size-filter-select: 150px;
@@ -54,19 +58,19 @@
   --ds-shadow-sm: 0 2px 4px rgb(0 0 0 / 0.1);
 
   // ── Landing page ──
-  --ds-landing-bg-start: #2e1459;
-  --ds-landing-bg-mid: #140a26;
-  --ds-landing-bg-end: #0d051a;
+  --ds-landing-bg-start: #0a3d35;
+  --ds-landing-bg-mid: #061f1b;
+  --ds-landing-bg-end: #031210;
   --ds-landing-text-muted: rgba(255, 255, 255, 0.9);
   --ds-landing-border-muted: rgba(255, 255, 255, 0.5);
   --ds-landing-footer-text: #9991a6;
-  --ds-landing-footer-divider: #33264d;
+  --ds-landing-footer-divider: #1a3d35;
   --ds-landing-logo-accent: #f5c73d;
-  --ds-landing-glow: rgba(98, 50, 201, 0.15);
-  --ds-landing-feature-dashboard: #6232c9;
-  --ds-landing-feature-students: #5367d9;
-  --ds-landing-feature-school: #9c27b0;
-  --ds-landing-feature-analytics: #e91e63;
+  --ds-landing-glow: rgba(0, 107, 94, 0.15);
+  --ds-landing-feature-dashboard: #006b5e;
+  --ds-landing-feature-students: #008676;
+  --ds-landing-feature-school: #00a28f;
+  --ds-landing-feature-analytics: #e37100;
   --ds-landing-screenshot-shadow: 0 20px 60px -8px rgba(0, 0, 0, 0.12), 0 4px 24px -4px rgba(0, 0, 0, 0.08);
 
   // ── Motion ──

@@ -46,13 +46,13 @@ IMPORTANT: Always use these Angular Material equivalents. Never create custom co
 
 | Figma Variable | CSS Token |
 |---|---|
-| `color/primary` (#6232c9) | `var(--mat-sys-primary)` |
+| `color/primary` (#006b5e) | `var(--mat-sys-primary)` |
 | `color/on-primary` (#ffffff) | `var(--mat-sys-on-primary)` |
-| `color/primary-container` (#eae0fc) | `var(--mat-sys-primary-container)` |
-| `color/on-surface` (#1c1131) | `var(--mat-sys-on-surface)` |
-| `color/on-surface-variant` (#6c6583) | `var(--mat-sys-on-surface-variant)` |
+| `color/primary-container` (#72f7de) | `var(--mat-sys-primary-container)` |
+| `color/on-surface` (#191c1b) | `var(--mat-sys-on-surface)` |
+| `color/on-surface-variant` (#6f7a77) | `var(--mat-sys-on-surface-variant)` |
 | `color/surface` (#ffffff) | `var(--mat-sys-surface)` |
-| `color/surface-variant` (#f6f4f9) | `var(--mat-sys-surface-variant)` |
+| `color/surface-variant` (#dbe6e2) | `var(--mat-sys-surface-variant)` |
 | `color/outline-variant` (#e0dbea) | `var(--mat-sys-outline-variant)` |
 | `color/success` (#19a185) | `var(--ds-color-success)` |
 | `color/success-container` (#d8f4ed) | `var(--ds-color-success-container)` |
