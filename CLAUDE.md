@@ -42,7 +42,7 @@ Use `/start-issue <number>` to work on a GitHub issue. This runs the full automa
 **Setup** → load issue, create worktree + branch, install deps
 **Plan** → enter plan mode for non-trivial issues (use judgment to skip for trivial fixes)
 **Implement** → code, build, test
-**Visual E2E** → start both servers, login via Playwright, screenshot affected pages
+**Visual Testing Workflow** → start both servers, login via Playwright, screenshot affected pages
 **Ship** → commit, rebase, push, PR, watch CI, squash merge
 
 **Do not stop between phases** unless genuinely blocked. Auto-merge after CI passes — no manual review needed.
@@ -61,34 +61,13 @@ See `.claude/commands/start-issue.md` for the full step-by-step.
 
 ## Visual Testing Workflow
 
-Required for all frontend changes. Skip only for purely backend issues with no UI impact.
+Required for all frontend changes. Skip only for purely backend issues with no UI impact. The full procedure (start servers, login, screenshot, stop) is in `.claude/commands/start-issue.md` Phase 4.
 
-### 1. Start both servers
-
+**Key details for reference:**
 - **Backend:** `cd backend && ./mvnw spring-boot:run` (runs on `http://localhost:8080`)
 - **Frontend:** Angular MCP `devserver.start` (workspace: `frontend/`) — uses `proxy.conf.json` to forward `/api` requests to the backend
-- Wait for both to be ready before proceeding
-
-### 2. Log in
-
 - **Dev credentials:** `owner@test.com` / `password` (School 1) or `owner2@test.com` / `password` (School 2)
-- The login page shows a simple email/password form with quick-login buttons for each owner
-- Use Playwright MCP to click a quick-login button
-
-### 3. Handle fresh database state
-
-The backend uses H2 in-memory, so every restart is a clean slate. However, `DevDataSeeder` automatically seeds two dev users with separate schools on startup, so login lands directly in the app shell — no onboarding step needed.
-
-### 4. Navigate and screenshot
-
-- Use Playwright `browser_navigate` to the relevant page
-- Use `browser_take_screenshot` to visually verify layout and styling
-- **Always take a final screenshot before committing** style or layout changes
-
-### 5. Stop servers
-
-- Stop the frontend devserver: Angular MCP `devserver.stop`
-- Kill the backend process
+- **Database:** H2 in-memory — every restart is a clean slate, but `DevDataSeeder` seeds two owners with separate schools automatically
 
 ## Working Rules
 

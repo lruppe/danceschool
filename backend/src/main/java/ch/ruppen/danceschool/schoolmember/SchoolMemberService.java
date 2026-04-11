@@ -1,5 +1,6 @@
 package ch.ruppen.danceschool.schoolmember;
 
+import ch.ruppen.danceschool.shared.logging.BusinessOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class SchoolMemberService {
                 .toList();
     }
 
+    @BusinessOperation(event = "MembershipCreated")
     public SchoolMember createMembership(SchoolMember member) {
         return schoolMemberRepository.save(member);
     }

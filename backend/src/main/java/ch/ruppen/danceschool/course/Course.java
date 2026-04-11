@@ -58,6 +58,8 @@ public class Course {
 
     private int numberOfSessions;
 
+    private LocalDate endDate;
+
     private LocalTime startTime;
 
     private LocalTime endTime;
@@ -68,12 +70,7 @@ public class Course {
 
     private int maxParticipants;
 
-    private boolean waitingListEnabled;
-
-    private boolean requireRoleSelection;
-
-    @Enumerated(EnumType.STRING)
-    private RoleBalancingMode roleBalancingMode;
+    private boolean roleBalancingEnabled;
 
     private Integer roleBalanceThreshold;
 
