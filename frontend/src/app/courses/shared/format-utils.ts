@@ -17,3 +17,10 @@ export function formatDayFull(dayOfWeek: string): string {
 export function formatTime(time: string): string {
   return time.substring(0, 5);
 }
+
+/** Format an ISO date string to European format (e.g. "2026-04-11" → "11.04.2026"). */
+export function formatDate(isoDate: string): string {
+  if (!isoDate) return '';
+  const [year, month, day] = isoDate.split('-');
+  return `${day}.${month}.${year}`;
+}
