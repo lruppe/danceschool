@@ -53,7 +53,13 @@
     </div>
     <div class="summary-field">
       <span class="summary-label">Sessions</span>
-      <span class="summary-value">{{ d.numberOfSessions }}</span>
+      <span class="summary-value">
+        @if (d.status === 'RUNNING' && d.completedSessions != null) {
+          Session {{ d.completedSessions }}/{{ d.numberOfSessions }}
+        } @else {
+          {{ d.numberOfSessions }}
+        }
+      </span>
     </div>
     <div class="summary-field">
       <span class="summary-label">Time</span>

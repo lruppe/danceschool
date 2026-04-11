@@ -45,6 +45,12 @@ public class CourseController {
         return courseService.getCourseDetail(principal.userId(), id);
     }
 
+    @PostMapping("/{id}/publish")
+    public CourseDetailDto publish(@PathVariable Long id,
+                                  @AuthenticationPrincipal AuthenticatedUser principal) {
+        return courseService.publishCourse(principal.userId(), id);
+    }
+
     @PutMapping("/{id}")
     public CourseDetailDto update(@PathVariable Long id,
                                  @Valid @RequestBody CreateCourseDto dto,

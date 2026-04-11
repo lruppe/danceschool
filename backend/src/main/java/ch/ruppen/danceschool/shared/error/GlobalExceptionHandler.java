@@ -33,6 +33,14 @@ class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(PublishValidationException.class)
+    ProblemDetail handlePublishValidation(PublishValidationException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Publish Validation Failed");
+        problem.setProperty("fieldErrors", ex.getFieldErrors());
+        return problem;
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
