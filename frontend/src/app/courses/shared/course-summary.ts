@@ -24,7 +24,6 @@ export interface CourseSummaryData {
   roleBalanceThreshold?: number | null;
   priceModel: string;
   price: number;
-  isPartnerCourse: boolean;
 }
 
 @Component({

@@ -89,7 +89,7 @@
       <span class="summary-label">Max Participants</span>
       <span class="summary-value">{{ d.maxParticipants }}</span>
     </div>
-    @if (d.isPartnerCourse) {
+    @if (d.courseType === 'PARTNER') {
       <div class="summary-field">
         <span class="summary-label">Role Balancing</span>
         <span class="summary-value">{{ d.roleBalancingEnabled ? 'Enabled' : 'Disabled' }}</span>

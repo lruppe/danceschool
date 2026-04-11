@@ -22,7 +22,6 @@ function makeSummaryData(overrides: Partial<CourseSummaryData> = {}): CourseSumm
     roleBalanceThreshold: 2,
     priceModel: 'FIXED_COURSE',
     price: 166.5,
-    isPartnerCourse: true,
     ...overrides,
   };
 }
@@ -76,14 +75,14 @@ describe('CourseSummaryComponent', () => {
   });
 
   it('should show role balancing fields for partner courses', () => {
-    setup(makeSummaryData({ isPartnerCourse: true, roleBalancingEnabled: true, roleBalanceThreshold: 3 }));
+    setup(makeSummaryData({ courseType: 'PARTNER', roleBalancingEnabled: true, roleBalanceThreshold: 3 }));
     const labels = Array.from(el.querySelectorAll('.summary-label')).map(e => e.textContent?.trim());
     expect(labels).toContain('Role Balancing');
     expect(labels).toContain('Max Imbalance');
   });
 
   it('should hide role balancing fields for solo courses', () => {
-    setup(makeSummaryData({ isPartnerCourse: false, courseType: 'SOLO' }));
+    setup(makeSummaryData({ courseType: 'SOLO' }));
     const labels = Array.from(el.querySelectorAll('.summary-label')).map(e => e.textContent?.trim());
     expect(labels).not.toContain('Role Balancing');
     expect(labels).not.toContain('Max Imbalance');

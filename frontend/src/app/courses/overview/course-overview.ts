@@ -68,7 +68,6 @@ export class CourseOverviewComponent implements OnInit {
       roleBalanceThreshold: c.roleBalanceThreshold,
       priceModel: c.priceModel,
       price: c.price,
-      isPartnerCourse: c.courseType === 'PARTNER',
     };
   }
 

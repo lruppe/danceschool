@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
+
 import { HttpErrorResponse } from '@angular/common/http';
 import { CourseFormService } from './course-form.service';
 import { extractErrorMessage } from '../../shared/error-utils';
@@ -31,7 +31,7 @@ interface StepDef {
   imports: [
     ReactiveFormsModule, RouterLink,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatButtonModule, MatIconModule, MatSlideToggleModule, MatTooltipModule,
+    MatButtonModule, MatIconModule, MatSlideToggleModule,
     CourseSummaryComponent,
   ],
   providers: [CourseFormService],
@@ -116,7 +116,6 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
       roleBalanceThreshold: this.registrationGroup.controls.roleBalanceThreshold.value,
       priceModel: this.pricingGroup.controls.priceModel.value,
       price: this.pricingGroup.controls.price.value ?? 0,
-      isPartnerCourse: this.isPartnerCourse,
     };
   }
 
