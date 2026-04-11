@@ -210,11 +210,11 @@
 
 // Content
 .shell-content {
-  background: var(--mat-sys-surface-variant);
+  background: var(--ds-page-background);
 }
 
 .shell-page {
-  background: var(--mat-sys-surface-variant);
+  background: var(--ds-page-background);
   min-height: calc(100vh - var(--ds-spacing-16));
   padding: var(--ds-card-padding);
 }

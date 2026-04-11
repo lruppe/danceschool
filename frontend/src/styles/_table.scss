@@ -72,13 +72,13 @@
 }
 
 .ds-chip-primary {
-  background: var(--mat-sys-primary-container);
-  color: var(--mat-sys-primary);
+  background: var(--ds-chip-primary-container);
+  color: var(--ds-chip-primary);
 }
 
 .ds-chip-info {
-  background: var(--ds-color-info-container);
-  color: var(--ds-color-info);
+  background: var(--ds-chip-info-container);
+  color: var(--ds-chip-info);
 }
 
 .ds-chip-default {

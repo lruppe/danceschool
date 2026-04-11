@@ -4,6 +4,7 @@
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+@use 'styles/palette' as pal;
 @use 'styles/tokens';
 @use 'styles/table';
 
@@ -12,8 +13,8 @@ html {
   @include mat.theme(
     (
       color: (
-        primary: mat.$violet-palette,
-        tertiary: mat.$rose-palette,
+        primary: pal.$ds-teal-palette,
+        tertiary: mat.$orange-palette,
       ),
       typography: Roboto,
       density: 0,
