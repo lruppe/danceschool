@@ -25,13 +25,22 @@ Implement the changes according to the plan (or directly for trivial issues). Fo
 
 **Always run this for frontend changes.** Skip only if the issue is purely backend with no UI impact.
 
-1. **Start backend:** `cd backend && ./mvnw spring-boot:run` (background)
-2. **Start frontend:** Angular MCP `devserver.start` (workspace: `frontend/`), then `devserver.wait_for_build`
+Multiple worktrees may run visual tests in parallel — using a random port avoids backend port conflicts.
+
+1. **Start backend on a random port:**
+   ```bash
+   cd backend && ./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=0
+   ```
+   Run in background. Read the output for `Tomcat started on port <PORT>` to get the actual port.
+2. **Update proxy config:** Edit `frontend/proxy.conf.json` — set the target to `http://localhost:<PORT>`. This is safe per-worktree. Do not commit this change.
+3. **Start frontend:** Angular MCP `devserver.start` (workspace: `frontend/`), then `devserver.wait_for_build`
    - **After code changes:** call `devserver.wait_for_build` again to confirm it compiled. If it returns the same stale error after a fix, run `npx ng build` directly — the MCP devserver can cache stale errors.
-3. **Wait for both** to be ready
 4. **Login:** Use Playwright MCP `browser_navigate` to the login page and click the Owner quick-login button (`owner@test.com` / `password`)
 5. **Navigate and screenshot:** Visit all pages affected by the change. Take screenshots to verify visual correctness.
-6. **Stop servers:** Stop the frontend devserver (Angular MCP `devserver.stop`) and kill the backend process
+6. **Stop servers:**
+   - Frontend: Angular MCP `devserver.stop`
+   - Backend: `kill $(lsof -t -i:<PORT>)` (use the port from step 1)
+   - Revert proxy config: `git checkout frontend/proxy.conf.json`
 
 ### Playwright rules
 - Use `browser_snapshot` over `browser_take_screenshot` when you need to interact with elements (click, fill, etc.)
