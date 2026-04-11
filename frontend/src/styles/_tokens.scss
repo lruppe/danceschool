@@ -36,7 +36,7 @@
 
   // ── Page background ──
   // Warm off-white instead of Material's cold surface-variant grey.
-  --ds-page-background: #f7f5f2;
+  --ds-page-background: #f5f5f5;
 
   // ── Semantic size tokens ──
   --ds-size-step-indicator: 28px;
@@ -53,6 +53,13 @@
   --ds-color-error: #d32f2f;
   --ds-color-error-container: #fce4ec;
   --ds-color-on-error: #ffffff;
+
+  // ── Chip colors (fixed, independent of Material primary palette) ──
+  // Kept from the original Figma design for vibrant, distinguishable tags.
+  --ds-chip-primary: #6232c9;
+  --ds-chip-primary-container: #eae0fc;
+  --ds-chip-info: #d18519;
+  --ds-chip-info-container: #fcefd8;
 
   // ── Shadows ──
   --ds-shadow-sm: 0 2px 4px rgb(0 0 0 / 0.1);
