@@ -244,27 +244,6 @@
       @case (4) {
         <!-- Review Step -->
         <div class="review-step">
-          <!-- Publishing Settings -->
-          <div class="publishing-settings" [formGroup]="pricingGroup">
-            <h3 class="section-title">Publishing Settings</h3>
-            <p class="section-hint">Controls whether this course is visible to students. Draft courses are only visible to you.</p>
-            <div class="form-row">
-              <mat-form-field class="half-width" appearance="outline">
-                <mat-label>Status</mat-label>
-                <mat-select formControlName="status">
-                  @for (status of courseStatuses; track status.value) {
-                    <mat-option [value]="status.value">{{ status.label }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field class="half-width" appearance="outline">
-                <mat-label>Publish Date</mat-label>
-                <input matInput type="date" formControlName="publishDate" />
-              </mat-form-field>
-            </div>
-          </div>
-
           <!-- Course Summary -->
           <app-course-summary [data]="reviewData" (edit)="goToStep($event)" />
         </div>
@@ -288,7 +267,7 @@
         @if (isEditMode) {
           Save Changes
         } @else {
-          {{ isDraft ? 'Save as Draft' : 'Publish Now' }}
+          Save as Draft
         }
       </button>
     }

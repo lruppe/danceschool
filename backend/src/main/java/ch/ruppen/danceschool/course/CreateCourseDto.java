@@ -27,8 +27,6 @@ public record CreateCourseDto(
         boolean roleBalancingEnabled,
         Integer roleBalanceThreshold,
         @NotNull PriceModel priceModel,
-        @NotNull @DecimalMin("0") BigDecimal price,
-        String status,
-        LocalDate publishDate
+        @NotNull @DecimalMin("0") BigDecimal price
 ) {
 }

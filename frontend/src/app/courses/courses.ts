@@ -13,7 +13,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { forkJoin } from 'rxjs';
 import { CourseListItem, CourseService } from './course.service';
 import { formatDayShort, formatTime as stripSeconds } from './shared/format-utils';
-import { CourseStatus, DANCE_STYLES, COURSE_LEVELS } from '../shared/course-constants';
+import { DANCE_STYLES, COURSE_LEVELS } from '../shared/course-constants';
 
 interface CourseFilter {
   text: string;
@@ -22,7 +22,7 @@ interface CourseFilter {
 }
 
 interface TabConfig {
-  status: CourseStatus;
+  status: string;
   label: string;
   columns: string[];
 }

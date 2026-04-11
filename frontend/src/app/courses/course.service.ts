@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { CourseLevel, CourseStatus, DanceStyle } from '../shared/course-constants';
+import { CourseLevel, DanceStyle } from '../shared/course-constants';
 
 export interface CourseListItem {
   id: number;
@@ -18,7 +18,7 @@ export interface CourseListItem {
   enrolledStudents: number;
   maxParticipants: number;
   price: number;
-  status: CourseStatus;
+  status: string;
   completedSessions: number;
 }
 
@@ -43,7 +43,7 @@ export interface CourseDetail {
   roleBalanceThreshold: number | null;
   priceModel: string;
   price: number;
-  status: CourseStatus;
+  status: string;
   publishedAt: string | null;
   enrolledStudents: number;
   completedSessions: number;
@@ -57,7 +57,7 @@ export class CourseService {
     return this.http.get<CourseListItem[]>(`${environment.apiUrl}/api/courses/me`);
   }
 
-  getCoursesByStatus(status: CourseStatus): Observable<CourseListItem[]> {
+  getCoursesByStatus(status: string): Observable<CourseListItem[]> {
     return this.http.get<CourseListItem[]>(`${environment.apiUrl}/api/courses/me`, {
       params: { status },
     });

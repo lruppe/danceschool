@@ -28,8 +28,6 @@ export class CourseFormService {
     pricing: new FormGroup({
       priceModel: new FormControl('FIXED_COURSE', { nonNullable: true, validators: [Validators.required] }),
       price: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(0)] }),
-      status: new FormControl('DRAFT', { nonNullable: true, validators: [Validators.required] }),
-      publishDate: new FormControl('', { nonNullable: true }),
     }),
   });
 
@@ -80,8 +78,6 @@ export class CourseFormService {
       pricing: {
         priceModel: data['priceModel'] as string,
         price: data['price'] as number,
-        status: (data['status'] as string) ?? 'DRAFT',
-        publishDate: (data['publishedAt'] as string) ?? '',
       },
     });
     // Mark as pristine after loading — form is not "dirty" until user edits
@@ -97,8 +93,6 @@ export class CourseFormService {
       roleBalanceThreshold: v.registration.roleBalancingEnabled ? v.registration.roleBalanceThreshold : null,
       priceModel: v.pricing.priceModel,
       price: v.pricing.price,
-      status: v.pricing.status,
-      publishDate: v.pricing.publishDate || null,
     };
   }
 

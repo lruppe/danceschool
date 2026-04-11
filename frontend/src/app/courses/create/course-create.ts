@@ -18,7 +18,7 @@ import { CourseSummaryComponent, CourseSummaryData } from '../shared/course-summ
 import { deriveDayOfWeek, deriveEndDate } from './schedule-utils';
 import {
   DANCE_STYLES, COURSE_LEVELS, COURSE_TYPES, RECURRENCE_TYPES,
-  PRICE_MODELS, COURSE_STATUSES,
+  PRICE_MODELS,
   RecurrenceType,
 } from '../../shared/course-constants';
 
@@ -69,7 +69,6 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
   protected courseTypes = COURSE_TYPES;
   protected recurrenceTypes = RECURRENCE_TYPES;
   protected priceModels = PRICE_MODELS;
-  protected courseStatuses = COURSE_STATUSES.filter(s => s.value === 'DRAFT' || s.value === 'OPEN');
 
   protected get detailsGroup() {
     return this.formService.form.controls.details;
@@ -89,10 +88,6 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
 
   protected get isPartnerCourse(): boolean {
     return this.formService.form.controls.details.controls.courseType.value === 'PARTNER';
-  }
-
-  protected get isDraft(): boolean {
-    return this.pricingGroup.controls.status.value === 'DRAFT';
   }
 
   protected get reviewData(): CourseSummaryData {
