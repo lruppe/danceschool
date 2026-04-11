@@ -29,14 +29,14 @@
   <properties>
     <java.version>21</java.version>
     <maven.compiler.release>21</maven.compiler.release>
-    <testcontainers.version>1.21.1</testcontainers.version>
+    <testcontainers.version>1.21.4</testcontainers.version>
   </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>bom</artifactId>
-        <version>2.42.29</version>
+        <version>2.42.31</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
