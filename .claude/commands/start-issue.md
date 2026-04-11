@@ -30,9 +30,15 @@ Implement the changes according to the plan (or directly for trivial issues). Fo
 1. **Start backend:** `cd backend && ./mvnw spring-boot:run` (background)
 2. **Start frontend:** Angular MCP `devserver.start` (workspace: `frontend/`)
 3. **Wait for both** to be ready
-4. **Login:** Use Playwright MCP to navigate to the app and log in with `owner@test.com` / `password` (click the Owner quick-login button)
+4. **Login:** Use Playwright MCP `browser_navigate` to the login page and click the Owner quick-login button (`owner@test.com` / `password`)
 5. **Navigate and screenshot:** Visit all pages affected by the change. Take screenshots to verify visual correctness.
 6. **Stop servers:** Stop the frontend devserver (Angular MCP `devserver.stop`) and kill the backend process
+
+### Playwright rules
+- Use `browser_snapshot` over `browser_take_screenshot` when you need to interact with elements (click, fill, etc.)
+- Use `browser_take_screenshot` to visually verify layout and styling
+- **Never use `browser_navigate` / `page.goto()` after the initial login** — direct URL navigation reloads the page and loses the Angular auth session. Always navigate via sidebar links and in-app buttons instead. The only `browser_navigate` call should be to the login page.
+- **Always take a final screenshot before committing** style or layout changes
 
 ## Phase 5 — Ship
 

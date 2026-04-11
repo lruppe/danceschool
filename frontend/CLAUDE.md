@@ -20,13 +20,9 @@ Use MCP tools for the develop → verify loop:
 3. **Start dev server:** Angular MCP `devserver.start` (workspace: `frontend/`)
 4. **Wait for build:** Angular MCP `devserver.wait_for_build` — also call this after every code change to confirm it compiled
    - **Fallback:** If `wait_for_build` returns the same error after you've fixed the code, don't cycle stop/restart — run `npx ng build` directly to get the real build status. The MCP devserver can cache stale errors.
-5. **Visual verify:** Follow the end-to-end Visual Testing Workflow in the root `CLAUDE.md` — start backend, log in, navigate, and screenshot affected pages.
-6. **Stop server:** Angular MCP `devserver.stop` when done
+5. **Stop server:** Angular MCP `devserver.stop` when done
 
-### Playwright MCP tips
-- Use `browser_snapshot` over `browser_take_screenshot` when you need to interact with elements (click, fill, etc.)
-- Use `browser_take_screenshot` to visually verify layout and styling
-- **Never use `browser_navigate` / `page.goto()` after the initial login** — direct URL navigation reloads the page and loses the Angular auth session. Always navigate via sidebar links and in-app buttons instead. The only `browser_navigate` call should be to the login page.
+Visual verification (Playwright screenshots) is handled by `/start-issue` Phase 4 — see `.claude/commands/start-issue.md` for the full procedure and Playwright rules.
 
 ## Architecture
 
