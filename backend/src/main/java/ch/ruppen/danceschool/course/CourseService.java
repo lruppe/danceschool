@@ -90,14 +90,9 @@ public class CourseService {
         if (dto.publishDate() != null && dto.publishDate().isAfter(dto.startDate())) {
             throw new DomainRuleViolationException("Publish date must not be after start date");
         }
-        if (dto.courseType() == CourseType.PARTNER && dto.requireRoleSelection()
-                && dto.roleBalancingMode() == null) {
+        if (!dto.roleBalancingEnabled() && dto.roleBalanceThreshold() != null) {
             throw new DomainRuleViolationException(
-                    "Role balancing mode is required when role selection is enabled for partner courses");
-        }
-        if (dto.roleBalancingMode() == null && dto.roleBalanceThreshold() != null) {
-            throw new DomainRuleViolationException(
-                    "Role balance threshold requires a role balancing mode");
+                    "Role balance threshold requires role balancing to be enabled");
         }
     }
 
@@ -117,9 +112,7 @@ public class CourseService {
         course.setLocation(dto.location());
         course.setTeachers(dto.teachers());
         course.setMaxParticipants(dto.maxParticipants());
-        course.setWaitingListEnabled(dto.waitingListEnabled());
-        course.setRequireRoleSelection(dto.requireRoleSelection());
-        course.setRoleBalancingMode(dto.roleBalancingMode());
+        course.setRoleBalancingEnabled(dto.roleBalancingEnabled());
         course.setRoleBalanceThreshold(dto.roleBalanceThreshold());
         course.setPriceModel(dto.priceModel());
         course.setPrice(dto.price());
@@ -170,9 +163,7 @@ public class CourseService {
                 course.getLocation(),
                 course.getTeachers(),
                 course.getMaxParticipants(),
-                course.isWaitingListEnabled(),
-                course.isRequireRoleSelection(),
-                course.getRoleBalancingMode(),
+                course.isRoleBalancingEnabled(),
                 course.getRoleBalanceThreshold(),
                 course.getPriceModel(),
                 course.getPrice(),

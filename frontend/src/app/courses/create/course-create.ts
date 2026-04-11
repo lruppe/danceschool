@@ -15,10 +15,9 @@ import { CourseService } from '../course.service';
 import { deriveDayOfWeek, deriveEndDate } from './schedule-utils';
 import {
   DANCE_STYLES, COURSE_LEVELS, COURSE_TYPES, RECURRENCE_TYPES,
-  ROLE_BALANCING_MODES, PRICE_MODELS, COURSE_STATUSES,
+  PRICE_MODELS, COURSE_STATUSES,
   RecurrenceType,
 } from '../../shared/course-constants';
-import { FieldHelpComponent } from '../../shared/field-help/field-help';
 
 interface StepDef {
   label: string;
@@ -30,7 +29,6 @@ interface StepDef {
     ReactiveFormsModule, RouterLink,
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatButtonModule, MatIconModule, MatSlideToggleModule, MatTooltipModule,
-    FieldHelpComponent,
   ],
   providers: [CourseFormService],
   templateUrl: './course-create.html',
@@ -66,7 +64,6 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
   protected levels = COURSE_LEVELS;
   protected courseTypes = COURSE_TYPES;
   protected recurrenceTypes = RECURRENCE_TYPES;
-  protected roleBalancingModes = ROLE_BALANCING_MODES;
   protected priceModels = PRICE_MODELS;
   protected courseStatuses = COURSE_STATUSES.filter(s => s.value === 'DRAFT' || s.value === 'ACTIVE');
 
@@ -123,6 +120,15 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
         },
       });
     }
+
+    // Default role balancing ON when course type changes to PARTNER (create mode only)
+    this.detailsGroup.controls.courseType.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(type => {
+        if (!this.isEditMode) {
+          this.registrationGroup.controls.roleBalancingEnabled.setValue(type === 'PARTNER');
+        }
+      });
   }
 
   protected label(items: { value: string; label: string }[], value: string): string {

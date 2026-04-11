@@ -78,8 +78,7 @@ class CourseCrudIntegrationTest {
                   "location": "Studio A",
                   "teachers": "Maria",
                   "maxParticipants": 15,
-                  "waitingListEnabled": false,
-                  "requireRoleSelection": false,
+                  "roleBalancingEnabled": false,
                   "priceModel": "FIXED_COURSE",
                   "price": 180.00,
                   "status": "DRAFT"
@@ -192,8 +191,7 @@ class CourseCrudIntegrationTest {
                     .andExpect(jsonPath("$.endTime").value("21:15:00"))
                     .andExpect(jsonPath("$.location").value("Studio A"))
                     .andExpect(jsonPath("$.maxParticipants").value(12))
-                    .andExpect(jsonPath("$.waitingListEnabled").value(false))
-                    .andExpect(jsonPath("$.requireRoleSelection").value(false))
+                    .andExpect(jsonPath("$.roleBalancingEnabled").value(false))
                     .andExpect(jsonPath("$.priceModel").value("FIXED_COURSE"))
                     .andExpect(jsonPath("$.price").value(310.00))
                     .andExpect(jsonPath("$.status").value("ACTIVE"))
@@ -311,21 +309,7 @@ class CourseCrudIntegrationTest {
         }
 
         @Test
-        void rejects_whenPartnerCourseRequiresRoleButNoMode() throws Exception {
-            String json = validCourseJson()
-                    .replace("\"requireRoleSelection\": false", "\"requireRoleSelection\": true");
-
-            mockMvc.perform(post("/api/courses")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(json)
-                            .with(authentication(authToken(ownerA))))
-                    .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.detail").value(
-                            "Role balancing mode is required when role selection is enabled for partner courses"));
-        }
-
-        @Test
-        void rejects_whenThresholdSetWithoutMode() throws Exception {
+        void rejects_whenThresholdSetWithoutBalancingEnabled() throws Exception {
             String json = validCourseJson()
                     .replace("\"priceModel\"", "\"roleBalanceThreshold\": 3, \"priceModel\"");
 
@@ -335,14 +319,14 @@ class CourseCrudIntegrationTest {
                             .with(authentication(authToken(ownerA))))
                     .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.detail").value(
-                            "Role balance threshold requires a role balancing mode"));
+                            "Role balance threshold requires role balancing to be enabled"));
         }
 
         @Test
-        void accepts_validPartnerCourseWithRoleSettings() throws Exception {
+        void accepts_partnerCourseWithRoleBalancingEnabled() throws Exception {
             String json = validCourseJson()
-                    .replace("\"requireRoleSelection\": false",
-                            "\"requireRoleSelection\": true, \"roleBalancingMode\": \"WARN\", \"roleBalanceThreshold\": 3");
+                    .replace("\"roleBalancingEnabled\": false",
+                            "\"roleBalancingEnabled\": true, \"roleBalanceThreshold\": 3");
 
             mockMvc.perform(post("/api/courses")
                             .contentType(MediaType.APPLICATION_JSON)
