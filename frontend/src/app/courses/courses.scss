@@ -75,10 +75,9 @@
   max-width: var(--ds-max-width-narrow);
 }
 
-// Actions column
-.mat-column-actions {
-  width: var(--ds-spacing-12);
-  text-align: center;
+// Clickable table rows
+.clickable-row {
+  cursor: pointer;
 }
 
 // Loading / error states
