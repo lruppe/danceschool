@@ -225,8 +225,8 @@
 .warning-icon {
   color: var(--mat-sys-error);
   font-size: var(--mat-sys-body-large-size);
-  width: 20px;
-  height: 20px;
+  width: var(--ds-spacing-5);
+  height: var(--ds-spacing-5);
   flex-shrink: 0;
 }
 
