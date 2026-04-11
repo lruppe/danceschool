@@ -39,3 +39,8 @@ body {
   height: 100%;
 }
 /* You can add global styles to this file, and also import other style files */
+
+// Field help tooltip — wider than default for readable help text
+.field-help-tooltip .mdc-tooltip__surface {
+  max-width: 280px;
+}

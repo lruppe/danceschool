@@ -54,7 +54,7 @@ export class CoursesComponent implements OnInit {
   protected filteredCount = computed(() => this.dataSource.filteredData.length);
 
   protected displayedColumns = [
-    'title', 'danceStyle', 'level', 'schedule', 'enrollment', 'price', 'status',
+    'title', 'danceStyle', 'level', 'schedule', 'enrollment', 'price', 'status', 'actions',
   ];
 
   @ViewChild(MatSort) set sort(sort: MatSort) {
