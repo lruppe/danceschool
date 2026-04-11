@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, OnDestroy, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,11 +9,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { CourseFormService } from './course-form.service';
 import { CourseService } from '../course.service';
+import { deriveDayOfWeek, deriveEndDate } from './schedule-utils';
 import {
   DANCE_STYLES, COURSE_LEVELS, COURSE_TYPES, RECURRENCE_TYPES,
-  ROLE_BALANCING_MODES, PRICE_MODELS, COURSE_STATUSES,
+  PRICE_MODELS, COURSE_STATUSES,
+  RecurrenceType,
 } from '../../shared/course-constants';
 
 interface StepDef {
@@ -24,7 +28,7 @@ interface StepDef {
   imports: [
     ReactiveFormsModule, RouterLink,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatButtonModule, MatIconModule, MatSlideToggleModule,
+    MatButtonModule, MatIconModule, MatSlideToggleModule, MatTooltipModule,
   ],
   providers: [CourseFormService],
   templateUrl: './course-create.html',
@@ -35,6 +39,7 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
   protected formService = inject(CourseFormService);
   private courseService = inject(CourseService);
 
@@ -59,18 +64,8 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
   protected levels = COURSE_LEVELS;
   protected courseTypes = COURSE_TYPES;
   protected recurrenceTypes = RECURRENCE_TYPES;
-  protected roleBalancingModes = ROLE_BALANCING_MODES;
   protected priceModels = PRICE_MODELS;
   protected courseStatuses = COURSE_STATUSES.filter(s => s.value === 'DRAFT' || s.value === 'ACTIVE');
-  protected daysOfWeek = [
-    { value: 'MONDAY', label: 'Monday' },
-    { value: 'TUESDAY', label: 'Tuesday' },
-    { value: 'WEDNESDAY', label: 'Wednesday' },
-    { value: 'THURSDAY', label: 'Thursday' },
-    { value: 'FRIDAY', label: 'Friday' },
-    { value: 'SATURDAY', label: 'Saturday' },
-    { value: 'SUNDAY', label: 'Sunday' },
-  ];
 
   protected get detailsGroup() {
     return this.formService.form.controls.details;
@@ -96,12 +91,24 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
     return this.pricingGroup.controls.status.value === 'DRAFT';
   }
 
+  protected get derivedDayOfWeek(): string {
+    return deriveDayOfWeek(this.scheduleGroup.controls.startDate.value);
+  }
+
+  protected get derivedEndDate(): string {
+    return deriveEndDate(
+      this.scheduleGroup.controls.startDate.value,
+      this.scheduleGroup.controls.numberOfSessions.value,
+      this.scheduleGroup.controls.recurrenceType.value as RecurrenceType,
+    );
+  }
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.editId.set(+id);
       this.loading.set(true);
-      this.courseService.getCourse(+id).subscribe({
+      this.courseService.getCourse(+id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (data) => {
           this.formService.populate(data);
           this.currentStep.set(4); // Start on Review step
@@ -113,6 +120,15 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
         },
       });
     }
+
+    // Default role balancing ON when course type changes to PARTNER (create mode only)
+    this.detailsGroup.controls.courseType.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(type => {
+        if (!this.isEditMode) {
+          this.registrationGroup.controls.roleBalancingEnabled.setValue(type === 'PARTNER');
+        }
+      });
   }
 
   protected label(items: { value: string; label: string }[], value: string): string {
@@ -135,9 +151,9 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
       this.snackBar.open(errorMsg, 'Close', { duration: 3000 });
     };
     if (id) {
-      this.courseService.updateCourse(id, dto).subscribe({ next: onSuccess, error: onError });
+      this.courseService.updateCourse(id, dto).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: onSuccess, error: onError });
     } else {
-      this.courseService.createCourse(dto).subscribe({ next: onSuccess, error: onError });
+      this.courseService.createCourse(dto).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({ next: onSuccess, error: onError });
     }
   }
 

@@ -4,8 +4,6 @@ export type CourseType = 'PARTNER' | 'SOLO';
 export type CourseStatus = 'DRAFT' | 'ACTIVE' | 'FULL' | 'INACTIVE';
 export type RecurrenceType = 'WEEKLY';
 export type PriceModel = 'FIXED_COURSE';
-export type RoleBalancingMode = 'WARN' | 'BLOCK';
-
 export const DANCE_STYLES: { value: DanceStyle; label: string }[] = [
   { value: 'SALSA', label: 'Salsa' },
   { value: 'BACHATA', label: 'Bachata' },
@@ -42,7 +40,3 @@ export const PRICE_MODELS: { value: PriceModel; label: string }[] = [
   { value: 'FIXED_COURSE', label: 'Fixed Course' },
 ];
 
-export const ROLE_BALANCING_MODES: { value: RoleBalancingMode; label: string }[] = [
-  { value: 'WARN', label: 'Warn' },
-  { value: 'BLOCK', label: 'Block' },
-];
