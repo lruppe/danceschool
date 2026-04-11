@@ -4,25 +4,12 @@
 
 - **Install:** `npm install`
 - **Build:** `ng build`
-- **Test:** `ng test --browsers chromium --no-watch` (or use Angular MCP `test`)
+- **Test:** `npx ng test --browsers chromium --no-watch` (or use Angular MCP `test`)
   - Requires `@vitest/browser-playwright` + `playwright` (already installed)
   - Browser binary: `npx playwright install chromium` (already done)
 - **Lint:** `ng lint`
 
-All commands run from the `frontend/` directory. For the dev server, see the workflow below.
-
-## Frontend Development Workflow
-
-Use MCP tools for the develop → verify loop:
-
-1. **Install dependencies:** Run `npm install` if in a fresh worktree or after pulling new changes
-2. **Verify build first:** Run `npx ng build` to confirm compilation before starting the dev server. This catches errors faster than the MCP devserver.
-3. **Start dev server:** Angular MCP `devserver.start` (workspace: `frontend/`)
-4. **Wait for build:** Angular MCP `devserver.wait_for_build` — also call this after every code change to confirm it compiled
-   - **Fallback:** If `wait_for_build` returns the same error after you've fixed the code, don't cycle stop/restart — run `npx ng build` directly to get the real build status. The MCP devserver can cache stale errors.
-5. **Stop server:** Angular MCP `devserver.stop` when done
-
-Visual verification (Playwright screenshots) is handled by `/start-issue` Phase 4 — see `.claude/commands/start-issue.md` for the full procedure and Playwright rules.
+All commands run from the `frontend/` directory.
 
 ## Architecture
 
@@ -85,7 +72,9 @@ Custom design tokens (`--ds-*`) extend Material's system tokens (`--mat-sys-*`).
 
 ## Testing
 
-Write unit tests for business logic (calculations, derived values, data transformations). Pure UI/layout components are covered by visual verification via Playwright.
+1. **Business logic** — calculations, data transformations, derived values, formatting. Pure unit tests.
+2. **Data-display correctness** — components that render dynamic data (tables, summaries, detail views). Render with mock data, assert all expected fields/columns are present in the output.
+3. **Conditional rendering** — things that show/hide based on state. Render with different inputs, assert presence/absence of elements.
 
 ## Angular Rules
 
