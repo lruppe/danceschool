@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-index-school-member-school-id
+      author: claude
+      changes:
+        - createIndex:
+            indexName: idx_school_member_school_id
+            tableName: school_member
+            columns:
+              - column:
+                  name: school_id
