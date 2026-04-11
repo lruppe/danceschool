@@ -1,7 +1,7 @@
 export type DanceStyle = 'SALSA' | 'BACHATA' | 'MERENGUE' | 'KIZOMBA' | 'ZOUK' | 'AFRO' | 'OTHER';
 export type CourseLevel = 'STARTER' | 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'MASTERCLASS';
 export type CourseType = 'PARTNER' | 'SOLO';
-export type CourseStatus = 'DRAFT' | 'ACTIVE' | 'FULL' | 'INACTIVE';
+export type CourseStatus = 'DRAFT' | 'OPEN' | 'RUNNING' | 'FINISHED';
 export type RecurrenceType = 'WEEKLY';
 export type PriceModel = 'FIXED_COURSE';
 export const DANCE_STYLES: { value: DanceStyle; label: string }[] = [
@@ -29,9 +29,9 @@ export const COURSE_TYPES: { value: CourseType; label: string }[] = [
 
 export const COURSE_STATUSES: { value: CourseStatus; label: string }[] = [
   { value: 'DRAFT', label: 'Draft' },
-  { value: 'ACTIVE', label: 'Active' },
-  { value: 'FULL', label: 'Full' },
-  { value: 'INACTIVE', label: 'Inactive' },
+  { value: 'OPEN', label: 'Open' },
+  { value: 'RUNNING', label: 'Running' },
+  { value: 'FINISHED', label: 'Finished' },
 ];
 
 export const RECURRENCE_TYPES: { value: RecurrenceType; label: string }[] = [

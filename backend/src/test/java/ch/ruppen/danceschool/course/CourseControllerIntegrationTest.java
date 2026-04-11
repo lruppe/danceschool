@@ -54,7 +54,7 @@ class CourseControllerIntegrationTest {
     void getMe_returnsCourses_whenUserHasCourses() throws Exception {
         createCourse(school, "Salsa Beginners", DanceStyle.SALSA, CourseLevel.BEGINNER,
                 DayOfWeek.MONDAY, LocalTime.of(19, 0), LocalTime.of(20, 0),
-                8, 5, 15, new BigDecimal("180.00"), CourseStatus.ACTIVE);
+                8, 5, 15, new BigDecimal("180.00"), LocalDate.now());
         entityManager.flush();
 
         mockMvc.perform(get("/api/courses/me")
@@ -71,7 +71,9 @@ class CourseControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].enrolledStudents").value(5))
                 .andExpect(jsonPath("$[0].maxParticipants").value(15))
                 .andExpect(jsonPath("$[0].price").value(180.00))
-                .andExpect(jsonPath("$[0].status").value("ACTIVE"));
+                .andExpect(jsonPath("$[0].status").value("OPEN"))
+                .andExpect(jsonPath("$[0].startDate").exists())
+                .andExpect(jsonPath("$[0].completedSessions").isNumber());
     }
 
     @Test
@@ -86,10 +88,10 @@ class CourseControllerIntegrationTest {
     void getMe_returnsMultipleCourses() throws Exception {
         createCourse(school, "Salsa Beginners", DanceStyle.SALSA, CourseLevel.BEGINNER,
                 DayOfWeek.MONDAY, LocalTime.of(19, 0), LocalTime.of(20, 0),
-                8, 5, 15, new BigDecimal("180.00"), CourseStatus.ACTIVE);
+                8, 5, 15, new BigDecimal("180.00"), LocalDate.now());
         createCourse(school, "Bachata Advanced", DanceStyle.BACHATA, CourseLevel.ADVANCED,
                 DayOfWeek.WEDNESDAY, LocalTime.of(20, 0), LocalTime.of(21, 15),
-                10, 10, 10, new BigDecimal("310.00"), CourseStatus.FULL);
+                10, 10, 10, new BigDecimal("310.00"), LocalDate.now());
         entityManager.flush();
 
         mockMvc.perform(get("/api/courses/me")
@@ -139,8 +141,9 @@ class CourseControllerIntegrationTest {
 
     private void createCourse(School s, String title, DanceStyle danceStyle, CourseLevel level,
                               DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime,
-                              int sessions, int enrolled, int max, BigDecimal price, CourseStatus status) {
-        LocalDate startDate = LocalDate.of(2026, 4, 7);
+                              int sessions, int enrolled, int max, BigDecimal price,
+                              LocalDate publishedAt) {
+        LocalDate startDate = LocalDate.now().plusDays(30);
         Course course = new Course();
         course.setSchool(s);
         course.setTitle(title);
@@ -159,7 +162,7 @@ class CourseControllerIntegrationTest {
         course.setEnrolledStudents(enrolled);
         course.setPriceModel(PriceModel.FIXED_COURSE);
         course.setPrice(price);
-        course.setStatus(status);
+        course.setPublishedAt(publishedAt);
         entityManager.persist(course);
     }
 

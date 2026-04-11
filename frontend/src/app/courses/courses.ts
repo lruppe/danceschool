@@ -144,10 +144,10 @@ export class CoursesComponent implements OnInit {
 
   protected statusChipClass(status: string): string {
     switch (status) {
-      case 'ACTIVE': return 'ds-chip-success';
-      case 'FULL': return 'ds-chip-default';
+      case 'OPEN': return 'ds-chip-success';
+      case 'RUNNING': return 'ds-chip-primary';
       case 'DRAFT': return 'ds-chip-default';
-      case 'INACTIVE': return 'ds-chip-default';
+      case 'FINISHED': return 'ds-chip-default';
       default: return 'ds-chip-default';
     }
   }

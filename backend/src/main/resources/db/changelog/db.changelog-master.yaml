@@ -25,3 +25,5 @@ databaseChangeLog:
       file: db/changelog/012-simplify-registration-fields.yaml
   - include:
       file: db/changelog/013-index-school-member-school-id.yaml
+  - include:
+      file: db/changelog/014-derived-course-status.yaml

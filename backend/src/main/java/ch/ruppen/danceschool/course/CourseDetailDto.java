@@ -26,8 +26,9 @@ public record CourseDetailDto(
         Integer roleBalanceThreshold,
         PriceModel priceModel,
         BigDecimal price,
-        CourseStatus status,
-        LocalDate publishDate,
-        int enrolledStudents
+        CourseLifecycleStatus status,
+        LocalDate publishedAt,
+        int enrolledStudents,
+        int completedSessions
 ) {
 }

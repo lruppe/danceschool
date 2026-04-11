@@ -80,8 +80,8 @@ export class CourseFormService {
       pricing: {
         priceModel: data['priceModel'] as string,
         price: data['price'] as number,
-        status: data['status'] as string,
-        publishDate: (data['publishDate'] as string) ?? '',
+        status: (data['status'] as string) ?? 'DRAFT',
+        publishDate: (data['publishedAt'] as string) ?? '',
       },
     });
     // Mark as pristine after loading — form is not "dirty" until user edits

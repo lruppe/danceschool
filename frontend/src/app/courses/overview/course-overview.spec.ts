@@ -28,9 +28,10 @@ function makeCourseDetail(overrides: Partial<CourseDetail> = {}): CourseDetail {
     roleBalanceThreshold: 2,
     priceModel: 'FIXED_COURSE',
     price: 166.5,
-    status: 'ACTIVE',
-    publishDate: null,
+    status: 'OPEN',
+    publishedAt: null,
     enrolledStudents: 12,
+    completedSessions: 0,
     ...overrides,
   };
 }
@@ -75,11 +76,11 @@ describe('CourseOverviewComponent', () => {
 
   it('should display course title and status chip after loading', () => {
     fixture.detectChanges();
-    httpTesting.expectOne(req => req.url.includes('/api/courses/1')).flush(makeCourseDetail({ title: 'Salsa Nights', status: 'ACTIVE' }));
+    httpTesting.expectOne(req => req.url.includes('/api/courses/1')).flush(makeCourseDetail({ title: 'Salsa Nights', status: 'OPEN' }));
     fixture.detectChanges();
 
     expect(el.querySelector('.overview-title')?.textContent?.trim()).toBe('Salsa Nights');
-    expect(el.querySelector('.ds-chip')?.textContent?.trim()).toBe('Active');
+    expect(el.querySelector('.ds-chip')?.textContent?.trim()).toBe('Open');
   });
 
   it('should display the back link', () => {

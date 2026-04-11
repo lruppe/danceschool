@@ -79,10 +79,7 @@ public class Course {
 
     private BigDecimal price;
 
-    @Enumerated(EnumType.STRING)
-    private CourseStatus status;
-
-    private LocalDate publishDate;
+    private LocalDate publishedAt;
 
     private int enrolledStudents;
 }

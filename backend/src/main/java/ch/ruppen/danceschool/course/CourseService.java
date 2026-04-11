@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,12 +21,15 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final SchoolService schoolService;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
-    public List<CourseListDto> getCoursesByMember(Long userId) {
+    public List<CourseListDto> getCoursesByMember(Long userId, CourseLifecycleStatus statusFilter) {
         School school = schoolService.findSchoolByMember(userId);
-        return courseRepository.findAllBySchoolId(school.getId()).stream()
-                .map(this::toListDto)
+        List<Course> courses = fetchCourses(school.getId(), statusFilter);
+        LocalDate today = LocalDate.now(clock);
+        return courses.stream()
+                .map(c -> toListDto(c, today))
                 .toList();
     }
 
@@ -50,7 +53,7 @@ public class CourseService {
         Course course = courseRepository.findByIdAndSchoolId(courseId, school.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
         applyDto(course, dto);
-        return toDetailDto(course);
+        return toDetailDto(course, LocalDate.now(clock));
     }
 
     @Transactional(readOnly = true)
@@ -58,19 +61,20 @@ public class CourseService {
         School school = schoolService.findSchoolByMember(userId);
         Course course = courseRepository.findByIdAndSchoolId(courseId, school.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
-        return toDetailDto(course);
+        return toDetailDto(course, LocalDate.now(clock));
     }
 
     /**
      * Seeds a course for dev/test data. Skips domain validation (seed data may have past dates).
      */
     @Transactional
-    public void seedCourse(Long userId, CreateCourseDto dto, int enrolledStudents) {
+    public void seedCourse(Long userId, CreateCourseDto dto, int enrolledStudents, LocalDate publishedAt) {
         School school = schoolService.findSchoolByMember(userId);
         Course course = new Course();
         course.setSchool(school);
         applyDto(course, dto);
         course.setEnrolledStudents(enrolledStudents);
+        course.setPublishedAt(publishedAt);
         courseRepository.save(course);
     }
 
@@ -80,15 +84,25 @@ public class CourseService {
         return courseRepository.existsBySchoolId(school.getId());
     }
 
+    private List<Course> fetchCourses(Long schoolId, CourseLifecycleStatus statusFilter) {
+        if (statusFilter == null) {
+            return courseRepository.findAllBySchoolId(schoolId);
+        }
+        LocalDate today = LocalDate.now(clock);
+        return switch (statusFilter) {
+            case DRAFT -> courseRepository.findDraftBySchoolId(schoolId);
+            case OPEN -> courseRepository.findOpenBySchoolId(schoolId, today);
+            case RUNNING -> courseRepository.findRunningBySchoolId(schoolId, today);
+            case FINISHED -> courseRepository.findFinishedBySchoolId(schoolId, today);
+        };
+    }
+
     private void validateDomainRules(CreateCourseDto dto, boolean isCreate) {
         if (!dto.startTime().isBefore(dto.endTime())) {
             throw new DomainRuleViolationException("Start time must be before end time");
         }
-        if (isCreate && !dto.startDate().isAfter(LocalDate.now())) {
+        if (isCreate && !dto.startDate().isAfter(LocalDate.now(clock))) {
             throw new DomainRuleViolationException("Start date must be in the future");
-        }
-        if (dto.publishDate() != null && dto.publishDate().isAfter(dto.startDate())) {
-            throw new DomainRuleViolationException("Publish date must not be after start date");
         }
         if (!dto.roleBalancingEnabled() && dto.roleBalanceThreshold() != null) {
             throw new DomainRuleViolationException(
@@ -116,8 +130,7 @@ public class CourseService {
         course.setRoleBalanceThreshold(dto.roleBalanceThreshold());
         course.setPriceModel(dto.priceModel());
         course.setPrice(dto.price());
-        course.setStatus(dto.status());
-        course.setPublishDate(dto.publishDate());
+        // status and publishDate from DTO are ignored — publishedAt is managed via publish endpoint
     }
 
     private LocalDate calculateEndDate(LocalDate startDate, RecurrenceType recurrenceType, int numberOfSessions) {
@@ -127,7 +140,7 @@ public class CourseService {
         return startDate.plusWeeks((long) (numberOfSessions - 1) * intervalWeeks);
     }
 
-    private CourseListDto toListDto(Course course) {
+    private CourseListDto toListDto(Course course, LocalDate today) {
         return new CourseListDto(
                 course.getId(),
                 course.getTitle(),
@@ -137,15 +150,19 @@ public class CourseService {
                 course.getStartTime(),
                 course.getEndTime(),
                 course.getNumberOfSessions(),
+                course.getStartDate(),
                 course.getEndDate(),
                 course.getEnrolledStudents(),
                 course.getMaxParticipants(),
                 course.getPrice(),
-                course.getStatus()
+                CourseStatusDerivation.deriveStatus(
+                        course.getPublishedAt(), course.getStartDate(), course.getEndDate(), today),
+                CourseStatusDerivation.deriveCompletedSessions(
+                        course.getStartDate(), course.getDayOfWeek(), course.getNumberOfSessions(), today)
         );
     }
 
-    private CourseDetailDto toDetailDto(Course course) {
+    private CourseDetailDto toDetailDto(Course course, LocalDate today) {
         return new CourseDetailDto(
                 course.getId(),
                 course.getTitle(),
@@ -167,9 +184,12 @@ public class CourseService {
                 course.getRoleBalanceThreshold(),
                 course.getPriceModel(),
                 course.getPrice(),
-                course.getStatus(),
-                course.getPublishDate(),
-                course.getEnrolledStudents()
+                CourseStatusDerivation.deriveStatus(
+                        course.getPublishedAt(), course.getStartDate(), course.getEndDate(), today),
+                course.getPublishedAt(),
+                course.getEnrolledStudents(),
+                CourseStatusDerivation.deriveCompletedSessions(
+                        course.getStartDate(), course.getDayOfWeek(), course.getNumberOfSessions(), today)
         );
     }
 }
