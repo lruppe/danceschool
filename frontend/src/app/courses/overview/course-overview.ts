@@ -7,7 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CourseDetail, CourseService } from '../course.service';
 import { CourseSummaryComponent, CourseSummaryData } from '../shared/course-summary';
-import { formatDayFull, formatTime } from '../shared/format-utils';
+import { formatDate, formatDayFull, formatTime } from '../shared/format-utils';
 import { extractErrorMessage } from '../../shared/error-utils';
 
 @Component({
@@ -47,13 +47,13 @@ export class CourseOverviewComponent implements OnInit {
       level: c.level,
       courseType: c.courseType,
       description: c.description,
-      startDate: c.startDate,
+      startDate: formatDate(c.startDate),
       dayOfWeek: formatDayFull(c.dayOfWeek),
       recurrenceType: c.recurrenceType,
       numberOfSessions: c.numberOfSessions,
       completedSessions: c.completedSessions,
       status: c.status,
-      endDate: c.endDate,
+      endDate: formatDate(c.endDate),
       startTime: formatTime(c.startTime),
       endTime: formatTime(c.endTime),
       location: c.location,

@@ -15,6 +15,7 @@ import { CourseFormService } from './course-form.service';
 import { extractErrorMessage } from '../../shared/error-utils';
 import { CourseService } from '../course.service';
 import { CourseSummaryComponent, CourseSummaryData } from '../shared/course-summary';
+import { formatDate } from '../shared/format-utils';
 import { deriveDayOfWeek, deriveEndDate } from './schedule-utils';
 import {
   DANCE_STYLES, COURSE_LEVELS, COURSE_TYPES, RECURRENCE_TYPES,
@@ -97,7 +98,7 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
       level: this.detailsGroup.controls.level.value,
       courseType: this.detailsGroup.controls.courseType.value,
       description: this.detailsGroup.controls.description.value || null,
-      startDate: this.scheduleGroup.controls.startDate.value,
+      startDate: formatDate(this.scheduleGroup.controls.startDate.value),
       dayOfWeek: this.derivedDayOfWeek,
       recurrenceType: this.scheduleGroup.controls.recurrenceType.value,
       numberOfSessions: this.scheduleGroup.controls.numberOfSessions.value ?? 0,

@@ -18,13 +18,12 @@ describe('deriveDayOfWeek', () => {
 describe('deriveEndDate', () => {
   it('calculates end date for 10 weekly sessions starting April 15', () => {
     const result = deriveEndDate('2026-04-15', 10, 'WEEKLY');
-    expect(result).toContain('June 17, 2026');
-    expect(result).toContain('Wednesday');
+    expect(result).toBe('17.06.2026');
   });
 
   it('returns the start date itself for 1 session', () => {
     const result = deriveEndDate('2026-04-15', 1, 'WEEKLY');
-    expect(result).toContain('April 15, 2026');
+    expect(result).toBe('15.04.2026');
   });
 
   it('returns empty string when startDate is missing', () => {
