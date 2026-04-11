@@ -104,6 +104,8 @@
               <input matInput type="date" formControlName="startDate" />
               @if (scheduleGroup.controls.startDate.hasError('required')) {
                 <mat-error>Start date is required</mat-error>
+              } @else if (scheduleGroup.controls.startDate.hasError('futureDate')) {
+                <mat-error>Start date must be in the future</mat-error>
               }
             </mat-form-field>
 
