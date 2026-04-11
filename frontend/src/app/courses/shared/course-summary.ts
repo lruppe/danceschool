@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import {
-  DANCE_STYLES, COURSE_LEVELS, COURSE_TYPES, RECURRENCE_TYPES, PRICE_MODELS, labelOf, CourseStatus,
+  DANCE_STYLES, COURSE_LEVELS, COURSE_TYPES, RECURRENCE_TYPES, PRICE_MODELS, labelOf,
 } from '../../shared/course-constants';
 
 export interface CourseSummaryData {
@@ -15,7 +15,7 @@ export interface CourseSummaryData {
   recurrenceType: string;
   numberOfSessions: number;
   completedSessions?: number;
-  status?: CourseStatus;
+  status?: string;
   endDate?: string | null;
   startTime: string;
   endTime: string;
