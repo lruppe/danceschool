@@ -1,0 +1,61 @@
+@use 'styles/mixins' as ds;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-6);
+}
+
+.summary-card {
+  background: var(--mat-sys-surface-variant);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-spacing-5) var(--ds-spacing-6);
+}
+
+.summary-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--ds-spacing-4);
+}
+
+.summary-card-title {
+  font: var(--mat-sys-title-medium);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+}
+
+.edit-link {
+  color: var(--mat-sys-primary);
+}
+
+.summary-card-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-spacing-3) var(--ds-spacing-5);
+
+  @include ds.bp-down(sm) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.summary-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-half);
+
+  &--full {
+    grid-column: 1 / -1;
+  }
+}
+
+.summary-label {
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.summary-value {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface);
+}

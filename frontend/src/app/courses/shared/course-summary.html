@@ -1,0 +1,123 @@
+@let d = data();
+
+<!-- Details Card -->
+<div class="summary-card">
+  <div class="summary-card-header">
+    <h3 class="summary-card-title">Details</h3>
+    <button mat-button class="edit-link" (click)="edit.emit(0)" type="button">Edit</button>
+  </div>
+  <div class="summary-card-fields">
+    <div class="summary-field">
+      <span class="summary-label">Title</span>
+      <span class="summary-value">{{ d.title }}</span>
+    </div>
+    <div class="summary-field">
+      <span class="summary-label">Dance Style</span>
+      <span class="summary-value">{{ label(danceStyles, d.danceStyle) }}</span>
+    </div>
+    <div class="summary-field">
+      <span class="summary-label">Level</span>
+      <span class="summary-value">{{ label(levels, d.level) }}</span>
+    </div>
+    <div class="summary-field">
+      <span class="summary-label">Course Type</span>
+      <span class="summary-value">{{ label(courseTypes, d.courseType) }}</span>
+    </div>
+    @if (d.description) {
+      <div class="summary-field summary-field--full">
+        <span class="summary-label">Description</span>
+        <span class="summary-value">{{ d.description }}</span>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Schedule Card -->
+<div class="summary-card">
+  <div class="summary-card-header">
+    <h3 class="summary-card-title">Schedule</h3>
+    <button mat-button class="edit-link" (click)="edit.emit(1)" type="button">Edit</button>
+  </div>
+  <div class="summary-card-fields">
+    <div class="summary-field">
+      <span class="summary-label">Start Date</span>
+      <span class="summary-value">{{ d.startDate }}</span>
+    </div>
+    <div class="summary-field">
+      <span class="summary-label">Recurrence</span>
+      <span class="summary-value">{{ label(recurrenceTypes, d.recurrenceType) }}</span>
+    </div>
+    <div class="summary-field">
+      <span class="summary-label">Day of Week</span>
+      <span class="summary-value">{{ d.dayOfWeek }}</span>
+    </div>
+    <div class="summary-field">
+      <span class="summary-label">Sessions</span>
+      <span class="summary-value">{{ d.numberOfSessions }}</span>
+    </div>
+    <div class="summary-field">
+      <span class="summary-label">Time</span>
+      <span class="summary-value">{{ d.startTime }} – {{ d.endTime }}</span>
+    </div>
+    @if (d.endDate) {
+      <div class="summary-field">
+        <span class="summary-label">End Date</span>
+        <span class="summary-value">{{ d.endDate }}</span>
+      </div>
+    }
+    <div class="summary-field summary-field--full">
+      <span class="summary-label">Location</span>
+      <span class="summary-value">{{ d.location }}</span>
+    </div>
+    @if (d.teachers) {
+      <div class="summary-field summary-field--full">
+        <span class="summary-label">Teachers</span>
+        <span class="summary-value">{{ d.teachers }}</span>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Registration Card -->
+<div class="summary-card">
+  <div class="summary-card-header">
+    <h3 class="summary-card-title">Registration</h3>
+    <button mat-button class="edit-link" (click)="edit.emit(2)" type="button">Edit</button>
+  </div>
+  <div class="summary-card-fields">
+    <div class="summary-field">
+      <span class="summary-label">Max Participants</span>
+      <span class="summary-value">{{ d.maxParticipants }}</span>
+    </div>
+    @if (d.isPartnerCourse) {
+      <div class="summary-field">
+        <span class="summary-label">Role Balancing</span>
+        <span class="summary-value">{{ d.roleBalancingEnabled ? 'Enabled' : 'Disabled' }}</span>
+      </div>
+      @if (d.roleBalancingEnabled && d.roleBalanceThreshold) {
+        <div class="summary-field">
+          <span class="summary-label">Max Imbalance</span>
+          <span class="summary-value">{{ d.roleBalanceThreshold }}</span>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Pricing Card -->
+<div class="summary-card">
+  <div class="summary-card-header">
+    <h3 class="summary-card-title">Pricing</h3>
+    <button mat-button class="edit-link" (click)="edit.emit(3)" type="button">Edit</button>
+  </div>
+  <div class="summary-card-fields">
+    <div class="summary-field">
+      <span class="summary-label">Price Model</span>
+      <span class="summary-value">{{ label(priceModels, d.priceModel) }}</span>
+    </div>
+    <div class="summary-field">
+      <span class="summary-label">Price</span>
+      <span class="summary-value">CHF {{ d.price }}</span>
+    </div>
+  </div>
+</div>
