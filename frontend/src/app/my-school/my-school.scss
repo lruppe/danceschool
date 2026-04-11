@@ -286,7 +286,7 @@
   font: var(--mat-sys-body-large);
   color: var(--mat-sys-on-surface-variant);
   margin-bottom: var(--ds-spacing-6);
-  max-width: 400px;
+  max-width: var(--ds-max-width-narrow);
 }
 
 // Loading / error states

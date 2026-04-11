@@ -32,6 +32,11 @@
   --ds-card-padding: var(--ds-spacing-6);
   --ds-section-gap: var(--ds-spacing-8);
   --ds-content-max-width: 960px;
+  --ds-max-width-narrow: 400px;
+
+  // ── Semantic size tokens ──
+  --ds-size-step-indicator: 28px;
+  --ds-size-filter-select: 150px;
 
   // ── Semantic colors (extend Material palette) ──
   // These map to Figma variables not covered by Material's built-in palette.

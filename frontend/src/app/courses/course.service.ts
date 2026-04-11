@@ -13,6 +13,7 @@ export interface CourseListItem {
   startTime: string;
   endTime: string;
   numberOfSessions: number;
+  endDate: string;
   enrolledStudents: number;
   maxParticipants: number;
   price: number;

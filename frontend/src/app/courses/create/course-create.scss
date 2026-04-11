@@ -50,7 +50,7 @@
 
 .stepper-connector {
   width: var(--ds-spacing-10);
-  height: 2px;
+  height: var(--ds-spacing-half);
   background: var(--mat-sys-outline-variant);
   flex-shrink: 0;
 }
@@ -75,8 +75,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: var(--ds-size-step-indicator);
+  height: var(--ds-size-step-indicator);
   border-radius: var(--ds-radius-full);
   font: var(--mat-sys-label-medium);
   flex-shrink: 0;
@@ -147,6 +147,36 @@
   gap: var(--ds-spacing-5);
 }
 
+// Derived fields (read-only computed values shown in schedule step)
+.derived-fields {
+  display: flex;
+  gap: var(--ds-spacing-8);
+  padding: var(--ds-spacing-4) var(--ds-spacing-5);
+  background: var(--mat-sys-surface-variant);
+  border-radius: var(--ds-radius-md);
+
+  @include ds.bp-down(sm) {
+    flex-direction: column;
+    gap: var(--ds-spacing-3);
+  }
+}
+
+.derived-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-1);
+}
+
+.derived-label {
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.derived-value {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface);
+}
+
 // Registration step
 .registration-step {
   display: flex;
@@ -157,21 +187,13 @@
 .toggle-field {
   display: flex;
   align-items: center;
-  padding-top: var(--ds-spacing-2);
+  gap: var(--ds-spacing-3);
 }
 
-.partner-settings {
+.role-balancing-section {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-spacing-5);
-  border: 1px solid var(--mat-sys-outline-variant);
-  border-radius: var(--ds-radius-md);
-  padding: var(--ds-spacing-6);
-
-  &.disabled {
-    opacity: 0.5;
-    pointer-events: none;
-  }
+  gap: var(--ds-spacing-4);
 }
 
 .section-title {
@@ -180,10 +202,32 @@
   margin: 0;
 }
 
-.section-hint {
-  font: var(--mat-sys-body-medium);
+.field-hint {
+  font: var(--mat-sys-body-small);
   color: var(--mat-sys-on-surface-variant);
   margin: 0;
+}
+
+.balancing-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-spacing-2);
+  padding: var(--ds-spacing-3);
+  border-radius: var(--ds-radius-md);
+  background: var(--mat-sys-error-container);
+}
+
+.warning-icon {
+  color: var(--mat-sys-error);
+  font-size: var(--mat-sys-body-large-size);
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.warning-text {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-error-container);
 }
 
 // Pricing step
@@ -227,23 +271,31 @@
   display: flex;
   flex-direction: column;
   gap: var(--ds-spacing-3);
+
+  &--grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ds-spacing-3) var(--ds-spacing-8);
+
+    @include ds.bp-down(sm) {
+      grid-template-columns: 1fr;
+    }
+  }
 }
 
 .review-field {
   display: flex;
-  gap: var(--ds-spacing-4);
+  flex-direction: column;
+  gap: var(--ds-spacing-1);
 
-  @include ds.bp-down(sm) {
-    flex-direction: column;
-    gap: var(--ds-spacing-1);
+  &--full {
+    grid-column: 1 / -1;
   }
 }
 
 .review-label {
-  font: var(--mat-sys-label-large);
+  font: var(--mat-sys-label-medium);
   color: var(--mat-sys-on-surface-variant);
-  min-width: var(--ds-spacing-24);
-  flex-shrink: 0;
 }
 
 .review-value {

@@ -23,7 +23,7 @@
 }
 
 .filter-select {
-  width: 150px;
+  width: var(--ds-size-filter-select);
 }
 
 .title-group {
@@ -72,7 +72,13 @@
   font: var(--mat-sys-body-large);
   color: var(--mat-sys-on-surface-variant);
   margin: 0 0 var(--ds-spacing-6);
-  max-width: 400px;
+  max-width: var(--ds-max-width-narrow);
+}
+
+// Actions column
+.mat-column-actions {
+  width: var(--ds-spacing-12);
+  text-align: center;
 }
 
 // Loading / error states
