@@ -165,16 +165,6 @@ export class CoursesComponent implements OnInit {
 
   protected statusChipClass = statusChipClass;
 
-  protected statusEmoji(status: string): string {
-    switch (status) {
-      case 'DRAFT': return '🟡';
-      case 'OPEN': return '🟢';
-      case 'RUNNING': return '🔵';
-      case 'FINISHED': return '⚫';
-      default: return '';
-    }
-  }
-
   protected danceStyleChipClass(style: string): string {
     switch (style) {
       case 'BACHATA': return 'ds-chip-primary';

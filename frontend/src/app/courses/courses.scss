@@ -25,13 +25,14 @@
   gap: var(--ds-spacing-3);
   margin-top: var(--ds-spacing-4);
 
-  // Compact form fields; input text matches the table body scale so controls
-  // and content read at the same size.
+  // Compact, quiet form fields; outline softened so filters read as supporting
+  // chrome rather than competing with the table.
   .mat-mdc-form-field {
     --mat-form-field-container-height: 40px;
     --mat-form-field-container-vertical-padding: 8px;
     --mdc-outlined-text-field-input-text-size: var(--mat-sys-body-medium-size);
     --mdc-outlined-text-field-label-text-size: var(--mat-sys-body-medium-size);
+    --mdc-outlined-text-field-outline-color: var(--mat-sys-outline-variant);
   }
 }
 

@@ -120,11 +120,11 @@ describe('CoursesComponent', () => {
     expect(cells.some(c => c?.includes('Session 3/8'))).toBe(true);
   });
 
-  it('should display status chip with emoji', () => {
+  it('should display status chip with dot indicator', () => {
     flushAllTabs({ running: [makeCourse()] });
 
     const chip = el.querySelector('.ds-chip');
-    expect(chip?.textContent?.trim()).toContain('🔵');
+    expect(chip?.querySelector('.ds-chip__dot')).toBeTruthy();
     expect(chip?.textContent?.trim()).toContain('Running');
   });
 
@@ -153,14 +153,6 @@ describe('CoursesComponent', () => {
       expect(component.statusChipClass('RUNNING')).toBe('ds-chip-primary');
       expect(component.statusChipClass('DRAFT')).toBe('ds-chip-default');
       expect(component.statusChipClass('FINISHED')).toBe('ds-chip-default');
-    });
-
-    it('should return correct status emoji', () => {
-      const component = fixture.componentInstance as any;
-      expect(component.statusEmoji('DRAFT')).toBe('🟡');
-      expect(component.statusEmoji('OPEN')).toBe('🟢');
-      expect(component.statusEmoji('RUNNING')).toBe('🔵');
-      expect(component.statusEmoji('FINISHED')).toBe('⚫');
     });
 
     it('should calculate starts in days', () => {
