@@ -24,3 +24,14 @@ export function formatDate(isoDate: string): string {
   const [year, month, day] = isoDate.split('-');
   return `${day}.${month}.${year}`;
 }
+
+/** Map a course lifecycle status to its chip class. */
+export function statusChipClass(status: string): string {
+  switch (status) {
+    case 'OPEN': return 'ds-chip-success';
+    case 'RUNNING': return 'ds-chip-primary';
+    case 'DRAFT': return 'ds-chip-default';
+    case 'FINISHED': return 'ds-chip-default';
+    default: return 'ds-chip-default';
+  }
+}

@@ -12,7 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { forkJoin } from 'rxjs';
 import { CourseListItem, CourseService } from './course.service';
-import { formatDayShort, formatTime as stripSeconds } from './shared/format-utils';
+import { formatDayShort, formatTime as stripSeconds, statusChipClass } from './shared/format-utils';
 import { DANCE_STYLES, COURSE_LEVELS } from '../shared/course-constants';
 
 interface CourseFilter {
@@ -162,15 +162,7 @@ export class CoursesComponent implements OnInit {
     return `${days} days`;
   }
 
-  protected statusChipClass(status: string): string {
-    switch (status) {
-      case 'OPEN': return 'ds-chip-success';
-      case 'RUNNING': return 'ds-chip-primary';
-      case 'DRAFT': return 'ds-chip-default';
-      case 'FINISHED': return 'ds-chip-default';
-      default: return 'ds-chip-default';
-    }
-  }
+  protected statusChipClass = statusChipClass;
 
   protected statusEmoji(status: string): string {
     switch (status) {

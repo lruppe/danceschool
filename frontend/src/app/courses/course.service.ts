@@ -53,10 +53,6 @@ export interface CourseDetail {
 export class CourseService {
   private http = inject(HttpClient);
 
-  getCourses(): Observable<CourseListItem[]> {
-    return this.http.get<CourseListItem[]>(`${environment.apiUrl}/api/courses/me`);
-  }
-
   getCoursesByStatus(status: string): Observable<CourseListItem[]> {
     return this.http.get<CourseListItem[]>(`${environment.apiUrl}/api/courses/me`, {
       params: { status },
@@ -71,8 +67,8 @@ export class CourseService {
     return this.http.post<{ id: number }>(`${environment.apiUrl}/api/courses`, dto);
   }
 
-  updateCourse(id: number, dto: Record<string, unknown>): Observable<void> {
-    return this.http.put<void>(`${environment.apiUrl}/api/courses/${id}`, dto);
+  updateCourse(id: number, dto: Record<string, unknown>): Observable<CourseDetail> {
+    return this.http.put<CourseDetail>(`${environment.apiUrl}/api/courses/${id}`, dto);
   }
 
   publishCourse(id: number): Observable<CourseDetail> {

@@ -7,7 +7,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CourseDetail, CourseService } from '../course.service';
 import { CourseSummaryComponent, CourseSummaryData } from '../shared/course-summary';
-import { formatDate, formatDayFull, formatTime } from '../shared/format-utils';
+import { formatDate, formatDayFull, formatTime, statusChipClass } from '../shared/format-utils';
 import { extractErrorMessage } from '../../shared/error-utils';
 
 @Component({
@@ -66,15 +66,7 @@ export class CourseOverviewComponent implements OnInit {
     };
   }
 
-  protected statusChipClass(status: string): string {
-    switch (status) {
-      case 'OPEN': return 'ds-chip-success';
-      case 'RUNNING': return 'ds-chip-primary';
-      case 'DRAFT': return 'ds-chip-default';
-      case 'FINISHED': return 'ds-chip-default';
-      default: return 'ds-chip-default';
-    }
-  }
+  protected statusChipClass = statusChipClass;
 
   protected onPublish(): void {
     const c = this.course();
