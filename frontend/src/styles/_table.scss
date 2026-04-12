@@ -34,6 +34,8 @@
     min-width: 0;
     padding: 0 var(--ds-spacing-4);
     font: var(--mat-sys-label-large);
+    text-transform: uppercase;
+    letter-spacing: var(--ds-letter-spacing-wide);
   }
 }
 
@@ -43,6 +45,7 @@
   .mat-mdc-header-row {
     height: 44px;
     border-bottom-color: var(--mat-sys-outline-variant);
+    background: var(--mat-sys-surface-container-low);
   }
 
   .mat-mdc-header-cell {
@@ -84,13 +87,24 @@
 }
 
 // ── Chip styles ──
-// Semantic colored chips for status, dance style, etc.
+// Semantic colored chips for status, dance style, etc. Status chips use an
+// optional `.ds-chip__dot` child to render a small leading dot in the chip's
+// own color; dance-style chips and plain chips omit it.
 .ds-chip {
   display: inline-flex;
   align-items: center;
   padding: var(--ds-spacing-1) var(--ds-spacing-3);
   border-radius: var(--ds-radius-md);
   font: var(--mat-sys-label-medium);
+}
+
+.ds-chip__dot {
+  width: var(--ds-spacing-2);
+  height: var(--ds-spacing-2);
+  border-radius: var(--ds-radius-full);
+  background: currentColor;
+  margin-right: var(--ds-spacing-2);
+  display: inline-block;
 }
 
 .ds-chip-success {
