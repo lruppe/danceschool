@@ -99,14 +99,6 @@
           <td mat-cell *matCellDef="let course">{{ course.price | currency:'CHF' }}</td>
         </ng-container>
 
-        <!-- Readiness (Draft tab) -->
-        <ng-container matColumnDef="readiness">
-          <th mat-header-cell *matHeaderCellDef>Readiness</th>
-          <td mat-cell *matCellDef="let course">
-            <span class="readiness-ready">Ready</span>
-          </td>
-        </ng-container>
-
         <!-- Enrollment (Open tab) -->
         <ng-container matColumnDef="enrollment">
           <th mat-header-cell *matHeaderCellDef mat-sort-header="enrolledStudents">Enrollment</th>

@@ -28,7 +28,7 @@ interface TabConfig {
 }
 
 const TAB_CONFIGS: TabConfig[] = [
-  { status: 'DRAFT', label: 'Draft', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'price', 'readiness'] },
+  { status: 'DRAFT', label: 'Draft', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'price'] },
   { status: 'OPEN', label: 'Open', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'enrollment', 'startsIn'] },
   { status: 'RUNNING', label: 'Running', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'progress', 'participants'] },
   { status: 'FINISHED', label: 'Finished', columns: ['status', 'title', 'danceStyle', 'level', 'schedule', 'participants'] },
