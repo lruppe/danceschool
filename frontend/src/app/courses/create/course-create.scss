@@ -149,7 +149,7 @@
 
 // Sessions row with inline derived fields
 .sessions-row {
-  align-items: center;
+  align-items: flex-end;
 }
 
 .third-width {
@@ -161,9 +161,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--ds-spacing-1);
-  padding: var(--ds-spacing-3) var(--ds-spacing-4);
-  background: var(--mat-sys-surface-variant);
-  border-radius: var(--ds-radius-md);
 }
 
 .derived-label {
@@ -174,6 +171,9 @@
 .derived-value {
   font: var(--mat-sys-body-large);
   color: var(--mat-sys-on-surface);
+  background: var(--mat-sys-surface-variant);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-spacing-3) var(--ds-spacing-4);
 }
 
 // Registration step
