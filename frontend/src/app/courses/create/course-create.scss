@@ -195,44 +195,11 @@
   gap: var(--ds-spacing-4);
 }
 
-.section-title {
-  font: var(--mat-sys-title-medium);
-  color: var(--mat-sys-on-surface);
-  margin: 0;
-}
-
-.section-hint {
-  font: var(--mat-sys-body-small);
-  color: var(--mat-sys-on-surface-variant);
-  margin: 0;
-}
-
 .field-hint {
   font: var(--mat-sys-body-small);
   color: var(--mat-sys-on-surface-variant);
   margin: 0;
-}
-
-.balancing-warning {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ds-spacing-2);
-  padding: var(--ds-spacing-3);
-  border-radius: var(--ds-radius-md);
-  background: var(--mat-sys-error-container);
-}
-
-.warning-icon {
-  color: var(--mat-sys-error);
-  font-size: var(--mat-sys-body-large-size);
-  width: var(--ds-spacing-5);
-  height: var(--ds-spacing-5);
-  flex-shrink: 0;
-}
-
-.warning-text {
-  font: var(--mat-sys-body-small);
-  color: var(--mat-sys-on-error-container);
+  padding: 0 var(--ds-spacing-4);
 }
 
 // Pricing step
