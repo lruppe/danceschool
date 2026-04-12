@@ -92,7 +92,7 @@ describe('CoursesComponent', () => {
       finished: [makeCourse({ id: 4, status: 'FINISHED' })],
     });
 
-    const tabs = el.querySelectorAll('.tab');
+    const tabs = el.querySelectorAll('a[mat-tab-link]');
     expect(tabs.length).toBe(4);
     // Order: Draft, Open, Running, Finished
     expect(tabs[0].textContent?.trim()).toBe('Draft (0)');
