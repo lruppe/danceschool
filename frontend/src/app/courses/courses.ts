@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
 import { forkJoin } from 'rxjs';
 import { CourseListItem, CourseService } from './course.service';
 import { formatDayShort, formatTime as stripSeconds, statusChipClass } from './shared/format-utils';
@@ -45,7 +46,7 @@ const DAY_ORDER: Record<string, number> = {
   selector: 'app-courses',
   imports: [
     MatTableModule, MatSortModule, MatIconModule, MatButtonModule,
-    MatFormFieldModule, MatInputModule, MatSelectModule,
+    MatFormFieldModule, MatInputModule, MatSelectModule, MatTabsModule,
     FormsModule, RouterLink, CurrencyPipe, TitleCasePipe, NgClass,
   ],
   templateUrl: './courses.html',

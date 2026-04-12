@@ -1,13 +1,40 @@
 // Shared table styles — reusable across all table pages (Courses, Students, Subscriptions, Payments).
 // Import via: @use 'styles' as ds; then apply classes to your template.
+//
+// Typography rule inside .ds-table-card:
+//   - Chrome (tabs, header cells)    -> label-medium / label-large
+//   - Content (table cells)          -> body-medium
+// Filters / search live outside the card (on the page background) and follow
+// the same body-medium input scale for consistency.
 
 // ── Table card wrapper ──
-// White card with border, wraps the mat-table + footer.
+// White card with border. May optionally start with a mat-tab-nav-bar acting as
+// the card header; otherwise it wraps just the mat-table + footer.
 .ds-table-card {
   background: var(--mat-sys-surface);
   border: 1px solid var(--mat-sys-outline-variant);
   border-radius: var(--ds-radius-lg);
   overflow: hidden;
+}
+
+// Optional: mat-tab-nav-bar used as the card header — left-align tabs and let
+// them size to their label instead of stretching.
+// NOTE: mat-tab-nav-bar does NOT support stretchTabs via config or binding
+// (angular/components#27211). When stretchTabs is (default) true, Material adds
+// `.mat-mdc-tab-nav-bar-stretch-tabs` and forces `flex: 1 0 auto` on both the
+// links container and each tab link. We disable that with a matching-specificity
+// override.
+.ds-table-card__tabs.mat-mdc-tab-nav-bar.mat-mdc-tab-nav-bar-stretch-tabs {
+  .mat-mdc-tab-links {
+    flex-grow: 0;
+  }
+
+  .mat-mdc-tab-link.mdc-tab {
+    flex-grow: 0;
+    min-width: 0;
+    padding: 0 var(--ds-spacing-4);
+    font: var(--mat-sys-label-large);
+  }
 }
 
 // ── Mat-table overrides ──

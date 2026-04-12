@@ -4,25 +4,34 @@
   gap: var(--ds-spacing-4);
 }
 
-// Page header
+// Page header (title + Add Course)
 .page-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  gap: var(--ds-spacing-4);
 }
 
-// Filter bar
+.page-title {
+  font: var(--mat-sys-headline-small);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+}
+
+// Filter bar (on page background, above the card)
 .filter-bar {
   display: flex;
   align-items: center;
   gap: var(--ds-spacing-3);
+  margin-top: var(--ds-spacing-4);
 
-  // Compact form fields — reduce Material's default density and match table font
+  // Compact form fields; input text matches the table body scale so controls
+  // and content read at the same size.
   .mat-mdc-form-field {
     --mat-form-field-container-height: 40px;
     --mat-form-field-container-vertical-padding: 8px;
-    --mdc-outlined-text-field-label-text-size: 14px;
-    --mdc-outlined-text-field-input-text-size: 14px;
+    --mdc-outlined-text-field-input-text-size: var(--mat-sys-body-medium-size);
+    --mdc-outlined-text-field-label-text-size: var(--mat-sys-body-medium-size);
   }
 }
 
@@ -32,12 +41,6 @@
 
 .filter-select {
   width: var(--ds-size-filter-select);
-}
-
-.page-title {
-  font: var(--mat-sys-headline-small);
-  color: var(--mat-sys-on-surface);
-  margin: 0;
 }
 
 // Empty state
@@ -71,35 +74,6 @@
   max-width: var(--ds-max-width-narrow);
 }
 
-// Tab bar (sits between filter bar and table card)
-.tab-bar {
-  display: flex;
-  gap: var(--ds-spacing-6);
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
-}
-
-.tab {
-  padding: var(--ds-spacing-4) var(--ds-spacing-1);
-  border: none;
-  background: none;
-  cursor: pointer;
-  font: var(--mat-sys-title-medium);
-  color: var(--mat-sys-on-surface-variant);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: color var(--ds-duration-fast) var(--ds-easing-standard),
-              border-color var(--ds-duration-fast) var(--ds-easing-standard);
-
-  &.active {
-    color: var(--mat-sys-on-surface);
-    border-bottom-color: var(--mat-sys-on-surface);
-    font-weight: 600;
-  }
-
-  &:hover:not(.active) {
-    color: var(--mat-sys-on-surface);
-  }
-}
 
 // Clickable table rows
 .clickable-row {
