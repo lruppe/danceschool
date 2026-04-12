@@ -65,8 +65,8 @@ export class CourseFormService {
         startDate: data['startDate'] as string,
         recurrenceType: data['recurrenceType'] as string,
         numberOfSessions: data['numberOfSessions'] as number,
-        startTime: data['startTime'] as string,
-        endTime: data['endTime'] as string,
+        startTime: toHHMM(data['startTime'] as string | undefined),
+        endTime: toHHMM(data['endTime'] as string | undefined),
         location: data['location'] as string,
         teachers: (data['teachers'] as string) ?? '',
       },
@@ -108,6 +108,10 @@ export class CourseFormService {
   reset(): void {
     this.form.reset();
   }
+}
+
+export function toHHMM(value: string | undefined): string {
+  return value ? value.slice(0, 5) : '';
 }
 
 export function futureDateValidator(control: AbstractControl): ValidationErrors | null {

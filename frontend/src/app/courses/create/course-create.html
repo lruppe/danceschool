@@ -182,13 +182,11 @@
             @if (registrationGroup.controls.maxParticipants.hasError('required')) {
               <mat-error>Max participants is required</mat-error>
             }
-            <mat-hint>When this limit is reached, new students are placed on a waiting list.</mat-hint>
+            <mat-hint>Extra students go on the waiting list.</mat-hint>
           </mat-form-field>
 
           @if (isPartnerCourse) {
             <div class="role-balancing-section">
-              <h3 class="section-title">Partner Course Settings</h3>
-
               <div class="toggle-field">
                 <mat-slide-toggle formControlName="roleBalancingEnabled">
                   Require Role Balancing
@@ -197,19 +195,18 @@
 
               @if (registrationGroup.controls.roleBalancingEnabled.value) {
                 <p class="field-hint">
-                  Ensures an even split between leaders and followers. When the imbalance exceeds the threshold, new students of the over-represented role are placed on the waiting list.
+                  Keeps leaders and followers roughly balanced — extras of the bigger role go on the waiting list.
                 </p>
 
                 <mat-form-field appearance="outline">
                   <mat-label>Max Imbalance</mat-label>
                   <input matInput type="number" formControlName="roleBalanceThreshold" min="0" />
-                  <mat-hint>Maximum allowed difference between leaders and followers before the waiting list activates for the over-represented role.</mat-hint>
+                  <mat-hint>Allowed difference before balancing kicks in.</mat-hint>
                 </mat-form-field>
               } @else {
-                <div class="balancing-warning">
-                  <mat-icon class="warning-icon">error</mat-icon>
-                  <span class="warning-text">Without role balancing, all spots could be filled by one role — e.g., 20 followers and 0 leaders.</span>
-                </div>
+                <p class="field-hint">
+                  Without balancing, all spots may be filled by one role.
+                </p>
               }
             </div>
           }
