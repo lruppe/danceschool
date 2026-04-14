@@ -4,34 +4,61 @@
   gap: var(--ds-spacing-4);
 }
 
-// Page header (title + Add Course)
-.page-header {
+// ── Top toolbar: tabs left, actions right (GitLab-style) ──
+.page-toolbar {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   gap: var(--ds-spacing-4);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
 }
 
-.page-title {
-  font: var(--mat-sys-headline-small);
-  color: var(--mat-sys-on-surface);
-  margin: 0;
+.page-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-2);
+  padding-bottom: var(--ds-spacing-2);
 }
 
-// Filter bar (on page background, above the card)
+.page-toolbar__tabs {
+  ::ng-deep .mat-mdc-tab-link.mdc-tab {
+    font: var(--mat-sys-label-large);
+    text-transform: none;
+    letter-spacing: normal;
+    padding: 0 var(--ds-spacing-4);
+    min-width: 0;
+    flex-grow: 0;
+  }
+
+  ::ng-deep .mat-mdc-tab-links {
+    flex-grow: 0;
+  }
+}
+
+.tab-label {
+  font-weight: 500;
+}
+
+.tab-count {
+  margin-left: var(--ds-spacing-2);
+  padding: 0 var(--ds-spacing-2);
+  border-radius: var(--ds-radius-md);
+  background: var(--mat-sys-surface-container-high);
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-small);
+  font-weight: 600;
+}
+
+// ── Filter row ──
 .filter-bar {
   display: flex;
   align-items: center;
   gap: var(--ds-spacing-3);
-  margin-top: var(--ds-spacing-4);
 
-  // Compact, quiet form fields; outline softened so filters read as supporting
-  // chrome rather than competing with the table.
   .mat-mdc-form-field {
     --mat-form-field-container-height: 40px;
     --mat-form-field-container-vertical-padding: 8px;
     --mdc-outlined-text-field-input-text-size: var(--mat-sys-body-medium-size);
-    --mdc-outlined-text-field-label-text-size: var(--mat-sys-body-medium-size);
     --mdc-outlined-text-field-outline-color: var(--mat-sys-outline-variant);
   }
 }
@@ -40,11 +67,37 @@
   flex: 1;
 }
 
-.filter-select {
-  width: var(--ds-size-filter-select);
+// ── Table: plain white header row, bold dark text (overrides shared grey) ──
+.courses-table {
+  ::ng-deep table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  ::ng-deep .mat-mdc-header-row {
+    background: var(--mat-sys-surface);
+  }
+
+  ::ng-deep .mat-mdc-header-cell {
+    font: var(--mat-sys-label-large);
+    font-weight: 500;
+    color: var(--mat-sys-on-surface);
+  }
+
+  // Consistent column widths across all tabs
+  ::ng-deep .mat-column-status      { width: 120px; }
+  ::ng-deep .mat-column-title       { width: auto; }
+  ::ng-deep .mat-column-danceStyle  { width: 120px; }
+  ::ng-deep .mat-column-level       { width: 140px; }
+  ::ng-deep .mat-column-dateRange   { width: 200px; }
+  ::ng-deep .mat-column-enrollment  { width: 120px; }
 }
 
-// Empty state
+.clickable-row {
+  cursor: pointer;
+}
+
+// ── Empty / loading / error ──
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -75,13 +128,6 @@
   max-width: var(--ds-max-width-narrow);
 }
 
-
-// Clickable table rows
-.clickable-row {
-  cursor: pointer;
-}
-
-// Loading / error states
 .loading {
   display: flex;
   justify-content: center;

@@ -84,7 +84,7 @@ describe('CoursesComponent', () => {
     expect(el.querySelector('.empty-state-title')?.textContent?.trim()).toBe('No courses yet');
   });
 
-  it('should render 4 tabs with correct labels and counts', () => {
+  it('should render 5 tabs with labels and counts (All + 4 statuses)', () => {
     flushAllTabs({
       running: [makeCourse({ id: 1 }), makeCourse({ id: 2 })],
       open: [makeCourse({ id: 3, status: 'OPEN' })],
@@ -93,31 +93,38 @@ describe('CoursesComponent', () => {
     });
 
     const tabs = el.querySelectorAll('a[mat-tab-link]');
-    expect(tabs.length).toBe(4);
-    // Order: Draft, Open, Running, Finished
-    expect(tabs[0].textContent?.trim()).toBe('Draft (0)');
-    expect(tabs[1].textContent?.trim()).toBe('Open (1)');
-    expect(tabs[2].textContent?.trim()).toBe('Running (2)');
-    expect(tabs[3].textContent?.trim()).toBe('Finished (1)');
+    expect(tabs.length).toBe(5);
+
+    const labels = Array.from(tabs).map(t => t.querySelector('.tab-label')?.textContent?.trim());
+    const counts = Array.from(tabs).map(t => t.querySelector('.tab-count')?.textContent?.trim());
+    expect(labels).toEqual(['All', 'Draft', 'Open', 'Running', 'Finished']);
+    expect(counts).toEqual(['4', '0', '1', '2', '1']);
   });
 
-  it('should show Running tab columns by default', () => {
+  it('should show unified column set across tabs', () => {
     flushAllTabs({ running: [makeCourse()] });
 
     const headers = Array.from(el.querySelectorAll('th')).map(th => th.textContent?.trim());
-    expect(headers).toContain('Status');
-    expect(headers).toContain('Course Name');
-    expect(headers).toContain('Progress');
-    expect(headers).toContain('Participants');
-    expect(headers).not.toContain('Price');
-    expect(headers).not.toContain('Starts In');
+    expect(headers).toEqual(['Status', 'Course Name', 'Type', 'Level', 'Start / End', 'Enrollment']);
   });
 
-  it('should display progress in Running tab', () => {
-    flushAllTabs({ running: [makeCourse({ completedSessions: 3, numberOfSessions: 8 })] });
+  it('should display enrollment for non-draft courses', () => {
+    flushAllTabs({ running: [makeCourse({ enrolledStudents: 12, maxParticipants: 20 })] });
 
     const cells = Array.from(el.querySelectorAll('td')).map(td => td.textContent?.trim());
-    expect(cells.some(c => c?.includes('Session 3/8'))).toBe(true);
+    expect(cells.some(c => c?.includes('12 / 20'))).toBe(true);
+  });
+
+  it('should leave enrollment blank for draft courses', () => {
+    flushAllTabs({ draft: [makeCourse({ status: 'DRAFT', enrolledStudents: 0, maxParticipants: 20 })] });
+    // Switch to Draft tab (index 1)
+    const component = fixture.componentInstance as any;
+    component.selectTab(1);
+    fixture.detectChanges();
+
+    const enrollmentCells = Array.from(el.querySelectorAll('td.mat-column-enrollment'));
+    expect(enrollmentCells.length).toBe(1);
+    expect(enrollmentCells[0].textContent?.trim()).toBe('');
   });
 
   it('should display status chip with dot indicator', () => {
@@ -131,12 +138,12 @@ describe('CoursesComponent', () => {
   it('should show correct count in table footer', () => {
     flushAllTabs({ running: [makeCourse({ id: 1 }), makeCourse({ id: 2 })] });
     const footer = el.querySelector('.ds-table-footer')?.textContent?.trim();
+    // All tab is default and aggregates all statuses
     expect(footer).toContain('2 of 2');
   });
 
   it('should display error state', () => {
     fixture.detectChanges();
-    // Error the first request — forkJoin cancels the rest
     const reqs = httpTesting.match(req => req.url.includes('/api/courses/me'));
     if (reqs.length > 0) {
       reqs[0].error(new ProgressEvent('error'));
@@ -155,33 +162,19 @@ describe('CoursesComponent', () => {
       expect(component.statusChipClass('FINISHED')).toBe('ds-chip-default');
     });
 
-    it('should calculate starts in days', () => {
-      const component = fixture.componentInstance as any;
-      const futureDate = new Date();
-      futureDate.setDate(futureDate.getDate() + 10);
-      const dateStr = futureDate.toISOString().split('T')[0];
-      expect(component.startsIn(dateStr)).toBe('10 days');
-    });
-
-    it('should return "1 day" for tomorrow', () => {
-      const component = fixture.componentInstance as any;
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const dateStr = tomorrow.toISOString().split('T')[0];
-      expect(component.startsIn(dateStr)).toBe('1 day');
-    });
-
-    it('should return "Today" for today or past dates', () => {
-      const component = fixture.componentInstance as any;
-      const today = new Date();
-      const dateStr = today.toISOString().split('T')[0];
-      expect(component.startsIn(dateStr)).toBe('Today');
-    });
-
     it('should calculate session duration in minutes', () => {
       const component = fixture.componentInstance as any;
       expect(component.sessionDuration('19:30:00', '20:45:00')).toBe(75);
       expect(component.sessionDuration('18:00:00', '19:00:00')).toBe(60);
+    });
+
+    it('should format date range with short month and year on end', () => {
+      const component = fixture.componentInstance as any;
+      const result: string = component.formatDateRange('2026-05-15', '2026-07-03');
+      expect(result).toContain('May');
+      expect(result).toContain('Jul');
+      expect(result).toContain('2026');
+      expect(result).toContain('–');
     });
 
     it('should return correct dance style chip class', () => {

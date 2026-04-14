@@ -1,58 +1,38 @@
 @if (loaded() && !error()) {
-  <!-- Page Header -->
-  <div class="page-header">
-    <h1 class="page-title">Courses</h1>
-    @if (hasAnyCourses()) {
-      <button mat-flat-button routerLink="/app/courses/create">
-        <mat-icon>add</mat-icon>
-        Add Course
-      </button>
-    }
-  </div>
-
   @if (hasAnyCourses()) {
-    <!-- Filter Bar (on page background, above the card) -->
-    <div class="filter-bar">
-      <mat-form-field class="filter-search" appearance="outline" subscriptSizing="dynamic">
-        <mat-icon matPrefix>search</mat-icon>
-        <input matInput placeholder="Search courses..." [(ngModel)]="searchText" (ngModelChange)="applyFilter()" />
-      </mat-form-field>
-
-      <mat-form-field class="filter-select" appearance="outline" subscriptSizing="dynamic">
-        <mat-select placeholder="Dance Type" [(ngModel)]="selectedDanceStyle" (ngModelChange)="applyFilter()">
-          <mat-option value="">All Types</mat-option>
-          @for (style of danceStyles; track style) {
-            <mat-option [value]="style">{{ style | titlecase }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field class="filter-select" appearance="outline" subscriptSizing="dynamic">
-        <mat-select placeholder="Level" [(ngModel)]="selectedLevel" (ngModelChange)="applyFilter()">
-          <mat-option value="">All Levels</mat-option>
-          @for (level of levels; track level) {
-            <mat-option [value]="level">{{ level | titlecase }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    </div>
-
-    <!-- Table Card (tabs + table) -->
-    <div class="ds-table-card">
-      <nav mat-tab-nav-bar [tabPanel]="coursesTabPanel" mat-align-tabs="start" class="ds-table-card__tabs">
+    <!-- Top toolbar: tabs left, actions right -->
+    <div class="page-toolbar">
+      <nav mat-tab-nav-bar [tabPanel]="coursesTabPanel" mat-align-tabs="start" class="page-toolbar__tabs">
         @for (tab of tabs; track tab.status; let i = $index) {
           <a
             mat-tab-link
             (click)="selectTab(i)"
             [active]="activeTabIndex() === i"
           >
-            {{ tab.label }} ({{ tabCounts()[i] }})
+            <span class="tab-label">{{ tab.label }}</span>
+            <span class="tab-count">{{ tabCounts()[i] }}</span>
           </a>
         }
       </nav>
-      <mat-tab-nav-panel #coursesTabPanel>
+      <div class="page-toolbar__actions">
+        <button mat-flat-button routerLink="/app/courses/create">
+          <mat-icon>add</mat-icon>
+          Add Course
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter row: full-width search -->
+    <div class="filter-bar">
+      <mat-form-field class="filter-search" appearance="outline" subscriptSizing="dynamic">
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput placeholder="Search or filter courses..." [(ngModel)]="searchText" (ngModelChange)="applyFilter()" />
+      </mat-form-field>
+    </div>
+
+    <mat-tab-nav-panel #coursesTabPanel>
+      <div class="ds-table-card courses-table">
         <table mat-table [dataSource]="activeDataSource()" matSort>
-          <!-- Status -->
           <ng-container matColumnDef="status">
             <th mat-header-cell *matHeaderCellDef>Status</th>
             <td mat-cell *matCellDef="let course">
@@ -63,13 +43,11 @@
             </td>
           </ng-container>
 
-          <!-- Course Name -->
           <ng-container matColumnDef="title">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Course Name</th>
             <td mat-cell *matCellDef="let course">{{ course.title }}</td>
           </ng-container>
 
-          <!-- Type (Dance Style) -->
           <ng-container matColumnDef="danceStyle">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
             <td mat-cell *matCellDef="let course">
@@ -79,62 +57,38 @@
             </td>
           </ng-container>
 
-          <!-- Level -->
           <ng-container matColumnDef="level">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Level</th>
             <td mat-cell *matCellDef="let course">{{ course.level | titlecase }}</td>
           </ng-container>
 
-          <!-- Schedule -->
-          <ng-container matColumnDef="schedule">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Schedule</th>
+          <ng-container matColumnDef="dateRange">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Start / End</th>
             <td mat-cell *matCellDef="let course">
-              <div class="ds-cell-primary">{{ formatDay(course.dayOfWeek) }}, {{ formatTime(course.startTime) }} – {{ formatTime(course.endTime) }}</div>
-              <div class="ds-cell-secondary">{{ course.numberOfSessions }} sessions × {{ sessionDuration(course.startTime, course.endTime) }} min</div>
+              <div class="ds-cell-primary">{{ formatDateRange(course.startDate, course.endDate) }}</div>
+              <div class="ds-cell-secondary">{{ sessionDuration(course.startTime, course.endTime) }} min / session</div>
             </td>
           </ng-container>
 
-          <!-- Price (Draft tab) -->
-          <ng-container matColumnDef="price">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Price</th>
-            <td mat-cell *matCellDef="let course">{{ course.price | currency:'CHF' }}</td>
-          </ng-container>
-
-          <!-- Enrollment (Open tab) -->
           <ng-container matColumnDef="enrollment">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="enrolledStudents">Enrollment</th>
-            <td mat-cell *matCellDef="let course">{{ course.enrolledStudents }} / {{ course.maxParticipants }}</td>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Enrollment</th>
+            <td mat-cell *matCellDef="let course">
+              @if (course.status !== 'DRAFT') {
+                {{ course.enrolledStudents }} / {{ course.maxParticipants }}
+              }
+            </td>
           </ng-container>
 
-          <!-- Starts In (Open tab) -->
-          <ng-container matColumnDef="startsIn">
-            <th mat-header-cell *matHeaderCellDef>Starts In</th>
-            <td mat-cell *matCellDef="let course">{{ startsIn(course.startDate) }}</td>
-          </ng-container>
-
-          <!-- Progress (Running tab) -->
-          <ng-container matColumnDef="progress">
-            <th mat-header-cell *matHeaderCellDef>Progress</th>
-            <td mat-cell *matCellDef="let course">Session {{ course.completedSessions }}/{{ course.numberOfSessions }}</td>
-          </ng-container>
-
-          <!-- Participants (Running/Finished tabs) -->
-          <ng-container matColumnDef="participants">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header="enrolledStudents">Participants</th>
-            <td mat-cell *matCellDef="let course">{{ course.enrolledStudents }} students</td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="activeTab().columns"></tr>
-          <tr mat-row *matRowDef="let row; columns: activeTab().columns;" [routerLink]="['/app/courses', row.id]" class="clickable-row"></tr>
+          <tr mat-header-row *matHeaderRowDef="columns"></tr>
+          <tr mat-row *matRowDef="let row; columns: columns;" [routerLink]="['/app/courses', row.id]" class="clickable-row"></tr>
         </table>
 
         <div class="ds-table-footer">
           Showing {{ activeDataSource().filteredData.length }} of {{ tabCounts()[activeTabIndex()] }} courses
         </div>
-      </mat-tab-nav-panel>
-    </div>
+      </div>
+    </mat-tab-nav-panel>
   } @else {
-    <!-- Empty State -->
     <div class="empty-state">
       <mat-icon class="empty-state-icon">school</mat-icon>
       <h2 class="empty-state-title">No courses yet</h2>
