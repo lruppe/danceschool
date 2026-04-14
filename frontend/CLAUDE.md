@@ -62,6 +62,7 @@ Custom design tokens (`--ds-*`) extend Material's system tokens (`--mat-sys-*`).
 - `src/styles/_tokens.scss` — spacing scale, border radius, semantic colors, semantic layout, motion
 - `src/styles/_mixins.scss` — responsive breakpoint mixins
 - `src/styles/_index.scss` — barrel file (import via `@use 'styles' as ds;`, enabled by `includePaths` in angular.json)
+- `src/styles/_table.scss` — shared chrome for list/table pages (`.ds-page-toolbar`, `.ds-filter-bar`, `.ds-table-card`, chips, cells). Read its header comment before building a new list page; copy the Courses page skeleton and swap column defs rather than wrapping mat-table.
 
 **Strict rules — always enforced:**
 1. **Spacing/layout:** MUST use `--ds-spacing-*` or semantic layout tokens. Hardcoded `px`, `rem`, or `em` values for margins, padding, and gaps are forbidden. If the scale doesn't have the value you need, add a new token to `_tokens.scss` — do not inline it.

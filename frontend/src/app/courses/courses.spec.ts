@@ -95,8 +95,8 @@ describe('CoursesComponent', () => {
     const tabs = el.querySelectorAll('a[mat-tab-link]');
     expect(tabs.length).toBe(5);
 
-    const labels = Array.from(tabs).map(t => t.querySelector('.tab-label')?.textContent?.trim());
-    const counts = Array.from(tabs).map(t => t.querySelector('.tab-count')?.textContent?.trim());
+    const labels = Array.from(tabs).map(t => t.querySelector('.ds-tab-label')?.textContent?.trim());
+    const counts = Array.from(tabs).map(t => t.querySelector('.ds-tab-count')?.textContent?.trim());
     expect(labels).toEqual(['All', 'Draft', 'Open', 'Running', 'Finished']);
     expect(counts).toEqual(['4', '0', '1', '2', '1']);
   });

@@ -1,20 +1,19 @@
 @if (loaded() && !error()) {
   @if (hasAnyCourses()) {
-    <!-- Top toolbar: tabs left, actions right -->
-    <div class="page-toolbar">
-      <nav mat-tab-nav-bar [tabPanel]="coursesTabPanel" mat-align-tabs="start" class="page-toolbar__tabs">
+    <div class="ds-page-toolbar">
+      <nav mat-tab-nav-bar [tabPanel]="coursesTabPanel" mat-align-tabs="start" class="ds-page-toolbar__tabs">
         @for (tab of tabs; track tab.status; let i = $index) {
           <a
             mat-tab-link
             (click)="selectTab(i)"
             [active]="activeTabIndex() === i"
           >
-            <span class="tab-label">{{ tab.label }}</span>
-            <span class="tab-count">{{ tabCounts()[i] }}</span>
+            <span class="ds-tab-label">{{ tab.label }}</span>
+            <span class="ds-tab-count">{{ tabCounts()[i] }}</span>
           </a>
         }
       </nav>
-      <div class="page-toolbar__actions">
+      <div class="ds-page-toolbar__actions">
         <button mat-flat-button routerLink="/app/courses/create">
           <mat-icon>add</mat-icon>
           Add Course
@@ -22,9 +21,8 @@
       </div>
     </div>
 
-    <!-- Filter row: full-width search -->
-    <div class="filter-bar">
-      <mat-form-field class="filter-search" appearance="outline" subscriptSizing="dynamic">
+    <div class="ds-filter-bar">
+      <mat-form-field class="ds-filter-search" appearance="outline" subscriptSizing="dynamic">
         <mat-icon matPrefix>search</mat-icon>
         <input matInput placeholder="Search or filter courses..." [(ngModel)]="searchText" (ngModelChange)="applyFilter()" />
       </mat-form-field>
