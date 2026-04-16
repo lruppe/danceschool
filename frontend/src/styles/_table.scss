@@ -1,11 +1,23 @@
-// Shared table styles — reusable across all table pages (Courses, Students, Subscriptions, Payments).
-// Import via: @use 'styles' as ds; then apply classes to your template.
+// Shared table-page styles — reusable across all list pages (Courses, Students,
+// Subscriptions, Payments). Loaded globally via `styles.scss`, so classes are
+// available without any @use in component SCSS.
 //
-// Typography rule inside .ds-table-card:
-//   - Chrome (tabs, header cells)    -> label-medium / label-large
-//   - Content (table cells)          -> body-medium
-// Filters / search live outside the card (on the page background) and follow
-// the same body-medium input scale for consistency.
+// Page layout (top → bottom):
+//   .ds-page-toolbar          ← tabs (left) + action buttons (right), hairline under
+//     .ds-page-toolbar__tabs  ← mat-tab-nav-bar
+//       .ds-tab-label / .ds-tab-count  ← label + pill badge
+//     .ds-page-toolbar__actions
+//   .ds-filter-bar            ← full-width search + optional trailing controls
+//     .ds-filter-search
+//   .ds-table-card            ← white card wrapping the mat-table + .ds-table-footer
+//
+// Typography inside .ds-table-card:
+//   - Header cells -> label-large, weight 500
+//   - Body cells   -> body-medium
+//
+// Each page keeps only its own column templates and column-width overrides in
+// its own SCSS. Do not wrap mat-table in a bespoke component — mat-table is the
+// reusable primitive; these styles are the shared chrome.
 
 // ── Table card wrapper ──
 // White card with border. May optionally start with a mat-tab-nav-bar acting as
@@ -17,14 +29,26 @@
   overflow: hidden;
 }
 
-// Optional: mat-tab-nav-bar used as the card header — left-align tabs and let
-// them size to their label instead of stretching.
-// NOTE: mat-tab-nav-bar does NOT support stretchTabs via config or binding
-// (angular/components#27211). When stretchTabs is (default) true, Material adds
-// `.mat-mdc-tab-nav-bar-stretch-tabs` and forces `flex: 1 0 auto` on both the
-// links container and each tab link. We disable that with a matching-specificity
-// override.
-.ds-table-card__tabs.mat-mdc-tab-nav-bar.mat-mdc-tab-nav-bar-stretch-tabs {
+// ── Page toolbar (tabs left + actions right, GitLab-style) ──
+// Sits above the table card on the page background. NOTE: mat-tab-nav-bar does
+// not support stretchTabs via config (angular/components#27211), so we disable
+// its default `flex: 1 0 auto` with a matching-specificity override.
+.ds-page-toolbar {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: var(--ds-spacing-4);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.ds-page-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-2);
+  padding-bottom: var(--ds-spacing-2);
+}
+
+.ds-page-toolbar__tabs.mat-mdc-tab-nav-bar.mat-mdc-tab-nav-bar-stretch-tabs {
   .mat-mdc-tab-links {
     flex-grow: 0;
   }
@@ -34,24 +58,61 @@
     min-width: 0;
     padding: 0 var(--ds-spacing-4);
     font: var(--mat-sys-label-large);
-    text-transform: uppercase;
-    letter-spacing: var(--ds-letter-spacing-wide);
+    text-transform: none;
+    letter-spacing: normal;
   }
+}
+
+.ds-tab-label {
+  font-weight: 500;
+}
+
+.ds-tab-count {
+  margin-left: var(--ds-spacing-2);
+  padding: 0 var(--ds-spacing-2);
+  border-radius: var(--ds-radius-md);
+  background: var(--mat-sys-surface-container-high);
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-small);
+  font-weight: 600;
+}
+
+// ── Filter bar (full-width search + optional trailing controls) ──
+.ds-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-3);
+
+  .mat-mdc-form-field {
+    --mat-form-field-container-height: 40px;
+    --mat-form-field-container-vertical-padding: 8px;
+    --mdc-outlined-text-field-input-text-size: var(--mat-sys-body-medium-size);
+    --mdc-outlined-text-field-outline-color: var(--mat-sys-outline-variant);
+  }
+}
+
+.ds-filter-search {
+  flex: 1;
 }
 
 // ── Mat-table overrides ──
 // Applied inside .ds-table-card via Angular Material's mat-table directive.
 .ds-table-card {
+  table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
   .mat-mdc-header-row {
     height: 44px;
     border-bottom-color: var(--mat-sys-outline-variant);
-    background: var(--mat-sys-surface-container-low);
+    background: var(--mat-sys-surface);
   }
 
   .mat-mdc-header-cell {
-    font: var(--mat-sys-label-medium);
-    font-weight: 600;
-    color: var(--mat-sys-on-surface-variant);
+    font: var(--mat-sys-label-large);
+    font-weight: 500;
+    color: var(--mat-sys-on-surface);
   }
 
   .mat-mdc-row {
@@ -63,6 +124,12 @@
     font: var(--mat-sys-body-medium);
     color: var(--mat-sys-on-surface);
   }
+}
+
+// Clickable rows (when the whole row routes somewhere)
+.ds-table-card .clickable-row,
+.clickable-row {
+  cursor: pointer;
 }
 
 // ── Multi-line cell pattern ──
