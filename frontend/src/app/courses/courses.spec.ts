@@ -142,6 +142,57 @@ describe('CoursesComponent', () => {
     expect(footer).toContain('2 of 2');
   });
 
+  it('should aggregate all statuses into the All tab', () => {
+    flushAllTabs({
+      running: [makeCourse({ id: 1 }), makeCourse({ id: 2 })],
+      open: [makeCourse({ id: 3, status: 'OPEN' })],
+      draft: [makeCourse({ id: 4, status: 'DRAFT' })],
+      finished: [makeCourse({ id: 5, status: 'FINISHED' }), makeCourse({ id: 6, status: 'FINISHED' })],
+    });
+
+    const component = fixture.componentInstance as any;
+    expect(component.tabCounts()[0]).toBe(6);
+    expect(component.tabData[0].data.map((c: CourseListItem) => c.id).sort()).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  describe('search filter', () => {
+    it('matches title case-insensitively', () => {
+      flushAllTabs({
+        running: [
+          makeCourse({ id: 1, title: 'Bachata Fundamentals', danceStyle: 'BACHATA' }),
+          makeCourse({ id: 2, title: 'Salsa Intermediate', danceStyle: 'SALSA' }),
+        ],
+      });
+      const component = fixture.componentInstance as any;
+      component.searchText = 'fundamentals';
+      component.applyFilter();
+
+      expect(component.tabData[0].filteredData.map((c: CourseListItem) => c.id)).toEqual([1]);
+    });
+
+    it('matches dance style, level, and day of week', () => {
+      flushAllTabs({
+        running: [
+          makeCourse({ id: 1, danceStyle: 'BACHATA', level: 'BEGINNER', dayOfWeek: 'FRIDAY' }),
+          makeCourse({ id: 2, danceStyle: 'SALSA', level: 'ADVANCED', dayOfWeek: 'MONDAY' }),
+        ],
+      });
+      const component = fixture.componentInstance as any;
+
+      component.searchText = 'salsa';
+      component.applyFilter();
+      expect(component.tabData[0].filteredData.map((c: CourseListItem) => c.id)).toEqual([2]);
+
+      component.searchText = 'beginner';
+      component.applyFilter();
+      expect(component.tabData[0].filteredData.map((c: CourseListItem) => c.id)).toEqual([1]);
+
+      component.searchText = 'monday';
+      component.applyFilter();
+      expect(component.tabData[0].filteredData.map((c: CourseListItem) => c.id)).toEqual([2]);
+    });
+  });
+
   it('should display error state', () => {
     fixture.detectChanges();
     const reqs = httpTesting.match(req => req.url.includes('/api/courses/me'));
