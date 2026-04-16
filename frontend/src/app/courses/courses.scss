@@ -4,14 +4,15 @@
   gap: var(--ds-spacing-4);
 }
 
-// Column widths specific to the courses table
+// Column widths specific to the courses table — proportions of the card width
+// (table-layout: fixed + width: 100% means these stretch evenly on wider viewports).
 .courses-table {
-  ::ng-deep .mat-column-status      { width: 120px; }
-  ::ng-deep .mat-column-title       { width: auto; }
-  ::ng-deep .mat-column-danceStyle  { width: 120px; }
-  ::ng-deep .mat-column-level       { width: 140px; }
-  ::ng-deep .mat-column-dateRange   { width: 200px; }
-  ::ng-deep .mat-column-enrollment  { width: 120px; }
+  ::ng-deep .mat-column-status      { width: 12%; }
+  ::ng-deep .mat-column-title       { width: 28%; }
+  ::ng-deep .mat-column-danceStyle  { width: 14%; }
+  ::ng-deep .mat-column-level       { width: 13%; }
+  ::ng-deep .mat-column-dateRange   { width: 20%; }
+  ::ng-deep .mat-column-enrollment  { width: 13%; }
 }
 
 // ── Empty / loading / error ──
