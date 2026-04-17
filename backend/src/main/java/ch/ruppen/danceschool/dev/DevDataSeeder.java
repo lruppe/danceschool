@@ -7,8 +7,11 @@ import ch.ruppen.danceschool.course.CreateCourseDto;
 import ch.ruppen.danceschool.course.DanceStyle;
 import ch.ruppen.danceschool.course.PriceModel;
 import ch.ruppen.danceschool.course.RecurrenceType;
+import ch.ruppen.danceschool.school.School;
 import ch.ruppen.danceschool.school.SchoolService;
 import ch.ruppen.danceschool.school.SchoolUpdateDto;
+import ch.ruppen.danceschool.student.CreateStudentDto;
+import ch.ruppen.danceschool.student.StudentService;
 import ch.ruppen.danceschool.user.AppUser;
 import ch.ruppen.danceschool.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * Seeds development users and a school on startup so that local dev login
@@ -38,6 +42,7 @@ public class DevDataSeeder implements ApplicationRunner {
     private final UserService userService;
     private final SchoolService schoolService;
     private final CourseService courseService;
+    private final StudentService studentService;
 
     @Override
     @Transactional
@@ -60,6 +65,7 @@ public class DevDataSeeder implements ApplicationRunner {
         }
 
         seedCourses(owner, owner2);
+        seedStudents(owner, owner2);
 
         log.info("Dev data seeded: owner@test.com (School 1), owner2@test.com (School 2)");
     }
@@ -146,5 +152,53 @@ public class DevDataSeeder implements ApplicationRunner {
                     "Main Hall", "Ana, Luis", 12, true, null,
                     PriceModel.FIXED_COURSE, new BigDecimal("200.00")), 8, today.minusDays(2));
         }
+    }
+
+    private void seedStudents(AppUser owner, AppUser owner2) {
+        if (studentService.hasStudentsForSchool(owner.getId())) {
+            return;
+        }
+
+        School school1 = schoolService.findSchoolByMember(owner.getId());
+        School school2 = schoolService.findSchoolByMember(owner2.getId());
+
+        // School 1: 7 students with varied dance levels
+        studentService.seedStudent(school1, "Anna Müller", "anna.mueller@example.com", "+41 79 100 0001",
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.INTERMEDIATE),
+                        new CreateStudentDto.DanceLevelEntry(DanceStyle.BACHATA, CourseLevel.BEGINNER)));
+
+        studentService.seedStudent(school1, "Marco Rossi", "marco.rossi@example.com", "+41 79 100 0002",
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.ADVANCED),
+                        new CreateStudentDto.DanceLevelEntry(DanceStyle.BACHATA, CourseLevel.INTERMEDIATE),
+                        new CreateStudentDto.DanceLevelEntry(DanceStyle.KIZOMBA, CourseLevel.BEGINNER)));
+
+        studentService.seedStudent(school1, "Laura Weber", "laura.weber@example.com", "+41 79 100 0003",
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.BACHATA, CourseLevel.ADVANCED)));
+
+        studentService.seedStudent(school1, "David Kim", "david.kim@example.com", null,
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.STARTER)));
+
+        studentService.seedStudent(school1, "Sofia Martinez", "sofia.martinez@example.com", "+41 79 100 0005",
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.BEGINNER),
+                        new CreateStudentDto.DanceLevelEntry(DanceStyle.KIZOMBA, CourseLevel.INTERMEDIATE)));
+
+        studentService.seedStudent(school1, "Jan de Vries", "jan.devries@example.com", "+41 79 100 0006",
+                List.of());
+
+        studentService.seedStudent(school1, "Yuki Tanaka", "yuki.tanaka@example.com", "+41 79 100 0007",
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.INTERMEDIATE),
+                        new CreateStudentDto.DanceLevelEntry(DanceStyle.BACHATA, CourseLevel.INTERMEDIATE),
+                        new CreateStudentDto.DanceLevelEntry(DanceStyle.ZOUK, CourseLevel.BEGINNER)));
+
+        // School 2: 3 students
+        studentService.seedStudent(school2, "Elena Fischer", "elena.fischer@example.com", "+41 79 200 0001",
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.BEGINNER)));
+
+        studentService.seedStudent(school2, "Thomas Bauer", "thomas.bauer@example.com", "+41 79 200 0002",
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.BACHATA, CourseLevel.INTERMEDIATE),
+                        new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.INTERMEDIATE)));
+
+        studentService.seedStudent(school2, "Mia Schmidt", "mia.schmidt@example.com", null,
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.STARTER)));
     }
 }

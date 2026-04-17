@@ -27,3 +27,7 @@ databaseChangeLog:
       file: db/changelog/013-index-school-member-school-id.yaml
   - include:
       file: db/changelog/014-derived-course-status.yaml
+  - include:
+      file: db/changelog/015-create-student.yaml
+  - include:
+      file: db/changelog/016-create-student-dance-level.yaml
