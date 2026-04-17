@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 018-add-requires-approval-to-course
+      author: claude
+      changes:
+        - addColumn:
+            tableName: course
+            columns:
+              - column:
+                  name: requires_approval
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false

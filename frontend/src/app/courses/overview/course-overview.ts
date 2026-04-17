@@ -1,18 +1,37 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgClass, TitleCasePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CourseDetail, CourseService } from '../course.service';
 import { CourseSummaryComponent, CourseSummaryData } from '../shared/course-summary';
+import { EnrollmentListItem, EnrollmentService } from '../enrollment.service';
 import { formatDate, formatDayFull, formatTime, statusChipClass } from '../shared/format-utils';
 import { extractErrorMessage } from '../../shared/error-utils';
 
+interface EnrollmentTab {
+  label: string;
+  key: string;
+}
+
+const ENROLLMENT_TABS: EnrollmentTab[] = [
+  { label: 'Enrolled', key: 'CONFIRMED' },
+  { label: 'Waitlist', key: 'WAITLISTED' },
+  { label: 'Approve', key: 'PENDING_APPROVAL' },
+  { label: 'Open Payment', key: 'PENDING_PAYMENT' },
+];
+
 @Component({
   selector: 'app-course-overview',
-  imports: [RouterLink, NgClass, TitleCasePipe, MatButtonModule, CourseSummaryComponent],
+  imports: [
+    RouterLink, NgClass, TitleCasePipe,
+    MatButtonModule, MatTableModule, MatTabsModule,
+    CourseSummaryComponent,
+  ],
   templateUrl: './course-overview.html',
   styleUrl: './course-overview.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,10 +42,42 @@ export class CourseOverviewComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private destroyRef = inject(DestroyRef);
   private courseService = inject(CourseService);
+  private enrollmentService = inject(EnrollmentService);
 
   protected course = signal<CourseDetail | null>(null);
   protected loading = signal(true);
   protected publishing = signal(false);
+  protected enrollments = signal<EnrollmentListItem[]>([]);
+  protected activeTabIndex = signal(0);
+
+  protected readonly tabs = ENROLLMENT_TABS;
+  protected readonly enrollmentColumns = ['name', 'phone', 'role', 'enrolledAt', 'lastColumn'];
+
+  protected enrolledList = computed(() =>
+    this.enrollments().filter(e => e.status === 'CONFIRMED'));
+  protected waitlistList = computed(() =>
+    this.enrollments().filter(e => e.status === 'WAITLISTED'));
+  protected approveList = computed(() =>
+    this.enrollments().filter(e => e.status === 'PENDING_APPROVAL'));
+  protected openPaymentList = computed(() =>
+    this.enrollments().filter(e => e.status === 'PENDING_PAYMENT'));
+
+  protected tabCounts = computed(() => [
+    this.enrolledList().length,
+    this.waitlistList().length,
+    this.approveList().length,
+    this.openPaymentList().length,
+  ]);
+
+  protected activeTabData = computed(() => {
+    switch (this.activeTabIndex()) {
+      case 0: return this.enrolledList();
+      case 1: return this.waitlistList();
+      case 2: return this.approveList();
+      case 3: return this.openPaymentList();
+      default: return [];
+    }
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -68,6 +119,34 @@ export class CourseOverviewComponent implements OnInit {
 
   protected statusChipClass = statusChipClass;
 
+  protected selectTab(index: number): void {
+    this.activeTabIndex.set(index);
+  }
+
+  protected formatEnrollmentDate(isoString: string | null): string {
+    if (!isoString) return '—';
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  protected formatRole(role: string | null): string {
+    if (!role) return '—';
+    return role === 'LEAD' ? 'Leader' : 'Follower';
+  }
+
+  protected onMarkPaid(enrollmentId: number): void {
+    this.enrollmentService.markPaid(enrollmentId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.snackBar.open('Payment confirmed', 'Close', { duration: 3000, panelClass: 'snackbar-success' });
+        const courseId = this.course()?.id;
+        if (courseId) this.loadEnrollments(courseId);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.snackBar.open(extractErrorMessage(err, 'Failed to confirm payment'), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
+      },
+    });
+  }
+
   protected onPublish(): void {
     const c = this.course();
     if (!c) return;
@@ -98,11 +177,21 @@ export class CourseOverviewComponent implements OnInit {
       next: (data) => {
         this.course.set(data);
         this.loading.set(false);
+        if (data.status !== 'DRAFT') {
+          this.loadEnrollments(data.id);
+        }
       },
       error: (err: HttpErrorResponse) => {
         this.snackBar.open(extractErrorMessage(err, 'Failed to load course'), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
         this.router.navigate(['/app/courses']);
       },
+    });
+  }
+
+  private loadEnrollments(courseId: number): void {
+    this.enrollmentService.getEnrollments(courseId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (data) => this.enrollments.set(data),
+      error: () => this.enrollments.set([]),
     });
   }
 }

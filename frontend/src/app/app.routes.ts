@@ -43,6 +43,7 @@ export const routes: Routes = [
       },
       { path: 'courses', loadComponent: () => import('./courses/courses').then(m => m.CoursesComponent) },
       { path: 'payments', loadComponent: () => import('./payments/payments').then(m => m.PaymentsComponent) },
+      { path: 'dev-tools', loadComponent: () => import('./dev-tools/dev-tools').then(m => m.DevToolsComponent) },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

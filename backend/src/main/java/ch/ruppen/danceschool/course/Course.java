@@ -82,4 +82,6 @@ public class Course {
     private LocalDate publishedAt;
 
     private int enrolledStudents;
+
+    private boolean requiresApproval;
 }

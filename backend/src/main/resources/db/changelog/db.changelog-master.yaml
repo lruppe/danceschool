@@ -31,3 +31,7 @@ databaseChangeLog:
       file: db/changelog/015-create-student.yaml
   - include:
       file: db/changelog/016-create-student-dance-level.yaml
+  - include:
+      file: db/changelog/017-create-enrollment.yaml
+  - include:
+      file: db/changelog/018-add-requires-approval-to-course.yaml
