@@ -7,9 +7,10 @@ The user provides a GitHub issue number as an argument (e.g., `/start-issue 100`
 ## Phase 1 — Setup
 
 1. **Load the issue:** `gh issue view <number>` (include comments for full context)
-2. **Create worktree:** Use `EnterWorktree` with a descriptive name derived from the issue (e.g., `100-multi-tenancy-isolation`)
-3. **Install frontend deps:** Run `npm install` in `frontend/` (fresh worktrees need this)
-4. **Create branch:** Create a feature branch from main
+2. **Update main:** `git checkout main && git pull --ff-only origin main`
+3. **Create worktree:** Use `EnterWorktree` with a descriptive name derived from the issue (e.g., `100-multi-tenancy-isolation`)
+4. **Install frontend deps:** Run `npm install` in `frontend/` (fresh worktrees need this)
+5. **Create branch:** Create a feature branch from main
 
 ## Phase 2 — Planning
 
