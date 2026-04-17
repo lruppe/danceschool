@@ -13,7 +13,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { concat, EMPTY, Observable, of, switchMap, tap, toArray } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { CourseListItem, CourseService } from '../courses/course.service';
+import { CourseDetail, CourseListItem, CourseService } from '../courses/course.service';
 import { EnrollmentListItem, EnrollmentService, EnrollStudentRequest } from '../courses/enrollment.service';
 
 const FIRST_NAMES = ['Anna', 'Marco', 'Laura', 'David', 'Sofia', 'Jan', 'Yuki', 'Elena', 'Thomas', 'Mia',
@@ -41,6 +41,7 @@ export class DevToolsComponent implements OnInit {
   protected courses = signal<CourseListItem[]>([]);
   protected selectedCourseId = signal<number | null>(null);
   protected selectedCourse = signal<CourseListItem | null>(null);
+  protected courseDetail = signal<CourseDetail | null>(null);
   protected enrollments = signal<EnrollmentListItem[]>([]);
   protected filling = signal(false);
   protected adding = signal(false);
@@ -56,15 +57,15 @@ export class DevToolsComponent implements OnInit {
   protected onCourseSelected(courseId: number): void {
     this.selectedCourseId.set(courseId);
     this.selectedCourse.set(this.courses().find(c => c.id === courseId) ?? null);
+    this.courseDetail.set(null);
+    this.courseService.getCourse(courseId).pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(detail => this.courseDetail.set(detail));
     this.loadEnrollments(courseId);
   }
 
   protected isPartnerCourse(): boolean {
-    const c = this.selectedCourse();
-    // CourseListItem doesn't have courseType, so check from detail
-    // For simplicity, look at enrollments for dance roles or check the course name
-    // Actually, CourseListItem doesn't expose courseType. Let's add a heuristic.
-    return c != null;
+    return this.courseDetail()?.courseType === 'PARTNER';
   }
 
   protected onFillCourse(): void {
@@ -87,16 +88,15 @@ export class DevToolsComponent implements OnInit {
     }
 
     // Create students and enroll them sequentially
+    const isPartner = this.isPartnerCourse();
     const operations: Observable<unknown>[] = [];
     for (let i = 0; i < spotsToFill; i++) {
-      const role = i % 2 === 0 ? 'LEAD' : 'FOLLOW';
+      const role: 'LEAD' | 'FOLLOW' = i % 2 === 0 ? 'LEAD' : 'FOLLOW';
       operations.push(
         this.createRandomStudent().pipe(
           switchMap(result => {
             const dto: EnrollStudentRequest = { studentId: result.id };
-            // If course has role-based enrollments, alternate roles
-            const hasRoles = this.enrollments().some(e => e.danceRole != null);
-            if (hasRoles) {
+            if (isPartner) {
               dto.danceRole = role;
             }
             return this.enrollmentService.enrollStudent(courseId, dto);
@@ -127,12 +127,11 @@ export class DevToolsComponent implements OnInit {
     if (!courseId) return;
 
     this.adding.set(true);
-    const hasRoles = this.enrollments().some(e => e.danceRole != null);
 
     this.createRandomStudent().pipe(
       switchMap(result => {
         const dto: EnrollStudentRequest = { studentId: result.id };
-        if (hasRoles) {
+        if (this.isPartnerCourse()) {
           dto.danceRole = this.danceRole();
         }
         return this.enrollmentService.enrollStudent(courseId, dto);
