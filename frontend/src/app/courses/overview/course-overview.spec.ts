@@ -64,19 +64,28 @@ describe('CourseOverviewComponent', () => {
     httpTesting.verify();
   });
 
+  /** Flush the course detail request and the enrollment request that follows for non-DRAFT courses. */
+  function flushCourse(overrides: Partial<CourseDetail> = {}): void {
+    const course = makeCourseDetail(overrides);
+    httpTesting.expectOne(req => req.url.includes('/api/courses/1') && !req.url.includes('enrollments')).flush(course);
+    if (course.status !== 'DRAFT') {
+      httpTesting.expectOne(req => req.url.includes('/api/courses/1/enrollments')).flush([]);
+    }
+  }
+
   it('should display loading state initially', () => {
     fixture.detectChanges();
     expect(el.querySelector('.loading')).toBeTruthy();
 
-    // Flush the pending request
-    httpTesting.expectOne(req => req.url.includes('/api/courses/1')).flush(makeCourseDetail());
+    // Flush the pending requests
+    flushCourse();
     fixture.detectChanges();
     expect(el.querySelector('.loading')).toBeFalsy();
   });
 
   it('should display course title and status chip after loading', () => {
     fixture.detectChanges();
-    httpTesting.expectOne(req => req.url.includes('/api/courses/1')).flush(makeCourseDetail({ title: 'Salsa Nights', status: 'OPEN' }));
+    flushCourse({ title: 'Salsa Nights', status: 'OPEN' });
     fixture.detectChanges();
 
     expect(el.querySelector('.overview-title')?.textContent?.trim()).toBe('Salsa Nights');
@@ -85,7 +94,7 @@ describe('CourseOverviewComponent', () => {
 
   it('should display the back link', () => {
     fixture.detectChanges();
-    httpTesting.expectOne(req => req.url.includes('/api/courses/1')).flush(makeCourseDetail());
+    flushCourse();
     fixture.detectChanges();
 
     const backLink = el.querySelector('.back-link') as HTMLAnchorElement;
@@ -95,7 +104,7 @@ describe('CourseOverviewComponent', () => {
 
   it('should render the course summary component', () => {
     fixture.detectChanges();
-    httpTesting.expectOne(req => req.url.includes('/api/courses/1')).flush(makeCourseDetail());
+    flushCourse();
     fixture.detectChanges();
 
     expect(el.querySelector('app-course-summary')).toBeTruthy();
@@ -103,9 +112,18 @@ describe('CourseOverviewComponent', () => {
 
   it('should display "Course Summary" heading inside the content card', () => {
     fixture.detectChanges();
-    httpTesting.expectOne(req => req.url.includes('/api/courses/1')).flush(makeCourseDetail());
+    flushCourse();
     fixture.detectChanges();
 
     expect(el.querySelector('.content-card-title')?.textContent?.trim()).toBe('Course Summary');
+  });
+
+  it('should not load enrollments for DRAFT courses', () => {
+    fixture.detectChanges();
+    flushCourse({ status: 'DRAFT' });
+    fixture.detectChanges();
+
+    // No enrollment request should have been made — httpTesting.verify() in afterEach confirms this
+    expect(el.querySelector('.enrollment-section')).toBeFalsy();
   });
 });
