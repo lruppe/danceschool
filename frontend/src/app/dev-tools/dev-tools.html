@@ -1,0 +1,110 @@
+<div class="dev-tools-header">
+  <h1 class="dev-tools-title">Dev Tools</h1>
+  <p class="dev-tools-subtitle">Simulate enrollment flows using production endpoints</p>
+</div>
+
+<!-- Course selector -->
+<div class="dev-tools-card">
+  <h2 class="card-title">Course</h2>
+  <mat-form-field class="course-select">
+    <mat-label>Select a course</mat-label>
+    <mat-select (selectionChange)="onCourseSelected($event.value)">
+      @for (course of courses(); track course.id) {
+        <mat-option [value]="course.id">
+          {{ course.title }} ({{ course.status | lowercase }}) — {{ course.enrolledStudents }}/{{ course.maxParticipants }}
+        </mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<!-- Actions -->
+@if (selectedCourseId()) {
+  <div class="dev-tools-card">
+    <h2 class="card-title">Actions</h2>
+
+    <div class="actions-row">
+      <button mat-flat-button (click)="onFillCourse()" [disabled]="filling()">
+        @if (filling()) {
+          <mat-spinner diameter="18"></mat-spinner>
+        }
+        Fill Course
+      </button>
+
+      <button mat-stroked-button (click)="onAddStudent()" [disabled]="adding()">
+        @if (adding()) {
+          <mat-spinner diameter="18"></mat-spinner>
+        }
+        Add Student
+      </button>
+
+      <mat-form-field class="role-select">
+        <mat-label>Role</mat-label>
+        <mat-select [value]="danceRole()" (selectionChange)="danceRole.set($event.value)">
+          <mat-option value="LEAD">Leader</mat-option>
+          <mat-option value="FOLLOW">Follower</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="onSimulatePayment()" [disabled]="paying()">
+        @if (paying()) {
+          <mat-spinner diameter="18"></mat-spinner>
+        }
+        Simulate Payment
+      </button>
+    </div>
+  </div>
+
+  <!-- Enrollment list -->
+  <div class="dev-tools-card">
+    <h2 class="card-title">Enrollments ({{ enrollments().length }})</h2>
+
+    @if (enrollments().length > 0) {
+      <div class="ds-table-card">
+        <table mat-table [dataSource]="enrollments()">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let row" class="cell-name">{{ row.studentName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="phone">
+            <th mat-header-cell *matHeaderCellDef>Phone</th>
+            <td mat-cell *matCellDef="let row">{{ row.studentPhoneNumber || '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="role">
+            <th mat-header-cell *matHeaderCellDef>Role</th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.danceRole) {
+                <span class="ds-chip ds-chip-default">{{ formatRole(row.danceRole) }}</span>
+              } @else {
+                —
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="ds-chip" [class.ds-chip-success]="row.status === 'CONFIRMED'"
+                    [class.ds-chip-info]="row.status === 'PENDING_PAYMENT'"
+                    [class.ds-chip-default]="row.status !== 'CONFIRMED' && row.status !== 'PENDING_PAYMENT'">
+                {{ formatStatus(row.status) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="enrolledAt">
+            <th mat-header-cell *matHeaderCellDef>Enrolled on</th>
+            <td mat-cell *matCellDef="let row">{{ formatDate(row.enrolledAt) }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="enrollmentColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: enrollmentColumns;"></tr>
+        </table>
+      </div>
+    } @else {
+      <p class="empty-text">No enrollments yet. Use the buttons above to simulate enrollment flows.</p>
+    }
+  </div>
+}

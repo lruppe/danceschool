@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,10 @@ public class SchoolMemberService {
                         member.getSchool().getName(),
                         member.getRole()))
                 .toList();
+    }
+
+    public Optional<SchoolMember> findByUserIdAndSchoolId(Long userId, Long schoolId) {
+        return schoolMemberRepository.findByUserIdAndSchoolId(userId, schoolId);
     }
 
     @BusinessOperation(event = "MembershipCreated")

@@ -19,6 +19,100 @@
       </div>
     </div>
 
+    <!-- Enrollment tabs (non-DRAFT courses only) -->
+    @if (c.status !== 'DRAFT') {
+      <div class="enrollment-section">
+        <nav mat-tab-nav-bar [tabPanel]="enrollmentTabPanel" mat-align-tabs="start"
+             class="ds-page-toolbar__tabs" mat-stretch-tabs="true">
+          @for (tab of tabs; track tab.key; let i = $index) {
+            <a mat-tab-link (click)="selectTab(i)" [active]="activeTabIndex() === i">
+              <span class="ds-tab-label">{{ tab.label }}</span>
+              <span class="ds-tab-count">{{ tabCounts()[i] }}</span>
+            </a>
+          }
+        </nav>
+
+        <mat-tab-nav-panel #enrollmentTabPanel>
+          @if (activeTabData().length > 0) {
+            <div class="ds-table-card enrollment-table">
+              <table mat-table [dataSource]="activeTabData()">
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                  <th mat-header-cell *matHeaderCellDef>Name</th>
+                  <td mat-cell *matCellDef="let row" class="cell-name">{{ row.studentName }}</td>
+                </ng-container>
+
+                <!-- Phone Column -->
+                <ng-container matColumnDef="phone">
+                  <th mat-header-cell *matHeaderCellDef>Phone Number</th>
+                  <td mat-cell *matCellDef="let row">{{ row.studentPhoneNumber || '—' }}</td>
+                </ng-container>
+
+                <!-- Role Column -->
+                <ng-container matColumnDef="role">
+                  <th mat-header-cell *matHeaderCellDef>Role</th>
+                  <td mat-cell *matCellDef="let row">
+                    @if (row.danceRole) {
+                      <span class="ds-chip ds-chip-default">{{ formatRole(row.danceRole) }}</span>
+                    } @else {
+                      —
+                    }
+                  </td>
+                </ng-container>
+
+                <!-- Enrolled on Column -->
+                <ng-container matColumnDef="enrolledAt">
+                  <th mat-header-cell *matHeaderCellDef>Enrolled on</th>
+                  <td mat-cell *matCellDef="let row">{{ formatEnrollmentDate(row.enrolledAt) }}</td>
+                </ng-container>
+
+                <!-- Last Column (varies by tab) -->
+                <ng-container matColumnDef="lastColumn">
+                  <th mat-header-cell *matHeaderCellDef>
+                    @switch (activeTabIndex()) {
+                      @case (0) { Paid }
+                      @case (3) { Approved on }
+                      @default { }
+                    }
+                  </th>
+                  <td mat-cell *matCellDef="let row">
+                    @switch (activeTabIndex()) {
+                      @case (0) { {{ formatEnrollmentDate(row.paidAt) }} }
+                      @case (3) {
+                        @if (row.approvedAt) {
+                          {{ formatEnrollmentDate(row.approvedAt) }}
+                        } @else {
+                          <button mat-stroked-button class="mark-paid-button" (click)="onMarkPaid(row.id)">
+                            Mark Paid
+                          </button>
+                        }
+                      }
+                    }
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="enrollmentColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: enrollmentColumns;"></tr>
+              </table>
+
+              <div class="ds-table-footer">
+                Showing {{ activeTabData().length }} of {{ activeTabData().length }}
+              </div>
+            </div>
+          } @else {
+            <div class="enrollment-empty-state">
+              @switch (activeTabIndex()) {
+                @case (0) { No enrolled students yet }
+                @case (1) { No students on the waitlist }
+                @case (2) { No students pending approval }
+                @case (3) { No students with open payments }
+              }
+            </div>
+          }
+        </mat-tab-nav-panel>
+      </div>
+    }
+
     <!-- Content Card -->
     <div class="content-card">
       <h2 class="content-card-title">Course Summary</h2>

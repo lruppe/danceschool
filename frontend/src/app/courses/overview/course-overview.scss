@@ -64,3 +64,47 @@
   color: var(--mat-sys-on-surface-variant);
   font: var(--mat-sys-body-large);
 }
+
+// ── Enrollment section ──
+
+.enrollment-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-4);
+}
+
+.enrollment-table {
+  // Column widths matching Figma: Name 260, Phone 200, Role 120, Enrolled on 180, rest flexible
+  .mat-column-name {
+    width: 260px;
+    font-weight: 600;
+  }
+
+  .mat-column-phone {
+    width: 200px;
+  }
+
+  .mat-column-role {
+    width: 120px;
+  }
+
+  .mat-column-enrolledAt {
+    width: 180px;
+  }
+}
+
+.mark-paid-button {
+  --mdc-outlined-button-label-text-size: var(--mat-sys-label-medium-size);
+}
+
+.enrollment-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-spacing-12) var(--ds-spacing-6);
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface-variant);
+  background: var(--mat-sys-surface);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--ds-radius-lg);
+}

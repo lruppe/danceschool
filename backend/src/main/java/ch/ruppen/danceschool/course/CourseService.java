@@ -130,14 +130,20 @@ public class CourseService {
      * Seeds a course for dev/test data. Skips domain validation (seed data may have past dates).
      */
     @Transactional
-    public void seedCourse(Long userId, CreateCourseDto dto, int enrolledStudents, LocalDate publishedAt) {
+    public Course seedCourse(Long userId, CreateCourseDto dto, int enrolledStudents, LocalDate publishedAt) {
         School school = schoolService.findSchoolByMember(userId);
         Course course = new Course();
         course.setSchool(school);
         applyDto(course, dto);
         course.setEnrolledStudents(enrolledStudents);
         course.setPublishedAt(publishedAt);
-        courseRepository.save(course);
+        return courseRepository.save(course);
+    }
+
+    @Transactional(readOnly = true)
+    public Course findCourseByIdAndSchool(Long courseId, School school) {
+        return courseRepository.findByIdAndSchoolId(courseId, school.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
     }
 
     @Transactional(readOnly = true)
