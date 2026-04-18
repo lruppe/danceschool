@@ -3,14 +3,16 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgClass, TitleCasePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CourseDetail, CourseService } from '../course.service';
 import { CourseSummaryComponent, CourseSummaryData } from '../shared/course-summary';
 import { EnrollmentListItem, EnrollmentService } from '../enrollment.service';
-import { formatDate, formatDayFull, formatTime, statusChipClass } from '../shared/format-utils';
+import { formatDate, formatDayFull, formatLevel, formatTime, levelChipClass, statusChipClass } from '../shared/format-utils';
 import { extractErrorMessage } from '../../shared/error-utils';
 
 interface EnrollmentTab {
@@ -29,7 +31,7 @@ const ENROLLMENT_TABS: EnrollmentTab[] = [
   selector: 'app-course-overview',
   imports: [
     RouterLink, NgClass, TitleCasePipe,
-    MatButtonModule, MatTableModule, MatTabsModule,
+    MatButtonModule, MatIconModule, MatTableModule, MatTabsModule, MatTooltipModule,
     CourseSummaryComponent,
   ],
   templateUrl: './course-overview.html',
@@ -119,6 +121,8 @@ export class CourseOverviewComponent implements OnInit {
   }
 
   protected statusChipClass = statusChipClass;
+  protected levelChipClass = levelChipClass;
+  protected formatLevel = formatLevel;
 
   protected selectTab(index: number): void {
     this.activeTabIndex.set(index);
@@ -144,6 +148,32 @@ export class CourseOverviewComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.snackBar.open(extractErrorMessage(err, 'Failed to confirm payment'), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
+      },
+    });
+  }
+
+  protected onApprove(enrollmentId: number): void {
+    this.enrollmentService.approve(enrollmentId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.snackBar.open('Enrollment approved', 'Close', { duration: 3000, panelClass: 'snackbar-success' });
+        const courseId = this.course()?.id;
+        if (courseId) this.loadEnrollments(courseId);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.snackBar.open(extractErrorMessage(err, 'Failed to approve enrollment'), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
+      },
+    });
+  }
+
+  protected onReject(enrollmentId: number): void {
+    this.enrollmentService.reject(enrollmentId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.snackBar.open('Enrollment rejected', 'Close', { duration: 3000, panelClass: 'snackbar-success' });
+        const courseId = this.course()?.id;
+        if (courseId) this.loadEnrollments(courseId);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.snackBar.open(extractErrorMessage(err, 'Failed to reject enrollment'), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
       },
     });
   }

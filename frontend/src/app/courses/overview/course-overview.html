@@ -71,6 +71,7 @@
                   <th mat-header-cell *matHeaderCellDef>
                     @switch (activeTabIndex()) {
                       @case (0) { Paid }
+                      @case (2) { Level }
                       @case (3) { Approved on }
                       @default { }
                     }
@@ -78,6 +79,23 @@
                   <td mat-cell *matCellDef="let row">
                     @switch (activeTabIndex()) {
                       @case (0) { {{ formatEnrollmentDate(row.paidAt) }} }
+                      @case (2) {
+                        <div class="approve-cell">
+                          <span class="ds-chip" [ngClass]="levelChipClass(row.studentDanceLevel)">
+                            {{ formatLevel(row.studentDanceLevel) }}
+                          </span>
+                          <div class="approve-actions">
+                            <button mat-icon-button class="approve-button" aria-label="Approve enrollment"
+                                    matTooltip="Approve" (click)="onApprove(row.id)">
+                              <mat-icon>check_circle</mat-icon>
+                            </button>
+                            <button mat-icon-button class="reject-button" aria-label="Reject enrollment"
+                                    matTooltip="Reject" (click)="onReject(row.id)">
+                              <mat-icon>cancel</mat-icon>
+                            </button>
+                          </div>
+                        </div>
+                      }
                       @case (3) {
                         @if (row.approvedAt) {
                           {{ formatEnrollmentDate(row.approvedAt) }}

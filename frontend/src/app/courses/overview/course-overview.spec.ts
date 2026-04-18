@@ -5,6 +5,7 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { CourseOverviewComponent } from './course-overview';
 import { ActivatedRoute } from '@angular/router';
 import { CourseDetail } from '../course.service';
+import { EnrollmentListItem } from '../enrollment.service';
 
 function makeCourseDetail(overrides: Partial<CourseDetail> = {}): CourseDetail {
   return {
@@ -125,5 +126,108 @@ describe('CourseOverviewComponent', () => {
 
     // No enrollment request should have been made — httpTesting.verify() in afterEach confirms this
     expect(el.querySelector('.enrollment-section')).toBeFalsy();
+  });
+
+  /** Flush the course detail request and the enrollment list with provided items. */
+  function flushCourseWithEnrollments(enrollments: EnrollmentListItem[], overrides: Partial<CourseDetail> = {}): void {
+    const course = makeCourseDetail(overrides);
+    httpTesting.expectOne(req => req.url.includes('/api/courses/1') && !req.url.includes('enrollments')).flush(course);
+    httpTesting.expectOne(req => req.url.includes('/api/courses/1/enrollments')).flush(enrollments);
+  }
+
+  function makeEnrollment(overrides: Partial<EnrollmentListItem> = {}): EnrollmentListItem {
+    return {
+      id: 1,
+      studentName: 'Anna Mueller',
+      studentEmail: 'anna@example.com',
+      studentPhoneNumber: '+41 79 100 0001',
+      danceRole: 'FOLLOW',
+      status: 'PENDING_APPROVAL',
+      enrolledAt: '2026-04-10T10:00:00Z',
+      approvedAt: null,
+      paidAt: null,
+      waitlistPosition: null,
+      waitlistReason: null,
+      studentDanceLevel: 'INTERMEDIATE',
+      ...overrides,
+    };
+  }
+
+  describe('Approve tab', () => {
+    it('renders PENDING_APPROVAL rows with level chip and action buttons', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([makeEnrollment()]);
+      fixture.detectChanges();
+
+      // Switch to the Approve tab (index 2)
+      const tabLinks = el.querySelectorAll('a[mat-tab-link]');
+      (tabLinks[2] as HTMLElement).click();
+      fixture.detectChanges();
+
+      const row = el.querySelector('tr[mat-row]');
+      expect(row).toBeTruthy();
+      expect(row?.textContent).toContain('Anna Mueller');
+
+      const levelChip = row?.querySelector('.approve-cell .ds-chip');
+      expect(levelChip?.textContent?.trim()).toBe('Intermediate');
+      expect(levelChip?.classList.contains('ds-chip-primary')).toBe(true);
+
+      expect(row?.querySelector('button[aria-label="Approve enrollment"]')).toBeTruthy();
+      expect(row?.querySelector('button[aria-label="Reject enrollment"]')).toBeTruthy();
+    });
+
+    it('shows "No level" chip when studentDanceLevel is null', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([makeEnrollment({ studentDanceLevel: null })]);
+      fixture.detectChanges();
+
+      const tabLinks = el.querySelectorAll('a[mat-tab-link]');
+      (tabLinks[2] as HTMLElement).click();
+      fixture.detectChanges();
+
+      const levelChip = el.querySelector('tr[mat-row] .approve-cell .ds-chip');
+      expect(levelChip?.textContent?.trim()).toBe('No level');
+    });
+
+    it('calls approve endpoint and refreshes list when approve clicked', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([makeEnrollment({ id: 42 })]);
+      fixture.detectChanges();
+
+      const tabLinks = el.querySelectorAll('a[mat-tab-link]');
+      (tabLinks[2] as HTMLElement).click();
+      fixture.detectChanges();
+
+      const approveBtn = el.querySelector('button[aria-label="Approve enrollment"]') as HTMLButtonElement;
+      approveBtn.click();
+      fixture.detectChanges();
+
+      const approveReq = httpTesting.expectOne(req =>
+        req.url.includes('/api/enrollments/42/approve') && req.method === 'PUT');
+      approveReq.flush({ enrollmentId: 42, status: 'PENDING_PAYMENT' });
+
+      // List refresh: the component re-fetches enrollments
+      httpTesting.expectOne(req => req.url.includes('/api/courses/1/enrollments')).flush([]);
+    });
+
+    it('calls reject endpoint and refreshes list when reject clicked', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([makeEnrollment({ id: 77 })]);
+      fixture.detectChanges();
+
+      const tabLinks = el.querySelectorAll('a[mat-tab-link]');
+      (tabLinks[2] as HTMLElement).click();
+      fixture.detectChanges();
+
+      const rejectBtn = el.querySelector('button[aria-label="Reject enrollment"]') as HTMLButtonElement;
+      rejectBtn.click();
+      fixture.detectChanges();
+
+      const rejectReq = httpTesting.expectOne(req =>
+        req.url.includes('/api/enrollments/77/reject') && req.method === 'PUT');
+      rejectReq.flush({ enrollmentId: 77, status: 'REJECTED' });
+
+      httpTesting.expectOne(req => req.url.includes('/api/courses/1/enrollments')).flush([]);
+    });
   });
 });

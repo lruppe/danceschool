@@ -1,5 +1,7 @@
 package ch.ruppen.danceschool.enrollment;
 
+import ch.ruppen.danceschool.course.CourseLevel;
+
 import java.time.Instant;
 
 public record EnrollmentListDto(
@@ -13,6 +15,7 @@ public record EnrollmentListDto(
         Instant approvedAt,
         Instant paidAt,
         Integer waitlistPosition,
-        WaitlistReason waitlistReason
+        WaitlistReason waitlistReason,
+        CourseLevel studentDanceLevel
 ) {
 }

@@ -42,4 +42,16 @@ public class EnrollmentController {
                                           @AuthenticationPrincipal AuthenticatedUser principal) {
         return enrollmentService.confirmPayment(principal.userId(), enrollmentId);
     }
+
+    @PutMapping("/enrollments/{enrollmentId}/approve")
+    public EnrollmentResponseDto approve(@PathVariable Long enrollmentId,
+                                         @AuthenticationPrincipal AuthenticatedUser principal) {
+        return enrollmentService.approveEnrollment(principal.userId(), enrollmentId);
+    }
+
+    @PutMapping("/enrollments/{enrollmentId}/reject")
+    public EnrollmentResponseDto reject(@PathVariable Long enrollmentId,
+                                        @AuthenticationPrincipal AuthenticatedUser principal) {
+        return enrollmentService.rejectEnrollment(principal.userId(), enrollmentId);
+    }
 }
