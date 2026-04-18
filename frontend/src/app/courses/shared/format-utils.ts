@@ -53,3 +53,17 @@ export function formatLevel(level: string | null): string {
   if (!level) return 'No level';
   return level.charAt(0) + level.slice(1).toLowerCase();
 }
+
+/** Map an enrollment status to its chip class. */
+export function enrollmentStatusChipClass(status: string): string {
+  switch (status) {
+    case 'CONFIRMED': return 'ds-chip-success';
+    case 'PENDING_PAYMENT': return 'ds-chip-info';
+    default: return 'ds-chip-default';
+  }
+}
+
+/** Human-friendly label for an enrollment status (e.g. "PENDING_PAYMENT" → "PENDING PAYMENT"). */
+export function formatEnrollmentStatus(status: string): string {
+  return status.replace(/_/g, ' ');
+}
