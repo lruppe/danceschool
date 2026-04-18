@@ -174,19 +174,71 @@ class EnrollmentIntegrationTest {
     }
 
     @Test
-    void enrollStudent_insufficientLevel_returns409() throws Exception {
+    void enrollStudent_insufficientLevel_returnsPendingApproval() throws Exception {
         Course advancedCourse = createCourse(school, "Salsa Advanced", DanceStyle.SALSA,
                 CourseLevel.ADVANCED, CourseType.PARTNER, 10, true, 2);
         entityManager.flush();
 
-        // Student has BEGINNER salsa level, course requires ADVANCED
+        // Student has BEGINNER salsa level, course requires ADVANCED → needs approval
         mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"studentId": %d, "danceRole": "LEAD"}
                                 """.formatted(student.getId()))
                         .with(authentication(authToken(owner))))
-                .andExpect(status().isConflict());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_APPROVAL"));
+    }
+
+    @Test
+    void enrollStudent_noLevelForStyle_returnsPendingApproval() throws Exception {
+        Course intermediateZouk = createCourse(school, "Zouk Intermediate", DanceStyle.ZOUK,
+                CourseLevel.INTERMEDIATE, CourseType.PARTNER, 10, false, null);
+        entityManager.flush();
+
+        // Student has no ZOUK level at all → needs approval
+        mockMvc.perform(post("/api/courses/{id}/enrollments", intermediateZouk.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "FOLLOW"}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_APPROVAL"));
+    }
+
+    @Test
+    void enrollStudent_requiresApprovalFlag_returnsPendingApproval_evenWithMatchingLevel() throws Exception {
+        Course approvalCourse = createCourseWithApproval(school, "Bachata Approval", DanceStyle.BACHATA,
+                CourseLevel.INTERMEDIATE, CourseType.PARTNER, 10, true);
+        entityManager.flush();
+
+        // Student has INTERMEDIATE bachata (matches course level), but requiresApproval=true
+        mockMvc.perform(post("/api/courses/{id}/enrollments", approvalCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "LEAD"}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_APPROVAL"));
+    }
+
+    @Test
+    void enrollStudent_beginnerCourseWithRequiresApproval_bypassesApproval() throws Exception {
+        // Even with requiresApproval=true, BEGINNER courses skip approval
+        Course approvalBeginner = createCourseWithApproval(school, "Kizomba Beginner Approval",
+                DanceStyle.KIZOMBA, CourseLevel.BEGINNER, CourseType.PARTNER, 10, true);
+        entityManager.flush();
+
+        mockMvc.perform(post("/api/courses/{id}/enrollments", approvalBeginner.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "FOLLOW"}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_PAYMENT"));
     }
 
     @Test
@@ -283,6 +335,159 @@ class EnrollmentIntegrationTest {
                 .andExpect(status().isConflict());
     }
 
+    // --- Approve / reject ---
+
+    @Test
+    void approve_transitionsToPendingPayment_setsApprovedAt_andUpgradesStudentLevel() throws Exception {
+        Long enrollmentId = createPendingApprovalForInsufficientLevel();
+
+        mockMvc.perform(put("/api/enrollments/{id}/approve", enrollmentId)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("PENDING_PAYMENT"));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Enrollment updated = entityManager.find(Enrollment.class, enrollmentId);
+        org.junit.jupiter.api.Assertions.assertNotNull(updated.getApprovedAt());
+
+        // Student had BEGINNER Salsa; approving an ADVANCED Salsa course should upgrade to ADVANCED
+        Student refreshed = entityManager.find(Student.class, student.getId());
+        CourseLevel salsaLevel = refreshed.getDanceLevels().stream()
+                .filter(dl -> dl.getDanceStyle() == DanceStyle.SALSA)
+                .map(StudentDanceLevel::getLevel)
+                .findFirst()
+                .orElse(null);
+        org.junit.jupiter.api.Assertions.assertEquals(CourseLevel.ADVANCED, salsaLevel);
+    }
+
+    @Test
+    void approve_doesNotDowngradeExistingHigherDanceLevel() throws Exception {
+        // Course is INTERMEDIATE bachata with requiresApproval=true; student has INTERMEDIATE bachata
+        // But to trigger PENDING_APPROVAL we need requiresApproval; and to test non-downgrade we use ADVANCED student
+        Student advancedStudent = createStudent(school, "Laura Advanced", "laura@example.com", null);
+        addDanceLevel(advancedStudent, DanceStyle.BACHATA, CourseLevel.ADVANCED);
+        Course approvalCourse = createCourseWithApproval(school, "Bachata Approval", DanceStyle.BACHATA,
+                CourseLevel.INTERMEDIATE, CourseType.PARTNER, 10, true);
+        entityManager.flush();
+
+        String response = mockMvc.perform(post("/api/courses/{id}/enrollments", approvalCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "LEAD"}
+                                """.formatted(advancedStudent.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long enrollmentId = com.jayway.jsonpath.JsonPath.parse(response).read("$.enrollmentId", Long.class);
+
+        mockMvc.perform(put("/api/enrollments/{id}/approve", enrollmentId)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk());
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Student refreshed = entityManager.find(Student.class, advancedStudent.getId());
+        CourseLevel bachataLevel = refreshed.getDanceLevels().stream()
+                .filter(dl -> dl.getDanceStyle() == DanceStyle.BACHATA)
+                .map(StudentDanceLevel::getLevel)
+                .findFirst()
+                .orElse(null);
+        org.junit.jupiter.api.Assertions.assertEquals(CourseLevel.ADVANCED, bachataLevel);
+    }
+
+    @Test
+    void reject_transitionsToRejected() throws Exception {
+        Long enrollmentId = createPendingApprovalForInsufficientLevel();
+
+        mockMvc.perform(put("/api/enrollments/{id}/reject", enrollmentId)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REJECTED"));
+    }
+
+    @Test
+    void approve_onNonPendingApproval_returns409() throws Exception {
+        // soloCourse is BEGINNER → goes directly to PENDING_PAYMENT
+        String response = mockMvc.perform(post("/api/courses/{id}/enrollments", soloCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long enrollmentId = com.jayway.jsonpath.JsonPath.parse(response).read("$.enrollmentId", Long.class);
+
+        mockMvc.perform(put("/api/enrollments/{id}/approve", enrollmentId)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void reject_onNonPendingApproval_returns409() throws Exception {
+        String response = mockMvc.perform(post("/api/courses/{id}/enrollments", soloCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long enrollmentId = com.jayway.jsonpath.JsonPath.parse(response).read("$.enrollmentId", Long.class);
+
+        mockMvc.perform(put("/api/enrollments/{id}/reject", enrollmentId)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void rejectedEnrollment_excludedFromCapacity_allowsReenrollment() throws Exception {
+        Course advancedCourse = createCourse(school, "Salsa Advanced", DanceStyle.SALSA,
+                CourseLevel.ADVANCED, CourseType.PARTNER, 10, true, 2);
+        entityManager.flush();
+
+        String response = mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "LEAD"}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        Long firstId = com.jayway.jsonpath.JsonPath.parse(response).read("$.enrollmentId", Long.class);
+
+        mockMvc.perform(put("/api/enrollments/{id}/reject", firstId)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk());
+
+        // Re-enroll the same student — should succeed with a new enrollment
+        String response2 = mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "LEAD"}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_APPROVAL"))
+                .andReturn().getResponse().getContentAsString();
+        Long secondId = com.jayway.jsonpath.JsonPath.parse(response2).read("$.enrollmentId", Long.class);
+        org.junit.jupiter.api.Assertions.assertNotEquals(firstId, secondId);
+    }
+
+    @Test
+    void listEnrollments_includesStudentDanceLevel() throws Exception {
+        Long enrollmentId = createPendingApprovalForInsufficientLevel();
+
+        mockMvc.perform(get("/api/courses/{id}/enrollments",
+                        entityManager.find(Enrollment.class, enrollmentId).getCourse().getId())
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].studentDanceLevel").value("BEGINNER"));
+    }
+
     // --- Tenant isolation ---
 
     @Test
@@ -360,6 +565,29 @@ class EnrollmentIntegrationTest {
         entityManager.persist(member);
 
         return s;
+    }
+
+    private Course createCourseWithApproval(School s, String title, DanceStyle danceStyle, CourseLevel level,
+                                            CourseType courseType, int maxParticipants, boolean requiresApproval) {
+        Course c = createCourse(s, title, danceStyle, level, courseType, maxParticipants, false, null);
+        c.setRequiresApproval(requiresApproval);
+        return c;
+    }
+
+    private Long createPendingApprovalForInsufficientLevel() throws Exception {
+        Course advancedCourse = createCourse(school, "Salsa Advanced", DanceStyle.SALSA,
+                CourseLevel.ADVANCED, CourseType.PARTNER, 10, true, 2);
+        entityManager.flush();
+
+        String response = mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "LEAD"}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        return com.jayway.jsonpath.JsonPath.parse(response).read("$.enrollmentId", Long.class);
     }
 
     private Course createCourse(School s, String title, DanceStyle danceStyle, CourseLevel level,

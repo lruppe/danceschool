@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 export type EnrollmentStatus = 'PENDING_APPROVAL' | 'PENDING_PAYMENT' | 'CONFIRMED' | 'WAITLISTED' | 'REJECTED';
 export type DanceRole = 'LEAD' | 'FOLLOW';
 export type WaitlistReason = 'CAPACITY' | 'ROLE_IMBALANCE';
+export type CourseLevel = 'STARTER' | 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'MASTERCLASS';
 
 export interface EnrollmentListItem {
   id: number;
@@ -19,6 +20,7 @@ export interface EnrollmentListItem {
   paidAt: string | null;
   waitlistPosition: number | null;
   waitlistReason: WaitlistReason | null;
+  studentDanceLevel: CourseLevel | null;
 }
 
 export interface EnrollmentResponse {
@@ -45,5 +47,13 @@ export class EnrollmentService {
 
   markPaid(enrollmentId: number): Observable<EnrollmentResponse> {
     return this.http.put<EnrollmentResponse>(`${environment.apiUrl}/api/enrollments/${enrollmentId}/mark-paid`, null);
+  }
+
+  approve(enrollmentId: number): Observable<EnrollmentResponse> {
+    return this.http.put<EnrollmentResponse>(`${environment.apiUrl}/api/enrollments/${enrollmentId}/approve`, null);
+  }
+
+  reject(enrollmentId: number): Observable<EnrollmentResponse> {
+    return this.http.put<EnrollmentResponse>(`${environment.apiUrl}/api/enrollments/${enrollmentId}/reject`, null);
   }
 }

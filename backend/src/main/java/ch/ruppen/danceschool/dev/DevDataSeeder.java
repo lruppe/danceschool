@@ -108,13 +108,15 @@ public class DevDataSeeder implements ApplicationRunner {
                 PriceModel.FIXED_COURSE, new BigDecimal("220.00")), 0, today.minusWeeks(3)));
 
         // --- OPEN courses (published, start in the future) ---
-        courses.add(courseService.seedCourse(owner.getId(), new CreateCourseDto(
+        Course salsaAdvanced = courseService.seedCourse(owner.getId(), new CreateCourseDto(
                 "Salsa Advanced", DanceStyle.SALSA, CourseLevel.ADVANCED,
                 CourseType.PARTNER, "Advanced Salsa patterns, styling, and performance preparation.",
                 today.plusWeeks(4), RecurrenceType.WEEKLY,
                 10, LocalTime.of(20, 0), LocalTime.of(21, 15),
                 "Studio A", "Maria, Carlos", 10, true, 2,
-                PriceModel.FIXED_COURSE, new BigDecimal("310.00")), 0, today.minusDays(5)));
+                PriceModel.FIXED_COURSE, new BigDecimal("310.00")), 0, today.minusDays(5));
+        salsaAdvanced.setRequiresApproval(true);
+        courses.add(salsaAdvanced);
 
         courses.add(courseService.seedCourse(owner.getId(), new CreateCourseDto(
                 "Bachata Beginners", DanceStyle.BACHATA, CourseLevel.BEGINNER,
@@ -271,5 +273,16 @@ public class DevDataSeeder implements ApplicationRunner {
         enrollmentService.seedEnrollment(partnerCourse, students.get(4), DanceRole.FOLLOW,
                 EnrollmentStatus.PENDING_PAYMENT, now.minus(2, ChronoUnit.DAYS), null);
         partnerCourse.setEnrolledStudents(5);
+
+        // courses[2] = "Salsa Advanced" (PARTNER, ADVANCED, requiresApproval=true)
+        // Seed two PENDING_APPROVAL rows so the Approve tab has visible content.
+        // students[0] Anna: INTERMEDIATE salsa (under-level)
+        // students[5] Jan de Vries: no salsa level at all
+        Course salsaAdvanced = courses.get(2);
+        enrollmentService.seedEnrollment(salsaAdvanced, students.get(0), DanceRole.FOLLOW,
+                EnrollmentStatus.PENDING_APPROVAL, now.minus(1, ChronoUnit.DAYS), null);
+        enrollmentService.seedEnrollment(salsaAdvanced, students.get(5), DanceRole.LEAD,
+                EnrollmentStatus.PENDING_APPROVAL, now.minus(12, ChronoUnit.HOURS), null);
+        salsaAdvanced.setEnrolledStudents(2);
     }
 }

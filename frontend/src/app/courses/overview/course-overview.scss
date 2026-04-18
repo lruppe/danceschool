@@ -97,6 +97,27 @@
   --mdc-outlined-button-label-text-size: var(--mat-sys-label-medium-size);
 }
 
+.approve-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-spacing-3);
+}
+
+.approve-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-1);
+}
+
+.approve-button {
+  color: var(--ds-color-success);
+}
+
+.reject-button {
+  color: var(--mat-sys-error);
+}
+
 .enrollment-empty-state {
   display: flex;
   align-items: center;

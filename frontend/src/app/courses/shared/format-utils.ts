@@ -35,3 +35,21 @@ export function statusChipClass(status: string): string {
     default: return 'ds-chip-default';
   }
 }
+
+/** Map a dance level to its chip class. Null → neutral "No level" variant. */
+export function levelChipClass(level: string | null): string {
+  switch (level) {
+    case 'BEGINNER': return 'ds-chip-info';
+    case 'INTERMEDIATE': return 'ds-chip-primary';
+    case 'ADVANCED': return 'ds-chip-success';
+    case 'MASTERCLASS': return 'ds-chip-primary';
+    case 'STARTER':
+    default: return 'ds-chip-default';
+  }
+}
+
+/** Display label for a dance level; null becomes "No level". */
+export function formatLevel(level: string | null): string {
+  if (!level) return 'No level';
+  return level.charAt(0) + level.slice(1).toLowerCase();
+}
