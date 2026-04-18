@@ -112,11 +112,13 @@ export class DevToolsComponent implements OnInit {
       next: () => {
         this.snackBar.open(`Enrolled ${spotsToFill} students`, 'Close', { duration: 3000, panelClass: 'snackbar-success' });
         this.filling.set(false);
+        this.loadCourses();
         this.loadEnrollments(courseId);
       },
       error: () => {
         this.snackBar.open('Some enrollments failed', 'Close', { duration: 5000, panelClass: 'snackbar-error' });
         this.filling.set(false);
+        this.loadCourses();
         this.loadEnrollments(courseId);
       },
     });
@@ -141,6 +143,7 @@ export class DevToolsComponent implements OnInit {
       next: (res) => {
         this.snackBar.open(`Student enrolled (${res.status})`, 'Close', { duration: 3000, panelClass: 'snackbar-success' });
         this.adding.set(false);
+        this.loadCourses();
         this.loadEnrollments(courseId);
       },
       error: (err) => {
@@ -216,11 +219,13 @@ export class DevToolsComponent implements OnInit {
     });
   }
 
+  private studentCounter = 0;
+
   private createRandomStudent(): Observable<{ id: number }> {
     const firstName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
     const lastName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
     const name = `${firstName} ${lastName}`;
-    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${Math.floor(Math.random() * 1000)}@test.com`;
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${Date.now()}.${this.studentCounter++}@test.com`;
 
     return this.http.post<{ id: number }>(`${environment.apiUrl}/api/students`, { name, email });
   }
