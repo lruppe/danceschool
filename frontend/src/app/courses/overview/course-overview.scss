@@ -120,6 +120,12 @@
   gap: var(--ds-spacing-3);
 }
 
+.waitlist-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-2);
+}
+
 .approve-actions {
   display: flex;
   align-items: center;

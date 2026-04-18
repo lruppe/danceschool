@@ -146,12 +146,13 @@ class EnrollmentIntegrationTest {
     }
 
     @Test
-    void enrollStudent_atCapacity_returns409() throws Exception {
+    void enrollStudent_atCapacity_returnsWaitlisted_withCapacityReason_andFifoPosition() throws Exception {
         Course tinyCourse = createCourse(school, "Tiny Course", DanceStyle.SALSA,
                 CourseLevel.BEGINNER, CourseType.SOLO, 1, false, null);
         entityManager.flush();
 
         Student student2 = createStudent(school, "Marco Rossi", "marco@example.com", null);
+        Student student3 = createStudent(school, "Laura Weber", "laura@example.com", null);
         entityManager.flush();
 
         // Fill the one spot
@@ -161,16 +162,175 @@ class EnrollmentIntegrationTest {
                                 {"studentId": %d}
                                 """.formatted(student.getId()))
                         .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_PAYMENT"));
+
+        // Second student goes to waitlist with CAPACITY reason and position 1
+        String resp2 = mockMvc.perform(post("/api/courses/{id}/enrollments", tinyCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d}
+                                """.formatted(student2.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("WAITLISTED"))
+                .andReturn().getResponse().getContentAsString();
+
+        Long waitlistedId = com.jayway.jsonpath.JsonPath.parse(resp2).read("$.enrollmentId", Long.class);
+        entityManager.flush();
+        entityManager.clear();
+        Enrollment waitlisted = entityManager.find(Enrollment.class, waitlistedId);
+        org.junit.jupiter.api.Assertions.assertEquals(WaitlistReason.CAPACITY, waitlisted.getWaitlistReason());
+        org.junit.jupiter.api.Assertions.assertEquals(1, waitlisted.getWaitlistPosition());
+
+        // Third student: waitlist position 2
+        String resp3 = mockMvc.perform(post("/api/courses/{id}/enrollments", tinyCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d}
+                                """.formatted(student3.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("WAITLISTED"))
+                .andReturn().getResponse().getContentAsString();
+
+        Long waitlistedId2 = com.jayway.jsonpath.JsonPath.parse(resp3).read("$.enrollmentId", Long.class);
+        entityManager.flush();
+        entityManager.clear();
+        Enrollment waitlisted2 = entityManager.find(Enrollment.class, waitlistedId2);
+        org.junit.jupiter.api.Assertions.assertEquals(2, waitlisted2.getWaitlistPosition());
+    }
+
+    @Test
+    void enrollStudent_atCapacity_doesNotIncrementEnrolledStudentsCounter() throws Exception {
+        Course tinyCourse = createCourse(school, "Tiny Course", DanceStyle.SALSA,
+                CourseLevel.BEGINNER, CourseType.SOLO, 1, false, null);
+        entityManager.flush();
+
+        Student student2 = createStudent(school, "Marco Rossi", "marco@example.com", null);
+        entityManager.flush();
+
+        mockMvc.perform(post("/api/courses/{id}/enrollments", tinyCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
                 .andExpect(status().isCreated());
 
-        // Second student cannot enroll
         mockMvc.perform(post("/api/courses/{id}/enrollments", tinyCourse.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"studentId": %d}
                                 """.formatted(student2.getId()))
                         .with(authentication(authToken(owner))))
-                .andExpect(status().isConflict());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("WAITLISTED"));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Course refreshed = entityManager.find(Course.class, tinyCourse.getId());
+        org.junit.jupiter.api.Assertions.assertEquals(1, refreshed.getEnrolledStudents());
+    }
+
+    @Test
+    void enrollStudent_roleImbalance_returnsWaitlisted_withRoleImbalanceReason() throws Exception {
+        // threshold=1 → tolerate up to a 1-diff. With 1 LEAD + 0 FOLLOW (diff=1=threshold, fine),
+        // a second LEAD would make diff=2 > threshold → waitlist with ROLE_IMBALANCE.
+        Course balancedCourse = createCourse(school, "Kizomba Balanced", DanceStyle.KIZOMBA,
+                CourseLevel.BEGINNER, CourseType.PARTNER, 20, true, 1);
+        entityManager.flush();
+
+        Student leadA = createStudent(school, "Lead A", "leada@example.com", null);
+        Student leadB = createStudent(school, "Lead B", "leadb@example.com", null);
+        entityManager.flush();
+
+        enrollPartner(balancedCourse.getId(), leadA.getId(), "LEAD", "PENDING_PAYMENT");
+
+        String resp = enrollPartner(balancedCourse.getId(), leadB.getId(), "LEAD", "WAITLISTED");
+        Long id = com.jayway.jsonpath.JsonPath.parse(resp).read("$.enrollmentId", Long.class);
+        entityManager.flush();
+        entityManager.clear();
+        Enrollment waitlisted = entityManager.find(Enrollment.class, id);
+        org.junit.jupiter.api.Assertions.assertEquals(WaitlistReason.ROLE_IMBALANCE, waitlisted.getWaitlistReason());
+        org.junit.jupiter.api.Assertions.assertEquals(1, waitlisted.getWaitlistPosition());
+    }
+
+    @Test
+    void enrollStudent_roleImbalance_onlyCountsActiveStatuses() throws Exception {
+        // threshold=1, 1 LEAD (REJECTED — excluded) + 1 FOLLOW; next LEAD should NOT waitlist because
+        // rejected enrollments don't count. It's PENDING_PAYMENT.
+        Course advancedCourse = createCourse(school, "Salsa Advanced Gate", DanceStyle.SALSA,
+                CourseLevel.ADVANCED, CourseType.PARTNER, 20, true, 1);
+        entityManager.flush();
+
+        Student rejectedLead = createStudent(school, "Rejected Lead", "rejlead@example.com", null);
+        Student follow = createStudent(school, "Follow", "follow@example.com", null);
+        Student newLead = createStudent(school, "New Lead", "newlead@example.com", null);
+        addDanceLevel(follow, DanceStyle.SALSA, CourseLevel.ADVANCED);
+        addDanceLevel(newLead, DanceStyle.SALSA, CourseLevel.ADVANCED);
+        entityManager.flush();
+
+        String respRejected = enrollPartner(advancedCourse.getId(), rejectedLead.getId(), "LEAD", "PENDING_APPROVAL");
+        Long rejectedId = com.jayway.jsonpath.JsonPath.parse(respRejected).read("$.enrollmentId", Long.class);
+        mockMvc.perform(put("/api/enrollments/{id}/reject", rejectedId)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk());
+
+        enrollPartner(advancedCourse.getId(), follow.getId(), "FOLLOW", "PENDING_PAYMENT");
+        // Rejected LEAD no longer counts; 0 active LEAD + 1 FOLLOW, adding 1 LEAD → 1 vs 1, diff 0, not waitlisted
+        enrollPartner(advancedCourse.getId(), newLead.getId(), "LEAD", "PENDING_PAYMENT");
+    }
+
+    @Test
+    void enrollStudent_waitlistPosition_perRoleFIFO() throws Exception {
+        // tinyCourse max=2: enroll 1 LEAD + 1 FOLLOW to fill capacity, then waitlist additional students.
+        // Positions should be assigned per role: LEAD #1, LEAD #2, FOLLOW #1.
+        Course tinyPartner = createCourse(school, "Kizomba Tiny", DanceStyle.KIZOMBA,
+                CourseLevel.BEGINNER, CourseType.PARTNER, 2, false, null);
+        entityManager.flush();
+
+        Student leadA = createStudent(school, "Lead A", "leada2@example.com", null);
+        Student followA = createStudent(school, "Follow A", "followa2@example.com", null);
+        Student leadB = createStudent(school, "Lead B", "leadb2@example.com", null);
+        Student leadC = createStudent(school, "Lead C", "leadc2@example.com", null);
+        Student followB = createStudent(school, "Follow B", "followb2@example.com", null);
+        entityManager.flush();
+
+        enrollPartner(tinyPartner.getId(), leadA.getId(), "LEAD", "PENDING_PAYMENT");
+        enrollPartner(tinyPartner.getId(), followA.getId(), "FOLLOW", "PENDING_PAYMENT");
+        // Now at capacity — remaining enrollments go to the waitlist with CAPACITY reason.
+
+        String respLeadB = enrollPartner(tinyPartner.getId(), leadB.getId(), "LEAD", "WAITLISTED");
+        String respLeadC = enrollPartner(tinyPartner.getId(), leadC.getId(), "LEAD", "WAITLISTED");
+        String respFollowB = enrollPartner(tinyPartner.getId(), followB.getId(), "FOLLOW", "WAITLISTED");
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Enrollment lB = entityManager.find(Enrollment.class,
+                com.jayway.jsonpath.JsonPath.parse(respLeadB).read("$.enrollmentId", Long.class));
+        Enrollment lC = entityManager.find(Enrollment.class,
+                com.jayway.jsonpath.JsonPath.parse(respLeadC).read("$.enrollmentId", Long.class));
+        Enrollment fB = entityManager.find(Enrollment.class,
+                com.jayway.jsonpath.JsonPath.parse(respFollowB).read("$.enrollmentId", Long.class));
+
+        org.junit.jupiter.api.Assertions.assertEquals(1, lB.getWaitlistPosition());
+        org.junit.jupiter.api.Assertions.assertEquals(2, lC.getWaitlistPosition());
+        org.junit.jupiter.api.Assertions.assertEquals(1, fB.getWaitlistPosition());
+    }
+
+    private String enrollPartner(Long courseId, Long studentId, String role, String expectedStatus) throws Exception {
+        return mockMvc.perform(post("/api/courses/{id}/enrollments", courseId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "%s"}
+                                """.formatted(studentId, role))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value(expectedStatus))
+                .andReturn().getResponse().getContentAsString();
     }
 
     @Test

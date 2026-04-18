@@ -13,5 +13,11 @@ interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     long countByCourseIdAndStatusIn(Long courseId, List<EnrollmentStatus> statuses);
 
+    long countByCourseIdAndDanceRoleAndStatusIn(Long courseId, DanceRole danceRole, List<EnrollmentStatus> statuses);
+
+    long countByCourseIdAndStatus(Long courseId, EnrollmentStatus status);
+
+    long countByCourseIdAndStatusAndDanceRole(Long courseId, EnrollmentStatus status, DanceRole danceRole);
+
     boolean existsByStudentIdAndCourseIdAndStatusNot(Long studentId, Long courseId, EnrollmentStatus status);
 }
