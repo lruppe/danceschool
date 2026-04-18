@@ -21,6 +21,8 @@ const FIRST_NAMES = ['Anna', 'Marco', 'Laura', 'David', 'Sofia', 'Jan', 'Yuki', 
 const LAST_NAMES = ['Mueller', 'Rossi', 'Weber', 'Kim', 'Martinez', 'de Vries', 'Tanaka', 'Fischer', 'Bauer', 'Schmidt',
   'Meier', 'Huber', 'Keller', 'Wagner', 'Braun', 'Steiner', 'Frey', 'Berger', 'Hess', 'Maurer'];
 
+const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
 @Component({
   selector: 'app-dev-tools',
   imports: [
@@ -225,7 +227,7 @@ export class DevToolsComponent implements OnInit {
     const firstName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
     const lastName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
     const name = `${firstName} ${lastName}`;
-    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${Date.now()}.${this.studentCounter++}@test.com`;
+    const email = `${slugify(firstName)}.${slugify(lastName)}.${Date.now()}.${this.studentCounter++}@test.com`;
 
     return this.http.post<{ id: number }>(`${environment.apiUrl}/api/students`, { name, email });
   }
