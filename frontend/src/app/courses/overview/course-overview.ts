@@ -12,7 +12,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CourseDetail, CourseService } from '../course.service';
 import { CourseSummaryComponent, CourseSummaryData } from '../shared/course-summary';
 import { EnrollmentListItem, EnrollmentService } from '../enrollment.service';
-import { formatDate, formatDayFull, formatLevel, formatTime, levelChipClass, statusChipClass } from '../shared/format-utils';
+import { enrollmentStatusChipClass, formatDate, formatDayFull, formatEnrollmentStatus, formatLevel, formatTime, levelChipClass, statusChipClass } from '../shared/format-utils';
 import { extractErrorMessage } from '../../shared/error-utils';
 
 interface EnrollmentTab {
@@ -53,7 +53,7 @@ export class CourseOverviewComponent implements OnInit {
   protected activeTabIndex = signal(0);
 
   protected readonly tabs = ENROLLMENT_TABS;
-  protected readonly enrollmentColumns = ['name', 'phone', 'role', 'enrolledAt', 'lastColumn'];
+  protected readonly enrollmentColumns = ['name', 'phone', 'role', 'status', 'enrolledAt', 'lastColumn'];
 
   protected enrolledList = computed(() =>
     this.enrollments().filter(e => e.status === 'CONFIRMED'));
@@ -123,6 +123,8 @@ export class CourseOverviewComponent implements OnInit {
   protected statusChipClass = statusChipClass;
   protected levelChipClass = levelChipClass;
   protected formatLevel = formatLevel;
+  protected enrollmentStatusChipClass = enrollmentStatusChipClass;
+  protected formatEnrollmentStatus = formatEnrollmentStatus;
 
   protected selectTab(index: number): void {
     this.activeTabIndex.set(index);

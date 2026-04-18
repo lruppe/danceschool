@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpClient } from '@angular/common/http';
-import { LowerCasePipe } from '@angular/common';
+import { LowerCasePipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -15,6 +15,7 @@ import { concat, EMPTY, Observable, of, switchMap, tap, toArray } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CourseDetail, CourseListItem, CourseService } from '../courses/course.service';
 import { EnrollmentListItem, EnrollmentService, EnrollStudentRequest } from '../courses/enrollment.service';
+import { enrollmentStatusChipClass, formatEnrollmentStatus } from '../courses/shared/format-utils';
 
 const FIRST_NAMES = ['Anna', 'Marco', 'Laura', 'David', 'Sofia', 'Jan', 'Yuki', 'Elena', 'Thomas', 'Mia',
   'Lukas', 'Sarah', 'Alex', 'Nina', 'Felix', 'Julia', 'Max', 'Lena', 'Tobias', 'Clara'];
@@ -26,7 +27,7 @@ const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').repla
 @Component({
   selector: 'app-dev-tools',
   imports: [
-    LowerCasePipe, FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
+    LowerCasePipe, NgClass, FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
     MatSelectModule, MatTableModule, MatProgressSpinnerModule,
   ],
   templateUrl: './dev-tools.html',
@@ -186,9 +187,8 @@ export class DevToolsComponent implements OnInit {
     });
   }
 
-  protected formatStatus(status: string): string {
-    return status.replace(/_/g, ' ');
-  }
+  protected formatStatus = formatEnrollmentStatus;
+  protected enrollmentStatusChipClass = enrollmentStatusChipClass;
 
   protected formatRole(role: string | null): string {
     if (!role) return '—';
