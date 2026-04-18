@@ -49,9 +49,10 @@ export class DevToolsComponent implements OnInit {
   protected filling = signal(false);
   protected adding = signal(false);
   protected paying = signal(false);
+  protected imbalancing = signal(false);
   protected danceRole = signal<'LEAD' | 'FOLLOW'>('LEAD');
 
-  protected readonly enrollmentColumns = ['name', 'phone', 'role', 'status', 'enrolledAt'];
+  protected readonly enrollmentColumns = ['name', 'phone', 'role', 'status', 'waitlistInfo', 'enrolledAt'];
 
   ngOnInit(): void {
     this.loadCourses();
@@ -157,6 +158,56 @@ export class DevToolsComponent implements OnInit {
     });
   }
 
+  protected onCreateImbalance(): void {
+    const courseId = this.selectedCourseId();
+    const course = this.courseDetail();
+    if (!courseId || !course || course.courseType !== 'PARTNER') return;
+
+    const threshold = course.roleBalanceThreshold ?? 3;
+    const role = this.danceRole();
+    const other = role === 'LEAD' ? 'FOLLOW' : 'LEAD';
+
+    const isActive = (s: string) => s === 'CONFIRMED' || s === 'PENDING_PAYMENT' || s === 'PENDING_APPROVAL';
+    const active = this.enrollments().filter(e => isActive(e.status));
+    const myCount = active.filter(e => e.danceRole === role).length;
+    const otherCount = active.filter(e => e.danceRole === other).length;
+
+    // One student to push past threshold + one extra so the waitlist row is visible.
+    const needed = Math.max(1, (otherCount + threshold) - myCount + 1);
+    const remainingCapacity = Math.max(0, course.maxParticipants - active.length);
+    // Don't over-enroll capacity-wise beyond what's needed to demonstrate imbalance.
+    const toEnroll = Math.max(1, Math.min(needed, remainingCapacity + 2));
+
+    this.imbalancing.set(true);
+
+    const operations: Observable<unknown>[] = [];
+    for (let i = 0; i < toEnroll; i++) {
+      operations.push(
+        this.createRandomStudent().pipe(
+          switchMap(result => this.enrollmentService.enrollStudent(courseId, { studentId: result.id, danceRole: role })),
+        ),
+      );
+    }
+
+    concat(...operations).pipe(
+      toArray(),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: () => {
+        this.snackBar.open(`Enrolled ${toEnroll} ${role}s to create imbalance`, 'Close', { duration: 3000, panelClass: 'snackbar-success' });
+        this.imbalancing.set(false);
+        this.loadCourses();
+        this.loadEnrollments(courseId);
+      },
+      error: () => {
+        this.snackBar.open('Some enrollments failed', 'Close', { duration: 5000, panelClass: 'snackbar-error' });
+        this.imbalancing.set(false);
+        this.loadCourses();
+        this.loadEnrollments(courseId);
+      },
+    });
+  }
+
   protected onSimulatePayment(): void {
     const courseId = this.selectedCourseId();
     if (!courseId) return;
@@ -189,6 +240,14 @@ export class DevToolsComponent implements OnInit {
 
   protected formatStatus = formatEnrollmentStatus;
   protected enrollmentStatusChipClass = enrollmentStatusChipClass;
+
+  protected formatWaitlistInfo(row: EnrollmentListItem): string {
+    if (row.status !== 'WAITLISTED' || row.waitlistPosition == null) return '—';
+    const reason = row.waitlistReason === 'ROLE_IMBALANCE' ? 'role imbalance'
+                 : row.waitlistReason === 'CAPACITY' ? 'capacity'
+                 : 'unknown';
+    return `#${row.waitlistPosition} · ${reason}`;
+  }
 
   protected formatRole(role: string | null): string {
     if (!role) return '—';

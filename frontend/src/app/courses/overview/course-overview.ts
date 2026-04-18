@@ -12,7 +12,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CourseDetail, CourseService } from '../course.service';
 import { CourseSummaryComponent, CourseSummaryData } from '../shared/course-summary';
 import { EnrollmentListItem, EnrollmentService } from '../enrollment.service';
-import { enrollmentStatusChipClass, formatDate, formatDayFull, formatEnrollmentStatus, formatLevel, formatTime, levelChipClass, statusChipClass } from '../shared/format-utils';
+import { enrollmentStatusChipClass, formatDate, formatDayFull, formatEnrollmentStatus, formatLevel, formatTime, formatWaitlistReason, levelChipClass, statusChipClass, waitlistReasonChipClass } from '../shared/format-utils';
 import { extractErrorMessage } from '../../shared/error-utils';
 
 interface EnrollmentTab {
@@ -125,6 +125,8 @@ export class CourseOverviewComponent implements OnInit {
   protected formatLevel = formatLevel;
   protected enrollmentStatusChipClass = enrollmentStatusChipClass;
   protected formatEnrollmentStatus = formatEnrollmentStatus;
+  protected waitlistReasonChipClass = waitlistReasonChipClass;
+  protected formatWaitlistReason = formatWaitlistReason;
 
   protected selectTab(index: number): void {
     this.activeTabIndex.set(index);

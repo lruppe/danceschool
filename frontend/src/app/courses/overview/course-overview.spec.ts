@@ -230,4 +230,70 @@ describe('CourseOverviewComponent', () => {
       httpTesting.expectOne(req => req.url.includes('/api/courses/1/enrollments')).flush([]);
     });
   });
+
+  describe('Waitlist tab', () => {
+    it('renders WAITLISTED rows with position and reason chips', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([
+        makeEnrollment({
+          id: 10, studentName: 'Lead A', status: 'WAITLISTED', danceRole: 'LEAD',
+          waitlistPosition: 2, waitlistReason: 'ROLE_IMBALANCE',
+        }),
+      ]);
+      fixture.detectChanges();
+
+      const tabLinks = el.querySelectorAll('a[mat-tab-link]');
+      (tabLinks[1] as HTMLElement).click();
+      fixture.detectChanges();
+
+      const row = el.querySelector('tr[mat-row]');
+      expect(row).toBeTruthy();
+      expect(row?.textContent).toContain('Lead A');
+
+      const waitlistCell = row?.querySelector('.waitlist-cell');
+      expect(waitlistCell).toBeTruthy();
+
+      const chips = waitlistCell?.querySelectorAll('.ds-chip') ?? [];
+      expect(chips.length).toBe(2);
+      expect(chips[0].textContent?.trim()).toBe('#2');
+      expect(chips[1].textContent?.trim()).toBe('Role imbalance');
+      expect(chips[1].classList.contains('ds-chip-info')).toBe(true);
+    });
+
+    it('renders CAPACITY reason with default chip styling', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([
+        makeEnrollment({
+          status: 'WAITLISTED', waitlistPosition: 1, waitlistReason: 'CAPACITY',
+        }),
+      ]);
+      fixture.detectChanges();
+
+      const tabLinks = el.querySelectorAll('a[mat-tab-link]');
+      (tabLinks[1] as HTMLElement).click();
+      fixture.detectChanges();
+
+      const chips = el.querySelectorAll('.waitlist-cell .ds-chip');
+      expect(chips[0].textContent?.trim()).toBe('#1');
+      expect(chips[1].textContent?.trim()).toBe('Capacity');
+      expect(chips[1].classList.contains('ds-chip-default')).toBe(true);
+    });
+
+    it('shows Waitlist as the last-column header on the waitlist tab', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([
+        makeEnrollment({
+          status: 'WAITLISTED', waitlistPosition: 1, waitlistReason: 'CAPACITY',
+        }),
+      ]);
+      fixture.detectChanges();
+
+      const tabLinks = el.querySelectorAll('a[mat-tab-link]');
+      (tabLinks[1] as HTMLElement).click();
+      fixture.detectChanges();
+
+      const headers = Array.from(el.querySelectorAll('th[mat-header-cell]')).map(h => h.textContent?.trim());
+      expect(headers).toContain('Waitlist');
+    });
+  });
 });

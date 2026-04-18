@@ -67,3 +67,19 @@ export function enrollmentStatusChipClass(status: string): string {
 export function formatEnrollmentStatus(status: string): string {
   return status.replace(/_/g, ' ');
 }
+
+/** Map a waitlist reason to its chip class. */
+export function waitlistReasonChipClass(reason: string | null): string {
+  switch (reason) {
+    case 'ROLE_IMBALANCE': return 'ds-chip-info';
+    case 'CAPACITY':       return 'ds-chip-default';
+    default:               return 'ds-chip-default';
+  }
+}
+
+/** Display label for a waitlist reason. */
+export function formatWaitlistReason(reason: string | null): string {
+  if (reason === 'CAPACITY') return 'Capacity';
+  if (reason === 'ROLE_IMBALANCE') return 'Role imbalance';
+  return '—';
+}
