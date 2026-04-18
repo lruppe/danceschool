@@ -104,6 +104,7 @@ export class CourseOverviewComponent implements OnInit {
       numberOfSessions: c.numberOfSessions,
       completedSessions: c.completedSessions,
       status: c.status,
+      publishedAt: formatDate(c.publishedAt ?? ''),
       endDate: formatDate(c.endDate),
       startTime: formatTime(c.startTime),
       endTime: formatTime(c.endTime),
