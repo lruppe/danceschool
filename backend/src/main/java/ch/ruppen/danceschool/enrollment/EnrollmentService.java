@@ -45,7 +45,13 @@ public class EnrollmentService {
 
         validateDanceRole(course, dto.danceRole());
         validateNoDuplicate(student.getId(), course.getId());
-        validateCapacity(course);
+
+        EnrollmentStatus status = resolveBookingStatus(course, student);
+        if (status == EnrollmentStatus.PENDING_PAYMENT) {
+            // Only the committed (direct-pay) path is capped by capacity at enroll time.
+            // PENDING_APPROVAL applicants queue up for owner review; approve-time rechecks capacity.
+            validateCapacity(course);
+        }
 
         SchoolMember enrolledBy = schoolMemberService.findByUserIdAndSchoolId(userId, school.getId())
                 .orElse(null);
@@ -54,7 +60,7 @@ public class EnrollmentService {
         enrollment.setStudent(student);
         enrollment.setCourse(course);
         enrollment.setDanceRole(dto.danceRole());
-        enrollment.setStatus(resolveBookingStatus(course, student));
+        enrollment.setStatus(status);
         enrollment.setEnrolledAt(Instant.now(clock));
         enrollment.setEnrolledBy(enrolledBy);
 
@@ -90,11 +96,21 @@ public class EnrollmentService {
             throw new DomainRuleViolationException("Enrollment is not pending approval");
         }
 
-        enrollment.setStatus(EnrollmentStatus.PENDING_PAYMENT);
         enrollment.setApprovedAt(Instant.now(clock));
 
         Course course = enrollment.getCourse();
         upsertStudentDanceLevel(enrollment.getStudent(), course.getDanceStyle(), course.getLevel());
+
+        // If the course is already full of committed enrollments, route the approval to the waitlist.
+        long committedCount = enrollmentRepository.countByCourseIdAndStatusIn(
+                course.getId(),
+                List.of(EnrollmentStatus.PENDING_PAYMENT, EnrollmentStatus.CONFIRMED));
+        if (committedCount >= course.getMaxParticipants()) {
+            enrollment.setStatus(EnrollmentStatus.WAITLISTED);
+            enrollment.setWaitlistReason(WaitlistReason.CAPACITY);
+        } else {
+            enrollment.setStatus(EnrollmentStatus.PENDING_PAYMENT);
+        }
 
         return new EnrollmentResponseDto(enrollment.getId(), enrollment.getStatus());
     }
@@ -154,11 +170,11 @@ public class EnrollmentService {
     }
 
     private void validateCapacity(Course course) {
+        // Only count committed seats. PENDING_APPROVAL applicants do not reserve capacity —
+        // the approve step re-checks and routes to WAITLISTED if the course has since filled.
         long activeCount = enrollmentRepository.countByCourseIdAndStatusIn(
                 course.getId(),
-                List.of(EnrollmentStatus.PENDING_APPROVAL,
-                        EnrollmentStatus.PENDING_PAYMENT,
-                        EnrollmentStatus.CONFIRMED));
+                List.of(EnrollmentStatus.PENDING_PAYMENT, EnrollmentStatus.CONFIRMED));
         if (activeCount >= course.getMaxParticipants()) {
             throw new DomainRuleViolationException("Course is at capacity");
         }

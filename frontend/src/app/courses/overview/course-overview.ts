@@ -154,8 +154,11 @@ export class CourseOverviewComponent implements OnInit {
 
   protected onApprove(enrollmentId: number): void {
     this.enrollmentService.approve(enrollmentId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.snackBar.open('Enrollment approved', 'Close', { duration: 3000, panelClass: 'snackbar-success' });
+      next: (response) => {
+        const message = response.status === 'WAITLISTED'
+          ? 'Approved — course is full, moved to waitlist'
+          : 'Enrollment approved';
+        this.snackBar.open(message, 'Close', { duration: 4000, panelClass: 'snackbar-success' });
         const courseId = this.course()?.id;
         if (courseId) this.loadEnrollments(courseId);
       },
