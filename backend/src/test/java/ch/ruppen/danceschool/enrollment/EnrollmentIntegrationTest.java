@@ -338,6 +338,98 @@ class EnrollmentIntegrationTest {
     // --- Approve / reject ---
 
     @Test
+    void enroll_withPendingApprovalApplicants_doesNotBlockCommittedEnrollment() throws Exception {
+        // Course with capacity 2, no requiresApproval, ADVANCED level.
+        Course advancedCourse = createCourse(school, "Salsa Advanced", DanceStyle.SALSA,
+                CourseLevel.ADVANCED, CourseType.PARTNER, 2, true, 1);
+        entityManager.flush();
+
+        // student (BEGINNER salsa) → PENDING_APPROVAL; should NOT reserve a seat.
+        mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "LEAD"}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_APPROVAL"));
+
+        // Two matching-level students can still take both direct-pay seats.
+        Student qualified1 = createStudent(school, "Q1", "q1@example.com", null);
+        addDanceLevel(qualified1, DanceStyle.SALSA, CourseLevel.ADVANCED);
+        Student qualified2 = createStudent(school, "Q2", "q2@example.com", null);
+        addDanceLevel(qualified2, DanceStyle.SALSA, CourseLevel.ADVANCED);
+        entityManager.flush();
+
+        mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "FOLLOW"}
+                                """.formatted(qualified1.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_PAYMENT"));
+
+        mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "LEAD"}
+                                """.formatted(qualified2.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_PAYMENT"));
+    }
+
+    @Test
+    void approve_whenCourseFull_routesToWaitlistWithCapacityReason() throws Exception {
+        // Course capacity 1, ADVANCED salsa.
+        Course advancedCourse = createCourse(school, "Salsa Advanced", DanceStyle.SALSA,
+                CourseLevel.ADVANCED, CourseType.PARTNER, 1, true, 1);
+        entityManager.flush();
+
+        // Fill the one seat with a qualified direct-pay student.
+        Student qualified = createStudent(school, "Qualified", "qualified@example.com", null);
+        addDanceLevel(qualified, DanceStyle.SALSA, CourseLevel.ADVANCED);
+        entityManager.flush();
+
+        mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "LEAD"}
+                                """.formatted(qualified.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_PAYMENT"));
+
+        // Under-leveled student enrolls → PENDING_APPROVAL.
+        String pendingResponse = mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "FOLLOW"}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_APPROVAL"))
+                .andReturn().getResponse().getContentAsString();
+        Long pendingId = com.jayway.jsonpath.JsonPath.parse(pendingResponse).read("$.enrollmentId", Long.class);
+
+        // Approve: course is at capacity → WAITLISTED with reason CAPACITY.
+        mockMvc.perform(put("/api/enrollments/{id}/approve", pendingId)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("WAITLISTED"));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Enrollment updated = entityManager.find(Enrollment.class, pendingId);
+        org.junit.jupiter.api.Assertions.assertEquals(EnrollmentStatus.WAITLISTED, updated.getStatus());
+        org.junit.jupiter.api.Assertions.assertEquals(WaitlistReason.CAPACITY, updated.getWaitlistReason());
+        // approvedAt is still set — approval decision is separate from slot outcome.
+        org.junit.jupiter.api.Assertions.assertNotNull(updated.getApprovedAt());
+    }
+
+    @Test
     void approve_transitionsToPendingPayment_setsApprovedAt_andUpgradesStudentLevel() throws Exception {
         Long enrollmentId = createPendingApprovalForInsufficientLevel();
 
