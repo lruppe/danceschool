@@ -116,7 +116,7 @@
     <!-- Content Card -->
     <div class="content-card">
       <h2 class="content-card-title">Course Summary</h2>
-      <app-course-summary [data]="summaryData" (edit)="onEdit($event)" />
+      <app-course-summary [data]="summaryData" [defaultOpen]="false" (edit)="onEdit($event)" />
     </div>
   }
 } @else {

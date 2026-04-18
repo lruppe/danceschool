@@ -1,129 +1,196 @@
 @let d = data();
 
-<!-- Details Card -->
-<div class="summary-card">
-  <div class="summary-card-header">
-    <h3 class="summary-card-title">Details</h3>
-    <button mat-button class="edit-link" (click)="edit.emit(0)" type="button">Edit</button>
+<!-- Course Details -->
+<section class="summary-card" [class.is-open]="isOpen('details')">
+  <div
+    class="summary-card-header"
+    role="button"
+    tabindex="0"
+    [attr.aria-expanded]="isOpen('details')"
+    (click)="toggle('details')"
+    (keydown.enter)="$event.preventDefault(); toggle('details')"
+    (keydown.space)="$event.preventDefault(); toggle('details')">
+    <h3 class="summary-card-title">Course Details</h3>
+    <button mat-button class="edit-link" (click)="onEdit($event, 'details')" type="button">Edit</button>
+    <mat-icon class="chevron" aria-hidden="true">{{ isOpen('details') ? 'expand_less' : 'expand_more' }}</mat-icon>
   </div>
-  <div class="summary-card-fields">
-    <div class="summary-field">
-      <span class="summary-label">Title</span>
-      <span class="summary-value">{{ d.title }}</span>
-    </div>
-    <div class="summary-field">
-      <span class="summary-label">Dance Style</span>
-      <span class="summary-value">{{ label(danceStyles, d.danceStyle) }}</span>
-    </div>
-    <div class="summary-field">
-      <span class="summary-label">Level</span>
-      <span class="summary-value">{{ label(levels, d.level) }}</span>
-    </div>
-    <div class="summary-field">
-      <span class="summary-label">Course Type</span>
-      <span class="summary-value">{{ label(courseTypes, d.courseType) }}</span>
-    </div>
-    @if (d.description) {
-      <div class="summary-field summary-field--full">
-        <span class="summary-label">Description</span>
-        <span class="summary-value">{{ d.description }}</span>
-      </div>
-    }
-  </div>
-</div>
-
-<!-- Schedule Card -->
-<div class="summary-card">
-  <div class="summary-card-header">
-    <h3 class="summary-card-title">Schedule</h3>
-    <button mat-button class="edit-link" (click)="edit.emit(1)" type="button">Edit</button>
-  </div>
-  <div class="summary-card-fields">
-    <div class="summary-field">
-      <span class="summary-label">Start Date</span>
-      <span class="summary-value">{{ d.startDate }}</span>
-    </div>
-    <div class="summary-field">
-      <span class="summary-label">Recurrence</span>
-      <span class="summary-value">{{ label(recurrenceTypes, d.recurrenceType) }}</span>
-    </div>
-    <div class="summary-field">
-      <span class="summary-label">Day of Week</span>
-      <span class="summary-value">{{ d.dayOfWeek }}</span>
-    </div>
-    <div class="summary-field">
-      <span class="summary-label">Sessions</span>
-      <span class="summary-value">
-        @if (d.status === 'RUNNING' && d.completedSessions != null) {
-          Session {{ d.completedSessions }}/{{ d.numberOfSessions }}
-        } @else {
-          {{ d.numberOfSessions }}
-        }
-      </span>
-    </div>
-    <div class="summary-field">
-      <span class="summary-label">Time</span>
-      <span class="summary-value">{{ d.startTime }} – {{ d.endTime }}</span>
-    </div>
-    @if (d.endDate) {
+  @if (isOpen('details')) {
+    <div class="summary-card-fields">
       <div class="summary-field">
-        <span class="summary-label">End Date</span>
-        <span class="summary-value">{{ d.endDate }}</span>
+        <span class="summary-label">Title</span>
+        <span class="summary-value">{{ d.title }}</span>
       </div>
-    }
-    <div class="summary-field summary-field--full">
-      <span class="summary-label">Location</span>
-      <span class="summary-value">{{ d.location }}</span>
-    </div>
-    @if (d.teachers) {
-      <div class="summary-field summary-field--full">
-        <span class="summary-label">Teachers</span>
-        <span class="summary-value">{{ d.teachers }}</span>
-      </div>
-    }
-  </div>
-</div>
-
-<!-- Registration Card -->
-<div class="summary-card">
-  <div class="summary-card-header">
-    <h3 class="summary-card-title">Registration</h3>
-    <button mat-button class="edit-link" (click)="edit.emit(2)" type="button">Edit</button>
-  </div>
-  <div class="summary-card-fields">
-    <div class="summary-field">
-      <span class="summary-label">Max Participants</span>
-      <span class="summary-value">{{ d.maxParticipants }}</span>
-    </div>
-    @if (d.courseType === 'PARTNER') {
       <div class="summary-field">
-        <span class="summary-label">Role Balancing</span>
-        <span class="summary-value">{{ d.roleBalancingEnabled ? 'Enabled' : 'Disabled' }}</span>
+        <span class="summary-label">Dance Style</span>
+        <span class="summary-value">{{ label(danceStyles, d.danceStyle) }}</span>
       </div>
-      @if (d.roleBalancingEnabled && d.roleBalanceThreshold) {
-        <div class="summary-field">
-          <span class="summary-label">Max Imbalance</span>
-          <span class="summary-value">{{ d.roleBalanceThreshold }}</span>
+      <div class="summary-field">
+        <span class="summary-label">Level</span>
+        <span class="summary-value">{{ label(levels, d.level) }}</span>
+      </div>
+      <div class="summary-field">
+        <span class="summary-label">Course Type</span>
+        <span class="summary-value">{{ label(courseTypes, d.courseType) }}</span>
+      </div>
+      @if (d.description) {
+        <div class="summary-field summary-field--full">
+          <span class="summary-label">Description</span>
+          <span class="summary-value">{{ d.description }}</span>
         </div>
       }
-    }
-  </div>
-</div>
+    </div>
+  }
+</section>
 
-<!-- Pricing Card -->
-<div class="summary-card">
-  <div class="summary-card-header">
+<!-- Schedule -->
+<section class="summary-card" [class.is-open]="isOpen('schedule')">
+  <div
+    class="summary-card-header"
+    role="button"
+    tabindex="0"
+    [attr.aria-expanded]="isOpen('schedule')"
+    (click)="toggle('schedule')"
+    (keydown.enter)="$event.preventDefault(); toggle('schedule')"
+    (keydown.space)="$event.preventDefault(); toggle('schedule')">
+    <h3 class="summary-card-title">Schedule</h3>
+    <button mat-button class="edit-link" (click)="onEdit($event, 'schedule')" type="button">Edit</button>
+    <mat-icon class="chevron" aria-hidden="true">{{ isOpen('schedule') ? 'expand_less' : 'expand_more' }}</mat-icon>
+  </div>
+  @if (isOpen('schedule')) {
+    <div class="summary-card-fields">
+      <div class="summary-field">
+        <span class="summary-label">Start Date</span>
+        <span class="summary-value">{{ d.startDate }}</span>
+      </div>
+      <div class="summary-field">
+        <span class="summary-label">Recurrence</span>
+        <span class="summary-value">{{ label(recurrenceTypes, d.recurrenceType) }}</span>
+      </div>
+      <div class="summary-field">
+        <span class="summary-label">Day of Week</span>
+        <span class="summary-value">{{ d.dayOfWeek }}</span>
+      </div>
+      <div class="summary-field">
+        <span class="summary-label">Sessions</span>
+        <span class="summary-value">
+          @if (d.status === 'RUNNING' && d.completedSessions != null) {
+            Session {{ d.completedSessions }}/{{ d.numberOfSessions }}
+          } @else {
+            {{ d.numberOfSessions }}
+          }
+        </span>
+      </div>
+      <div class="summary-field">
+        <span class="summary-label">Time</span>
+        <span class="summary-value">{{ d.startTime }} – {{ d.endTime }}</span>
+      </div>
+      @if (d.endDate) {
+        <div class="summary-field">
+          <span class="summary-label">End Date</span>
+          <span class="summary-value">{{ d.endDate }}</span>
+        </div>
+      }
+      <div class="summary-field summary-field--full">
+        <span class="summary-label">Location</span>
+        <span class="summary-value">{{ d.location }}</span>
+      </div>
+      @if (d.teachers) {
+        <div class="summary-field summary-field--full">
+          <span class="summary-label">Teachers</span>
+          <span class="summary-value">{{ d.teachers }}</span>
+        </div>
+      }
+    </div>
+  }
+</section>
+
+<!-- Registration -->
+<section class="summary-card" [class.is-open]="isOpen('registration')">
+  <div
+    class="summary-card-header"
+    role="button"
+    tabindex="0"
+    [attr.aria-expanded]="isOpen('registration')"
+    (click)="toggle('registration')"
+    (keydown.enter)="$event.preventDefault(); toggle('registration')"
+    (keydown.space)="$event.preventDefault(); toggle('registration')">
+    <h3 class="summary-card-title">Registration</h3>
+    <button mat-button class="edit-link" (click)="onEdit($event, 'registration')" type="button">Edit</button>
+    <mat-icon class="chevron" aria-hidden="true">{{ isOpen('registration') ? 'expand_less' : 'expand_more' }}</mat-icon>
+  </div>
+  @if (isOpen('registration')) {
+    <div class="summary-card-fields">
+      <div class="summary-field">
+        <span class="summary-label">Max Participants</span>
+        <span class="summary-value">{{ d.maxParticipants }}</span>
+      </div>
+      @if (d.courseType === 'PARTNER') {
+        <div class="summary-field">
+          <span class="summary-label">Role Balancing</span>
+          <span class="summary-value">{{ d.roleBalancingEnabled ? 'Enabled' : 'Disabled' }}</span>
+        </div>
+        @if (d.roleBalancingEnabled && d.roleBalanceThreshold) {
+          <div class="summary-field">
+            <span class="summary-label">Max Imbalance</span>
+            <span class="summary-value">{{ d.roleBalanceThreshold }}</span>
+          </div>
+        }
+      }
+    </div>
+  }
+</section>
+
+<!-- Pricing -->
+<section class="summary-card" [class.is-open]="isOpen('pricing')">
+  <div
+    class="summary-card-header"
+    role="button"
+    tabindex="0"
+    [attr.aria-expanded]="isOpen('pricing')"
+    (click)="toggle('pricing')"
+    (keydown.enter)="$event.preventDefault(); toggle('pricing')"
+    (keydown.space)="$event.preventDefault(); toggle('pricing')">
     <h3 class="summary-card-title">Pricing</h3>
-    <button mat-button class="edit-link" (click)="edit.emit(3)" type="button">Edit</button>
+    <button mat-button class="edit-link" (click)="onEdit($event, 'pricing')" type="button">Edit</button>
+    <mat-icon class="chevron" aria-hidden="true">{{ isOpen('pricing') ? 'expand_less' : 'expand_more' }}</mat-icon>
   </div>
-  <div class="summary-card-fields">
-    <div class="summary-field">
-      <span class="summary-label">Price Model</span>
-      <span class="summary-value">{{ label(priceModels, d.priceModel) }}</span>
+  @if (isOpen('pricing')) {
+    <div class="summary-card-fields">
+      <div class="summary-field">
+        <span class="summary-label">Price Model</span>
+        <span class="summary-value">{{ label(priceModels, d.priceModel) }}</span>
+      </div>
+      <div class="summary-field">
+        <span class="summary-label">Price</span>
+        <span class="summary-value">CHF {{ d.price }}</span>
+      </div>
     </div>
-    <div class="summary-field">
-      <span class="summary-label">Price</span>
-      <span class="summary-value">CHF {{ d.price }}</span>
-    </div>
+  }
+</section>
+
+<!-- Publication -->
+<section class="summary-card" [class.is-open]="isOpen('publication')">
+  <div
+    class="summary-card-header"
+    role="button"
+    tabindex="0"
+    [attr.aria-expanded]="isOpen('publication')"
+    (click)="toggle('publication')"
+    (keydown.enter)="$event.preventDefault(); toggle('publication')"
+    (keydown.space)="$event.preventDefault(); toggle('publication')">
+    <h3 class="summary-card-title">Publication</h3>
+    <mat-icon class="chevron" aria-hidden="true">{{ isOpen('publication') ? 'expand_less' : 'expand_more' }}</mat-icon>
   </div>
-</div>
+  @if (isOpen('publication')) {
+    <div class="summary-card-fields">
+      <div class="summary-field">
+        <span class="summary-label">Publish Status</span>
+        <span class="summary-value">{{ statusLabel(d.status) }}</span>
+      </div>
+      <div class="summary-field">
+        <span class="summary-label">Publish Date</span>
+        <span class="summary-value">{{ d.publishedAt || '—' }}</span>
+      </div>
+    </div>
+  }
+</section>

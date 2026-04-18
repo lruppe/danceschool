@@ -30,18 +30,60 @@ describe('CourseSummaryComponent', () => {
   let fixture: ComponentFixture<CourseSummaryComponent>;
   let el: HTMLElement;
 
-  function setup(data: CourseSummaryData): void {
+  function setup(data: CourseSummaryData, defaultOpen = true): void {
     TestBed.configureTestingModule({ imports: [CourseSummaryComponent] });
     fixture = TestBed.createComponent(CourseSummaryComponent);
     fixture.componentRef.setInput('data', data);
+    fixture.componentRef.setInput('defaultOpen', defaultOpen);
     fixture.detectChanges();
     el = fixture.nativeElement;
   }
 
-  it('should render all 4 section titles', () => {
+  function titles(): (string | undefined)[] {
+    return Array.from(el.querySelectorAll('.summary-card-title')).map(e => e.textContent?.trim());
+  }
+
+  function openHeaders(): HTMLElement[] {
+    return Array.from(el.querySelectorAll('.summary-card-header[aria-expanded="true"]'));
+  }
+
+  function clickHeader(title: string): void {
+    const header = Array.from(el.querySelectorAll<HTMLElement>('.summary-card-header'))
+      .find(h => h.querySelector('.summary-card-title')?.textContent?.trim() === title);
+    header?.click();
+    fixture.detectChanges();
+  }
+
+  it('should render all 5 section titles', () => {
     setup(makeSummaryData());
-    const titles = Array.from(el.querySelectorAll('.summary-card-title')).map(e => e.textContent?.trim());
-    expect(titles).toEqual(['Details', 'Schedule', 'Registration', 'Pricing']);
+    expect(titles()).toEqual(['Course Details', 'Schedule', 'Registration', 'Pricing', 'Publication']);
+  });
+
+  it('should start with all sections collapsed when defaultOpen=false', () => {
+    setup(makeSummaryData(), false);
+    expect(openHeaders().length).toBe(0);
+    expect(el.querySelectorAll('.summary-card-fields').length).toBe(0);
+  });
+
+  it('should start with all sections expanded when defaultOpen=true', () => {
+    setup(makeSummaryData(), true);
+    expect(openHeaders().length).toBe(5);
+    expect(el.querySelectorAll('.summary-card-fields').length).toBe(5);
+  });
+
+  it('should toggle a single section independently of the others', () => {
+    setup(makeSummaryData(), true);
+    clickHeader('Schedule');
+
+    const expanded = openHeaders().map(h => h.querySelector('.summary-card-title')?.textContent?.trim());
+    expect(expanded).toEqual(['Course Details', 'Registration', 'Pricing', 'Publication']);
+  });
+
+  it('should re-open a collapsed section when its header is clicked again', () => {
+    setup(makeSummaryData(), false);
+    clickHeader('Pricing');
+    expect(openHeaders().length).toBe(1);
+    expect(openHeaders()[0].querySelector('.summary-card-title')?.textContent?.trim()).toBe('Pricing');
   });
 
   it('should display course details fields with labels', () => {
@@ -106,6 +148,23 @@ describe('CourseSummaryComponent', () => {
     expect(values).toContain('CHF 166.5');
   });
 
+  it('should display Publication section with status and publish date', () => {
+    setup(makeSummaryData({ status: 'OPEN', publishedAt: '01.03.2026' }));
+    const labels = Array.from(el.querySelectorAll('.summary-label')).map(e => e.textContent?.trim());
+    expect(labels).toContain('Publish Status');
+    expect(labels).toContain('Publish Date');
+
+    const values = Array.from(el.querySelectorAll('.summary-value')).map(e => e.textContent?.trim());
+    expect(values).toContain('Open');
+    expect(values).toContain('01.03.2026');
+  });
+
+  it('should show Draft status when status is missing', () => {
+    setup(makeSummaryData({ status: undefined }));
+    const values = Array.from(el.querySelectorAll('.summary-value')).map(e => e.textContent?.trim());
+    expect(values).toContain('Draft');
+  });
+
   it('should emit edit event with correct section index when Edit is clicked', () => {
     setup(makeSummaryData());
     const editSpy = vi.fn();
@@ -125,5 +184,15 @@ describe('CourseSummaryComponent', () => {
 
     (editButtons[3] as HTMLButtonElement).click();
     expect(editSpy).toHaveBeenCalledWith(3);
+  });
+
+  it('should not toggle the section when Edit is clicked', () => {
+    setup(makeSummaryData(), true);
+    const firstEdit = el.querySelector<HTMLButtonElement>('.edit-link');
+    firstEdit?.click();
+    fixture.detectChanges();
+
+    // All 5 sections should still be expanded after clicking Edit
+    expect(openHeaders().length).toBe(5);
   });
 });

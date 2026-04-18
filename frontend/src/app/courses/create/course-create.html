@@ -242,7 +242,7 @@
         <!-- Review Step -->
         <div class="review-step">
           <!-- Course Summary -->
-          <app-course-summary [data]="reviewData" (edit)="goToStep($event)" />
+          <app-course-summary [data]="reviewData" [defaultOpen]="true" (edit)="goToStep($event)" />
         </div>
       }
     }
