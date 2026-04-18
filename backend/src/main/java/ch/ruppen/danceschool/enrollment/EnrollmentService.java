@@ -59,6 +59,7 @@ public class EnrollmentService {
         enrollment.setEnrolledBy(enrolledBy);
 
         enrollmentRepository.save(enrollment);
+        course.setEnrolledStudents(course.getEnrolledStudents() + 1);
         return new EnrollmentResponseDto(enrollment.getId(), enrollment.getStatus());
     }
 

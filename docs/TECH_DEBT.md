@@ -1,8 +1,7 @@
 # Tech Debt
 
 - Public URL on R2 Cloudflare S3 Bucket
-- String config for Enums
-- Proper ControllerAdvice
+- Check dev tools endpoints (available in prod?)
 
 ## Course Domain
 
