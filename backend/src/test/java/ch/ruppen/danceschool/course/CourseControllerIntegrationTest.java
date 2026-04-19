@@ -57,9 +57,18 @@ class CourseControllerIntegrationTest {
 
     @Test
     void getMe_returnsCourses_whenUserHasCourses() throws Exception {
-        createCourse(school, "Salsa Beginners", DanceStyle.SALSA, CourseLevel.BEGINNER,
+        Course course = createCourse(school, "Salsa Beginners", DanceStyle.SALSA, CourseLevel.BEGINNER,
                 DayOfWeek.MONDAY, LocalTime.of(19, 0), LocalTime.of(20, 0),
-                8, 5, 15, new BigDecimal("180.00"), LocalDate.now());
+                8, 15, new BigDecimal("180.00"), LocalDate.now());
+        // Committed enrollments (PENDING_PAYMENT + CONFIRMED) count as enrolledStudents.
+        // WAITLISTED / PENDING_APPROVAL must not be counted.
+        createEnrollment(course, createStudent(school, "S1", "s1@example.com"), null, EnrollmentStatus.CONFIRMED);
+        createEnrollment(course, createStudent(school, "S2", "s2@example.com"), null, EnrollmentStatus.CONFIRMED);
+        createEnrollment(course, createStudent(school, "S3", "s3@example.com"), null, EnrollmentStatus.CONFIRMED);
+        createEnrollment(course, createStudent(school, "S4", "s4@example.com"), null, EnrollmentStatus.PENDING_PAYMENT);
+        createEnrollment(course, createStudent(school, "S5", "s5@example.com"), null, EnrollmentStatus.PENDING_PAYMENT);
+        createEnrollment(course, createStudent(school, "S6", "s6@example.com"), null, EnrollmentStatus.WAITLISTED);
+        createEnrollment(course, createStudent(school, "S7", "s7@example.com"), null, EnrollmentStatus.PENDING_APPROVAL);
         entityManager.flush();
 
         mockMvc.perform(get("/api/courses/me")
@@ -96,10 +105,10 @@ class CourseControllerIntegrationTest {
     void getMe_returnsMultipleCourses() throws Exception {
         createCourse(school, "Salsa Beginners", DanceStyle.SALSA, CourseLevel.BEGINNER,
                 DayOfWeek.MONDAY, LocalTime.of(19, 0), LocalTime.of(20, 0),
-                8, 5, 15, new BigDecimal("180.00"), LocalDate.now());
+                8, 15, new BigDecimal("180.00"), LocalDate.now());
         createCourse(school, "Bachata Advanced", DanceStyle.BACHATA, CourseLevel.ADVANCED,
                 DayOfWeek.WEDNESDAY, LocalTime.of(20, 0), LocalTime.of(21, 15),
-                10, 10, 10, new BigDecimal("310.00"), LocalDate.now());
+                10, 10, new BigDecimal("310.00"), LocalDate.now());
         entityManager.flush();
 
         mockMvc.perform(get("/api/courses/me")
@@ -113,11 +122,11 @@ class CourseControllerIntegrationTest {
         Course partnerCourse = createCourseEntity(school, "Bachata Intermediate", DanceStyle.BACHATA,
                 CourseLevel.INTERMEDIATE, CourseType.PARTNER,
                 DayOfWeek.MONDAY, LocalTime.of(19, 0), LocalTime.of(20, 0),
-                8, 0, 20, new BigDecimal("200.00"), LocalDate.now());
+                8, 20, new BigDecimal("200.00"), LocalDate.now());
         Course soloCourse = createCourseEntity(school, "Salsa Solo", DanceStyle.SALSA,
                 CourseLevel.BEGINNER, CourseType.SOLO,
                 DayOfWeek.TUESDAY, LocalTime.of(19, 0), LocalTime.of(20, 0),
-                8, 0, 20, new BigDecimal("180.00"), LocalDate.now());
+                8, 20, new BigDecimal("180.00"), LocalDate.now());
 
         Student s1 = createStudent(school, "Anna", "anna@example.com");
         Student s2 = createStudent(school, "Ben", "ben@example.com");
@@ -186,17 +195,17 @@ class CourseControllerIntegrationTest {
         return s;
     }
 
-    private void createCourse(School s, String title, DanceStyle danceStyle, CourseLevel level,
-                              DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime,
-                              int sessions, int enrolled, int max, BigDecimal price,
-                              LocalDate publishedAt) {
-        createCourseEntity(s, title, danceStyle, level, CourseType.PARTNER,
-                dayOfWeek, startTime, endTime, sessions, enrolled, max, price, publishedAt);
+    private Course createCourse(School s, String title, DanceStyle danceStyle, CourseLevel level,
+                                DayOfWeek dayOfWeek, LocalTime startTime, LocalTime endTime,
+                                int sessions, int max, BigDecimal price,
+                                LocalDate publishedAt) {
+        return createCourseEntity(s, title, danceStyle, level, CourseType.PARTNER,
+                dayOfWeek, startTime, endTime, sessions, max, price, publishedAt);
     }
 
     private Course createCourseEntity(School s, String title, DanceStyle danceStyle, CourseLevel level,
                                       CourseType courseType, DayOfWeek dayOfWeek, LocalTime startTime,
-                                      LocalTime endTime, int sessions, int enrolled, int max,
+                                      LocalTime endTime, int sessions, int max,
                                       BigDecimal price, LocalDate publishedAt) {
         LocalDate startDate = LocalDate.now().plusDays(30);
         Course course = new Course();
@@ -214,7 +223,6 @@ class CourseControllerIntegrationTest {
         course.setEndTime(endTime);
         course.setLocation("Studio A");
         course.setMaxParticipants(max);
-        course.setEnrolledStudents(enrolled);
         course.setPriceModel(PriceModel.FIXED_COURSE);
         course.setPrice(price);
         course.setPublishedAt(publishedAt);

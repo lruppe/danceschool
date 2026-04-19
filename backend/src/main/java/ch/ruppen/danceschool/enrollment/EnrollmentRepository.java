@@ -28,4 +28,10 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
             "GROUP BY e.course.id, e.danceRole")
     List<Object[]> countByRoleGroupedByCourse(@Param("courseIds") List<Long> courseIds,
                                               @Param("statuses") List<EnrollmentStatus> statuses);
+
+    @Query("SELECT e.course.id, COUNT(e) FROM Enrollment e " +
+            "WHERE e.course.id IN :courseIds AND e.status IN :statuses " +
+            "GROUP BY e.course.id")
+    List<Object[]> countGroupedByCourse(@Param("courseIds") List<Long> courseIds,
+                                        @Param("statuses") List<EnrollmentStatus> statuses);
 }

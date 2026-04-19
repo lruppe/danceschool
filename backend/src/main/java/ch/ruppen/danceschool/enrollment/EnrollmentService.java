@@ -29,10 +29,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EnrollmentService {
 
-    private static final List<EnrollmentStatus> COMMITTED_STATUSES = List.of(
-            EnrollmentStatus.PENDING_PAYMENT,
-            EnrollmentStatus.CONFIRMED);
-
     private final EnrollmentRepository enrollmentRepository;
     private final SchoolService schoolService;
     private final CourseService courseService;
@@ -75,9 +71,6 @@ public class EnrollmentService {
         }
 
         enrollmentRepository.save(enrollment);
-        if (enrollment.getStatus() != EnrollmentStatus.WAITLISTED) {
-            course.setEnrolledStudents(course.getEnrolledStudents() + 1);
-        }
         return new EnrollmentResponseDto(enrollment.getId(), enrollment.getStatus());
     }
 
@@ -115,7 +108,7 @@ public class EnrollmentService {
 
         // If the course filled up between application and approval, route to the waitlist.
         long committedCount = enrollmentRepository.countByCourseIdAndStatusIn(
-                course.getId(), COMMITTED_STATUSES);
+                course.getId(), EnrollmentStatus.SEAT_HOLDING_STATI);
         if (committedCount >= course.getMaxParticipants()) {
             // Compute position BEFORE flipping to WAITLISTED so Hibernate's auto-flush
             // doesn't count this enrollment against itself.
@@ -185,7 +178,7 @@ public class EnrollmentService {
     }
 
     private WaitlistDecision resolveWaitlist(Course course, DanceRole role) {
-        long committed = enrollmentRepository.countByCourseIdAndStatusIn(course.getId(), COMMITTED_STATUSES);
+        long committed = enrollmentRepository.countByCourseIdAndStatusIn(course.getId(), EnrollmentStatus.SEAT_HOLDING_STATI);
         if (committed >= course.getMaxParticipants()) {
             return new WaitlistDecision(WaitlistReason.CAPACITY, nextPosition(course.getId(), role));
         }
@@ -196,9 +189,9 @@ public class EnrollmentService {
                 && role != null) {
             DanceRole other = (role == DanceRole.LEAD) ? DanceRole.FOLLOW : DanceRole.LEAD;
             long myCount = enrollmentRepository.countByCourseIdAndDanceRoleAndStatusIn(
-                    course.getId(), role, COMMITTED_STATUSES);
+                    course.getId(), role, EnrollmentStatus.SEAT_HOLDING_STATI);
             long otherCount = enrollmentRepository.countByCourseIdAndDanceRoleAndStatusIn(
-                    course.getId(), other, COMMITTED_STATUSES);
+                    course.getId(), other, EnrollmentStatus.SEAT_HOLDING_STATI);
             if ((myCount + 1) > otherCount + course.getRoleBalanceThreshold()) {
                 return new WaitlistDecision(WaitlistReason.ROLE_IMBALANCE, nextPosition(course.getId(), role));
             }

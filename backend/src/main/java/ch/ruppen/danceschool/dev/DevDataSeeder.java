@@ -97,7 +97,7 @@ public class DevDataSeeder implements ApplicationRunner {
                 today.minusWeeks(1), RecurrenceType.WEEKLY,
                 6, LocalTime.of(19, 30), LocalTime.of(20, 45),
                 "Studio A", "Maria", 12, false, null,
-                PriceModel.FIXED_COURSE, new BigDecimal("166.50")), 0, today.minusWeeks(2)));
+                PriceModel.FIXED_COURSE, new BigDecimal("166.50")), today.minusWeeks(2)));
 
         courses.add(courseService.seedCourse(owner.getId(), new CreateCourseDto(
                 "Bachata Intermediate", DanceStyle.BACHATA, CourseLevel.INTERMEDIATE,
@@ -105,7 +105,7 @@ public class DevDataSeeder implements ApplicationRunner {
                 today.minusWeeks(2), RecurrenceType.WEEKLY,
                 8, LocalTime.of(19, 0), LocalTime.of(20, 0),
                 "Studio B", "Carlos", 15, true, 3,
-                PriceModel.FIXED_COURSE, new BigDecimal("220.00")), 0, today.minusWeeks(3)));
+                PriceModel.FIXED_COURSE, new BigDecimal("220.00")), today.minusWeeks(3)));
 
         // --- OPEN courses (published, start in the future) ---
         Course salsaAdvanced = courseService.seedCourse(owner.getId(), new CreateCourseDto(
@@ -114,7 +114,7 @@ public class DevDataSeeder implements ApplicationRunner {
                 today.plusWeeks(4), RecurrenceType.WEEKLY,
                 10, LocalTime.of(20, 0), LocalTime.of(21, 15),
                 "Studio A", "Maria, Carlos", 10, true, 2,
-                PriceModel.FIXED_COURSE, new BigDecimal("310.00")), 0, today.minusDays(5));
+                PriceModel.FIXED_COURSE, new BigDecimal("310.00")), today.minusDays(5));
         courses.add(salsaAdvanced);
 
         courses.add(courseService.seedCourse(owner.getId(), new CreateCourseDto(
@@ -123,7 +123,7 @@ public class DevDataSeeder implements ApplicationRunner {
                 today.plusWeeks(5), RecurrenceType.WEEKLY,
                 6, LocalTime.of(18, 30), LocalTime.of(19, 45),
                 "Studio B", "Carlos", 16, true, null,
-                PriceModel.FIXED_COURSE, new BigDecimal("166.50")), 0, today.minusDays(3)));
+                PriceModel.FIXED_COURSE, new BigDecimal("166.50")), today.minusDays(3)));
 
         // --- DRAFT courses (not published) ---
         courses.add(courseService.seedCourse(owner.getId(), new CreateCourseDto(
@@ -132,7 +132,7 @@ public class DevDataSeeder implements ApplicationRunner {
                 today.plusWeeks(8), RecurrenceType.WEEKLY,
                 8, LocalTime.of(19, 0), LocalTime.of(20, 0),
                 "Studio A", "Maria", 20, false, null,
-                PriceModel.FIXED_COURSE, new BigDecimal("220.00")), 0, null));
+                PriceModel.FIXED_COURSE, new BigDecimal("220.00")), null));
 
         courses.add(courseService.seedCourse(owner.getId(), new CreateCourseDto(
                 "Bachata Sensual", DanceStyle.BACHATA, CourseLevel.ADVANCED,
@@ -140,7 +140,7 @@ public class DevDataSeeder implements ApplicationRunner {
                 today.plusWeeks(10), RecurrenceType.WEEKLY,
                 6, LocalTime.of(14, 0), LocalTime.of(15, 30),
                 "Studio B", "Carlos, Ana", 12, true, null,
-                PriceModel.FIXED_COURSE, new BigDecimal("310.00")), 0, null));
+                PriceModel.FIXED_COURSE, new BigDecimal("310.00")), null));
 
         // --- FINISHED course (end date in the past) ---
         courses.add(courseService.seedCourse(owner.getId(), new CreateCourseDto(
@@ -149,7 +149,7 @@ public class DevDataSeeder implements ApplicationRunner {
                 today.minusWeeks(12), RecurrenceType.WEEKLY,
                 8, LocalTime.of(20, 0), LocalTime.of(21, 0),
                 "Studio A", "Luis", 14, true, null,
-                PriceModel.FIXED_COURSE, new BigDecimal("180.00")), 0, today.minusWeeks(14)));
+                PriceModel.FIXED_COURSE, new BigDecimal("180.00")), today.minusWeeks(14)));
 
         return courses;
     }
@@ -169,7 +169,7 @@ public class DevDataSeeder implements ApplicationRunner {
                 today.minusWeeks(1), RecurrenceType.WEEKLY,
                 8, LocalTime.of(18, 0), LocalTime.of(19, 0),
                 "Main Hall", "Ana", 20, true, null,
-                PriceModel.FIXED_COURSE, new BigDecimal("180.00")), 0, today.minusWeeks(2)));
+                PriceModel.FIXED_COURSE, new BigDecimal("180.00")), today.minusWeeks(2)));
 
         courses.add(courseService.seedCourse(owner2.getId(), new CreateCourseDto(
                 "Bachata Sensual", DanceStyle.BACHATA, CourseLevel.ADVANCED,
@@ -177,7 +177,7 @@ public class DevDataSeeder implements ApplicationRunner {
                 today.plusWeeks(3), RecurrenceType.WEEKLY,
                 6, LocalTime.of(14, 0), LocalTime.of(15, 30),
                 "Main Hall", "Ana, Luis", 12, true, null,
-                PriceModel.FIXED_COURSE, new BigDecimal("200.00")), 0, today.minusDays(2)));
+                PriceModel.FIXED_COURSE, new BigDecimal("200.00")), today.minusDays(2)));
 
         return courses;
     }
@@ -256,7 +256,6 @@ public class DevDataSeeder implements ApplicationRunner {
                 EnrollmentStatus.PENDING_PAYMENT, now.minus(3, ChronoUnit.DAYS), null);
         enrollmentService.seedEnrollment(soloCourse, students.get(6), null,
                 EnrollmentStatus.PENDING_PAYMENT, now.minus(2, ChronoUnit.DAYS), null);
-        soloCourse.setEnrolledStudents(6);
 
         // courses[1] = "Bachata Intermediate" (PARTNER, INTERMEDIATE, max 15, roleBalancing=true, threshold=3)
         // Enroll 5 students with LEAD/FOLLOW roles, mix of CONFIRMED and PENDING_PAYMENT
@@ -271,7 +270,6 @@ public class DevDataSeeder implements ApplicationRunner {
                 EnrollmentStatus.CONFIRMED, now.minus(9, ChronoUnit.DAYS), now.minus(7, ChronoUnit.DAYS));
         enrollmentService.seedEnrollment(partnerCourse, students.get(4), DanceRole.FOLLOW,
                 EnrollmentStatus.PENDING_PAYMENT, now.minus(2, ChronoUnit.DAYS), null);
-        partnerCourse.setEnrolledStudents(5);
 
         // courses[2] = "Salsa Advanced" (PARTNER, ADVANCED)
         // Seed two PENDING_APPROVAL rows so the Approve tab has visible content.
@@ -283,6 +281,5 @@ public class DevDataSeeder implements ApplicationRunner {
                 EnrollmentStatus.PENDING_APPROVAL, now.minus(1, ChronoUnit.DAYS), null);
         enrollmentService.seedEnrollment(salsaAdvanced, students.get(5), DanceRole.LEAD,
                 EnrollmentStatus.PENDING_APPROVAL, now.minus(12, ChronoUnit.HOURS), null);
-        salsaAdvanced.setEnrolledStudents(2);
     }
 }

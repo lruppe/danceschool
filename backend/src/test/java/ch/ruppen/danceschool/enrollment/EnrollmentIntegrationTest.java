@@ -202,7 +202,7 @@ class EnrollmentIntegrationTest {
     }
 
     @Test
-    void enrollStudent_atCapacity_doesNotIncrementEnrolledStudentsCounter() throws Exception {
+    void enrollStudent_atCapacity_waitlistedDoesNotCountAsCommitted() throws Exception {
         Course tinyCourse = createCourse(school, "Tiny Course", DanceStyle.SALSA,
                 CourseLevel.BEGINNER, CourseType.SOLO, 1, false, null);
         entityManager.flush();
@@ -227,11 +227,10 @@ class EnrollmentIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("WAITLISTED"));
 
-        entityManager.flush();
-        entityManager.clear();
-
-        Course refreshed = entityManager.find(Course.class, tinyCourse.getId());
-        org.junit.jupiter.api.Assertions.assertEquals(1, refreshed.getEnrolledStudents());
+        mockMvc.perform(get("/api/courses/{id}", tinyCourse.getId())
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.enrolledStudents").value(1));
     }
 
     @Test

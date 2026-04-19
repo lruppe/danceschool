@@ -80,6 +80,4 @@ public class Course {
     private BigDecimal price;
 
     private LocalDate publishedAt;
-
-    private int enrolledStudents;
 }
