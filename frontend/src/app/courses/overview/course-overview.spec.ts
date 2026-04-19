@@ -231,6 +231,53 @@ describe('CourseOverviewComponent', () => {
     });
   });
 
+  describe('Open Payment tab', () => {
+    it('renders Mark Paid button for approved-then-pending-payment enrollments (approvedAt set)', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([
+        makeEnrollment({
+          id: 50, studentName: 'Paid Me', status: 'PENDING_PAYMENT',
+          approvedAt: '2026-04-15T12:00:00Z', paidAt: null,
+        }),
+      ]);
+      fixture.detectChanges();
+
+      const tabLinks = el.querySelectorAll('a[mat-tab-link]');
+      (tabLinks[3] as HTMLElement).click();
+      fixture.detectChanges();
+
+      const row = el.querySelector('tr[mat-row]');
+      expect(row).toBeTruthy();
+      expect(row?.textContent).toContain('Paid Me');
+
+      const markPaidBtn = row?.querySelector('.mark-paid-button') as HTMLButtonElement;
+      expect(markPaidBtn).toBeTruthy();
+      expect(markPaidBtn.textContent?.trim()).toBe('Mark Paid');
+    });
+
+    it('calls markPaid endpoint and refreshes list when Mark Paid clicked', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([
+        makeEnrollment({ id: 99, status: 'PENDING_PAYMENT', approvedAt: '2026-04-15T12:00:00Z' }),
+      ]);
+      fixture.detectChanges();
+
+      const tabLinks = el.querySelectorAll('a[mat-tab-link]');
+      (tabLinks[3] as HTMLElement).click();
+      fixture.detectChanges();
+
+      const markPaidBtn = el.querySelector('.mark-paid-button') as HTMLButtonElement;
+      markPaidBtn.click();
+      fixture.detectChanges();
+
+      const markPaidReq = httpTesting.expectOne(req =>
+        req.url.includes('/api/enrollments/99/mark-paid') && req.method === 'PUT');
+      markPaidReq.flush({ enrollmentId: 99, status: 'CONFIRMED' });
+
+      httpTesting.expectOne(req => req.url.includes('/api/courses/1/enrollments')).flush([]);
+    });
+  });
+
   describe('Waitlist tab', () => {
     it('renders WAITLISTED rows with position and reason chips', () => {
       fixture.detectChanges();

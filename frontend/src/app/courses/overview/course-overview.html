@@ -82,7 +82,6 @@
                     @case (0) { Paid }
                     @case (1) { Waitlist }
                     @case (2) { Level }
-                    @case (3) { Approved on }
                     @default { }
                   }
                 </th>
@@ -115,13 +114,9 @@
                       </div>
                     }
                     @case (3) {
-                      @if (row.approvedAt) {
-                        {{ formatEnrollmentDate(row.approvedAt) }}
-                      } @else {
-                        <button mat-stroked-button class="mark-paid-button" (click)="onMarkPaid(row.id)">
-                          Mark Paid
-                        </button>
-                      }
+                      <button mat-stroked-button class="mark-paid-button" (click)="onMarkPaid(row.id)">
+                        Mark Paid
+                      </button>
                     }
                   }
                 </td>
