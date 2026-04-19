@@ -113,7 +113,6 @@ export class CourseOverviewComponent implements OnInit {
       location: c.location,
       teachers: c.teachers,
       maxParticipants: c.maxParticipants,
-      roleBalancingEnabled: c.roleBalancingEnabled,
       roleBalanceThreshold: c.roleBalanceThreshold,
       priceModel: c.priceModel,
       price: c.price,

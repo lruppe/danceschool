@@ -24,8 +24,7 @@ public record CreateCourseDto(
         @NotBlank @Size(max = 255) String location,
         @Size(max = 255) String teachers,
         @Min(1) int maxParticipants,
-        boolean roleBalancingEnabled,
-        Integer roleBalanceThreshold,
+        @Min(0) Integer roleBalanceThreshold,
         @NotNull PriceModel priceModel,
         @NotNull @DecimalMin("0") BigDecimal price
 ) {

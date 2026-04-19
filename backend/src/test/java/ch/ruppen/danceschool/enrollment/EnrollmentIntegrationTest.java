@@ -63,10 +63,10 @@ class EnrollmentIntegrationTest {
         school = createSchoolWithOwner("Test School", owner);
 
         partnerCourse = createCourse(school, "Bachata Intermediate", DanceStyle.BACHATA,
-                CourseLevel.INTERMEDIATE, CourseType.PARTNER, 15, true, 3);
+                CourseLevel.INTERMEDIATE, CourseType.PARTNER, 15, 3);
 
         soloCourse = createCourse(school, "Salsa Solo Beginner", DanceStyle.SALSA,
-                CourseLevel.BEGINNER, CourseType.SOLO, 12, false, null);
+                CourseLevel.BEGINNER, CourseType.SOLO, 12, null);
 
         student = createStudent(school, "Anna Mueller", "anna@example.com", "+41 79 100 0001");
         addDanceLevel(student, DanceStyle.BACHATA, CourseLevel.INTERMEDIATE);
@@ -148,7 +148,7 @@ class EnrollmentIntegrationTest {
     @Test
     void enrollStudent_atCapacity_returnsWaitlisted_withCapacityReason_andFifoPosition() throws Exception {
         Course tinyCourse = createCourse(school, "Tiny Course", DanceStyle.SALSA,
-                CourseLevel.BEGINNER, CourseType.SOLO, 1, false, null);
+                CourseLevel.BEGINNER, CourseType.SOLO, 1, null);
         entityManager.flush();
 
         Student student2 = createStudent(school, "Marco Rossi", "marco@example.com", null);
@@ -204,7 +204,7 @@ class EnrollmentIntegrationTest {
     @Test
     void enrollStudent_atCapacity_waitlistedDoesNotCountAsCommitted() throws Exception {
         Course tinyCourse = createCourse(school, "Tiny Course", DanceStyle.SALSA,
-                CourseLevel.BEGINNER, CourseType.SOLO, 1, false, null);
+                CourseLevel.BEGINNER, CourseType.SOLO, 1, null);
         entityManager.flush();
 
         Student student2 = createStudent(school, "Marco Rossi", "marco@example.com", null);
@@ -234,11 +234,56 @@ class EnrollmentIntegrationTest {
     }
 
     @Test
+    void enrollStudent_partnerCourseWithNullThreshold_doesNotWaitlistOnImbalance() throws Exception {
+        // null threshold = balancing off. Even a large LEAD-vs-FOLLOW gap must not waitlist.
+        Course course = createCourse(school, "Bachata Unbalanced", DanceStyle.BACHATA,
+                CourseLevel.BEGINNER, CourseType.PARTNER, 20, null);
+        entityManager.flush();
+
+        Student leadA = createStudent(school, "Lead A", "leadnull-a@example.com", null);
+        Student leadB = createStudent(school, "Lead B", "leadnull-b@example.com", null);
+        Student leadC = createStudent(school, "Lead C", "leadnull-c@example.com", null);
+        Student leadD = createStudent(school, "Lead D", "leadnull-d@example.com", null);
+        entityManager.flush();
+
+        enrollPartner(course.getId(), leadA.getId(), "LEAD", "PENDING_PAYMENT");
+        enrollPartner(course.getId(), leadB.getId(), "LEAD", "PENDING_PAYMENT");
+        enrollPartner(course.getId(), leadC.getId(), "LEAD", "PENDING_PAYMENT");
+        enrollPartner(course.getId(), leadD.getId(), "LEAD", "PENDING_PAYMENT");
+    }
+
+    @Test
+    void enrollStudent_partnerCourseWithThreshold3_waitlistsWhenExceedsThreshold() throws Exception {
+        // threshold=3 → tolerate up to a 3-diff. After 4 LEADs vs 0 FOLLOWS (diff=4 > 3),
+        // the 4th LEAD must waitlist with ROLE_IMBALANCE.
+        Course course = createCourse(school, "Bachata Threshold3", DanceStyle.BACHATA,
+                CourseLevel.BEGINNER, CourseType.PARTNER, 20, 3);
+        entityManager.flush();
+
+        Student leadA = createStudent(school, "Lead A", "lead3-a@example.com", null);
+        Student leadB = createStudent(school, "Lead B", "lead3-b@example.com", null);
+        Student leadC = createStudent(school, "Lead C", "lead3-c@example.com", null);
+        Student leadD = createStudent(school, "Lead D", "lead3-d@example.com", null);
+        entityManager.flush();
+
+        enrollPartner(course.getId(), leadA.getId(), "LEAD", "PENDING_PAYMENT");
+        enrollPartner(course.getId(), leadB.getId(), "LEAD", "PENDING_PAYMENT");
+        enrollPartner(course.getId(), leadC.getId(), "LEAD", "PENDING_PAYMENT");
+
+        String resp = enrollPartner(course.getId(), leadD.getId(), "LEAD", "WAITLISTED");
+        Long id = com.jayway.jsonpath.JsonPath.parse(resp).read("$.enrollmentId", Long.class);
+        entityManager.flush();
+        entityManager.clear();
+        Enrollment waitlisted = entityManager.find(Enrollment.class, id);
+        org.junit.jupiter.api.Assertions.assertEquals(WaitlistReason.ROLE_IMBALANCE, waitlisted.getWaitlistReason());
+    }
+
+    @Test
     void enrollStudent_roleImbalance_returnsWaitlisted_withRoleImbalanceReason() throws Exception {
         // threshold=1 → tolerate up to a 1-diff. With 1 LEAD + 0 FOLLOW (diff=1=threshold, fine),
         // a second LEAD would make diff=2 > threshold → waitlist with ROLE_IMBALANCE.
         Course balancedCourse = createCourse(school, "Kizomba Balanced", DanceStyle.KIZOMBA,
-                CourseLevel.BEGINNER, CourseType.PARTNER, 20, true, 1);
+                CourseLevel.BEGINNER, CourseType.PARTNER, 20, 1);
         entityManager.flush();
 
         Student leadA = createStudent(school, "Lead A", "leada@example.com", null);
@@ -261,7 +306,7 @@ class EnrollmentIntegrationTest {
         // threshold=1, 1 LEAD (REJECTED — excluded) + 1 FOLLOW; next LEAD should NOT waitlist because
         // rejected enrollments don't count. It's PENDING_PAYMENT.
         Course advancedCourse = createCourse(school, "Salsa Advanced Gate", DanceStyle.SALSA,
-                CourseLevel.ADVANCED, CourseType.PARTNER, 20, true, 1);
+                CourseLevel.ADVANCED, CourseType.PARTNER, 20, 1);
         entityManager.flush();
 
         Student rejectedLead = createStudent(school, "Rejected Lead", "rejlead@example.com", null);
@@ -287,7 +332,7 @@ class EnrollmentIntegrationTest {
         // tinyCourse max=2: enroll 1 LEAD + 1 FOLLOW to fill capacity, then waitlist additional students.
         // Positions should be assigned per role: LEAD #1, LEAD #2, FOLLOW #1.
         Course tinyPartner = createCourse(school, "Kizomba Tiny", DanceStyle.KIZOMBA,
-                CourseLevel.BEGINNER, CourseType.PARTNER, 2, false, null);
+                CourseLevel.BEGINNER, CourseType.PARTNER, 2, null);
         entityManager.flush();
 
         Student leadA = createStudent(school, "Lead A", "leada2@example.com", null);
@@ -335,7 +380,7 @@ class EnrollmentIntegrationTest {
     @Test
     void enrollStudent_insufficientLevel_returnsPendingApproval() throws Exception {
         Course advancedCourse = createCourse(school, "Salsa Advanced", DanceStyle.SALSA,
-                CourseLevel.ADVANCED, CourseType.PARTNER, 10, true, 2);
+                CourseLevel.ADVANCED, CourseType.PARTNER, 10, 2);
         entityManager.flush();
 
         // Student has BEGINNER salsa level, course requires ADVANCED → needs approval
@@ -352,7 +397,7 @@ class EnrollmentIntegrationTest {
     @Test
     void enrollStudent_noLevelForStyle_returnsPendingApproval() throws Exception {
         Course intermediateZouk = createCourse(school, "Zouk Intermediate", DanceStyle.ZOUK,
-                CourseLevel.INTERMEDIATE, CourseType.PARTNER, 10, false, null);
+                CourseLevel.INTERMEDIATE, CourseType.PARTNER, 10, null);
         entityManager.flush();
 
         // Student has no ZOUK level at all → needs approval
@@ -370,7 +415,7 @@ class EnrollmentIntegrationTest {
     void enrollStudent_beginnerCourse_alwaysAllowed() throws Exception {
         // Student with no Kizomba level can still enroll in BEGINNER Kizomba
         Course beginnerKizomba = createCourse(school, "Kizomba Beginner", DanceStyle.KIZOMBA,
-                CourseLevel.BEGINNER, CourseType.PARTNER, 10, false, null);
+                CourseLevel.BEGINNER, CourseType.PARTNER, 10, null);
         entityManager.flush();
 
         mockMvc.perform(post("/api/courses/{id}/enrollments", beginnerKizomba.getId())
@@ -466,7 +511,7 @@ class EnrollmentIntegrationTest {
     void enroll_withPendingApprovalApplicants_doesNotBlockCommittedEnrollment() throws Exception {
         // Course with capacity 2, ADVANCED level.
         Course advancedCourse = createCourse(school, "Salsa Advanced", DanceStyle.SALSA,
-                CourseLevel.ADVANCED, CourseType.PARTNER, 2, true, 1);
+                CourseLevel.ADVANCED, CourseType.PARTNER, 2, 1);
         entityManager.flush();
 
         // student (BEGINNER salsa) → PENDING_APPROVAL; should NOT reserve a seat.
@@ -509,7 +554,7 @@ class EnrollmentIntegrationTest {
     void approve_whenCourseFull_routesToWaitlistWithCapacityReason() throws Exception {
         // Course capacity 1, ADVANCED salsa.
         Course advancedCourse = createCourse(school, "Salsa Advanced", DanceStyle.SALSA,
-                CourseLevel.ADVANCED, CourseType.PARTNER, 1, true, 1);
+                CourseLevel.ADVANCED, CourseType.PARTNER, 1, 1);
         entityManager.flush();
 
         // Fill the one seat with a qualified direct-pay student.
@@ -561,7 +606,7 @@ class EnrollmentIntegrationTest {
         // queue for approval. Interleave enroll-time waitlisting with approve-time routing to verify
         // the per-role FIFO counter is shared between both entry points.
         Course advancedCourse = createCourse(school, "Salsa Advanced FIFO", DanceStyle.SALSA,
-                CourseLevel.ADVANCED, CourseType.PARTNER, 2, false, null);
+                CourseLevel.ADVANCED, CourseType.PARTNER, 2, null);
         entityManager.flush();
 
         Student qualifiedLead = createStudent(school, "Q Lead", "qlead@example.com", null);
@@ -688,7 +733,7 @@ class EnrollmentIntegrationTest {
     @Test
     void rejectedEnrollment_excludedFromCapacity_allowsReenrollment() throws Exception {
         Course advancedCourse = createCourse(school, "Salsa Advanced", DanceStyle.SALSA,
-                CourseLevel.ADVANCED, CourseType.PARTNER, 10, true, 2);
+                CourseLevel.ADVANCED, CourseType.PARTNER, 10, 2);
         entityManager.flush();
 
         String response = mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
@@ -811,7 +856,7 @@ class EnrollmentIntegrationTest {
 
     private Long createPendingApprovalForInsufficientLevel() throws Exception {
         Course advancedCourse = createCourse(school, "Salsa Advanced", DanceStyle.SALSA,
-                CourseLevel.ADVANCED, CourseType.PARTNER, 10, true, 2);
+                CourseLevel.ADVANCED, CourseType.PARTNER, 10, 2);
         entityManager.flush();
 
         String response = mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
@@ -827,7 +872,7 @@ class EnrollmentIntegrationTest {
 
     private Course createCourse(School s, String title, DanceStyle danceStyle, CourseLevel level,
                                 CourseType courseType, int maxParticipants,
-                                boolean roleBalancing, Integer roleBalanceThreshold) {
+                                Integer roleBalanceThreshold) {
         Course c = new Course();
         c.setSchool(s);
         c.setTitle(title);
@@ -835,7 +880,6 @@ class EnrollmentIntegrationTest {
         c.setLevel(level);
         c.setCourseType(courseType);
         c.setMaxParticipants(maxParticipants);
-        c.setRoleBalancingEnabled(roleBalancing);
         c.setRoleBalanceThreshold(roleBalanceThreshold);
         c.setStartDate(LocalDate.now().plusWeeks(2));
         c.setEndDate(LocalDate.now().plusWeeks(10));

@@ -107,7 +107,6 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
       location: this.scheduleGroup.controls.location.value,
       teachers: this.scheduleGroup.controls.teachers.value || null,
       maxParticipants: this.registrationGroup.controls.maxParticipants.value ?? 0,
-      roleBalancingEnabled: this.registrationGroup.controls.roleBalancingEnabled.value,
       roleBalanceThreshold: this.registrationGroup.controls.roleBalanceThreshold.value,
       priceModel: this.pricingGroup.controls.priceModel.value,
       price: this.pricingGroup.controls.price.value ?? 0,
@@ -152,9 +151,17 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(type => {
         if (!this.isEditMode) {
-          this.registrationGroup.controls.roleBalancingEnabled.setValue(type === 'PARTNER');
+          this.formService.setRoleBalancingEnabled(type === 'PARTNER');
         }
       });
+  }
+
+  protected get roleBalancingEnabled(): boolean {
+    return this.formService.roleBalancingEnabled;
+  }
+
+  protected onRoleBalancingToggle(enabled: boolean): void {
+    this.formService.setRoleBalancingEnabled(enabled);
   }
 
   protected label(items: { value: string; label: string }[], value: string): string {

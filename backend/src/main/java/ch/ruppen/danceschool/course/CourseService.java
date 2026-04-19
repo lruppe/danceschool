@@ -218,10 +218,6 @@ public class CourseService {
         if (isCreate && !dto.startDate().isAfter(LocalDate.now(clock))) {
             throw new DomainRuleViolationException("Start date must be in the future");
         }
-        if (!dto.roleBalancingEnabled() && dto.roleBalanceThreshold() != null) {
-            throw new DomainRuleViolationException(
-                    "Role balance threshold requires role balancing to be enabled");
-        }
     }
 
     private void applyDto(Course course, CreateCourseDto dto) {
@@ -240,7 +236,6 @@ public class CourseService {
         course.setLocation(dto.location());
         course.setTeachers(dto.teachers());
         course.setMaxParticipants(dto.maxParticipants());
-        course.setRoleBalancingEnabled(dto.roleBalancingEnabled());
         course.setRoleBalanceThreshold(dto.roleBalanceThreshold());
         course.setPriceModel(dto.priceModel());
         course.setPrice(dto.price());
@@ -298,7 +293,6 @@ public class CourseService {
                 course.getLocation(),
                 course.getTeachers(),
                 course.getMaxParticipants(),
-                course.isRoleBalancingEnabled(),
                 course.getRoleBalanceThreshold(),
                 course.getPriceModel(),
                 course.getPrice(),

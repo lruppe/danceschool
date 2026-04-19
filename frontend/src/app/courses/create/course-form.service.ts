@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 
+export const DEFAULT_ROLE_BALANCE_THRESHOLD = 3;
+
 @Injectable()
 export class CourseFormService {
   readonly form = new FormGroup({
@@ -22,8 +24,7 @@ export class CourseFormService {
     }),
     registration: new FormGroup({
       maxParticipants: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(1)] }),
-      roleBalancingEnabled: new FormControl(false, { nonNullable: true }),
-      roleBalanceThreshold: new FormControl<number | null>(3),
+      roleBalanceThreshold: new FormControl<number | null>(null),
     }),
     pricing: new FormGroup({
       priceModel: new FormControl('FIXED_COURSE', { nonNullable: true, validators: [Validators.required] }),
@@ -72,7 +73,6 @@ export class CourseFormService {
       },
       registration: {
         maxParticipants: data['maxParticipants'] as number,
-        roleBalancingEnabled: data['roleBalancingEnabled'] as boolean,
         roleBalanceThreshold: data['roleBalanceThreshold'] as number | null,
       },
       pricing: {
@@ -84,13 +84,22 @@ export class CourseFormService {
     this.form.markAsPristine();
   }
 
+  get roleBalancingEnabled(): boolean {
+    return this.form.controls.registration.controls.roleBalanceThreshold.value !== null;
+  }
+
+  setRoleBalancingEnabled(enabled: boolean): void {
+    const control = this.form.controls.registration.controls.roleBalanceThreshold;
+    control.setValue(enabled ? DEFAULT_ROLE_BALANCE_THRESHOLD : null);
+    control.markAsDirty();
+  }
+
   toDto(): Record<string, unknown> {
     const v = this.form.getRawValue();
     return {
       ...v.details,
       ...v.schedule,
       ...v.registration,
-      roleBalanceThreshold: v.registration.roleBalancingEnabled ? v.registration.roleBalanceThreshold : null,
       priceModel: v.pricing.priceModel,
       price: v.pricing.price,
     };

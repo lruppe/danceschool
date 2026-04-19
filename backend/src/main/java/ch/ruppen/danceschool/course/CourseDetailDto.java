@@ -22,7 +22,6 @@ public record CourseDetailDto(
         String location,
         String teachers,
         int maxParticipants,
-        boolean roleBalancingEnabled,
         Integer roleBalanceThreshold,
         PriceModel priceModel,
         BigDecimal price,

@@ -38,7 +38,7 @@
         Add Student
       </button>
 
-      @if (isPartnerCourse()) {
+      @if (hasRoleBalancing()) {
         <button mat-stroked-button (click)="onCreateImbalance()" [disabled]="imbalancing()">
           @if (imbalancing()) {
             <mat-spinner diameter="18"></mat-spinner>

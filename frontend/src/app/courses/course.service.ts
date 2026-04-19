@@ -42,7 +42,6 @@ export interface CourseDetail {
   location: string;
   teachers: string | null;
   maxParticipants: number;
-  roleBalancingEnabled: boolean;
   roleBalanceThreshold: number | null;
   priceModel: string;
   price: number;

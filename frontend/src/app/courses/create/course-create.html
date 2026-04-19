@@ -188,12 +188,14 @@
           @if (isPartnerCourse) {
             <div class="role-balancing-section">
               <div class="toggle-field">
-                <mat-slide-toggle formControlName="roleBalancingEnabled">
+                <mat-slide-toggle
+                  [checked]="roleBalancingEnabled"
+                  (change)="onRoleBalancingToggle($event.checked)">
                   Require Role Balancing
                 </mat-slide-toggle>
               </div>
 
-              @if (registrationGroup.controls.roleBalancingEnabled.value) {
+              @if (roleBalancingEnabled) {
                 <p class="field-hint">
                   Keeps leaders and followers roughly balanced — extras of the bigger role go on the waiting list.
                 </p>

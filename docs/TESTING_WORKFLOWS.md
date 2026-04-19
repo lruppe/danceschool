@@ -99,11 +99,11 @@ Seed content (courses, students, enrollments, statuses) is defined in [`backend/
 
 ### Waitlist by role imbalance
 
-**How it triggers:** Only for PARTNER courses with `roleBalancingEnabled = true`. If adding another `LEAD` would push `leads - follows > threshold`, the new LEAD enrollment is waitlisted with reason `ROLE_IMBALANCE`. Default threshold is 3.
+**How it triggers:** Only for PARTNER courses with a non-null `roleBalanceThreshold`. If adding another `LEAD` would push `leads - follows > threshold`, the new LEAD enrollment is waitlisted with reason `ROLE_IMBALANCE`. Default threshold when enabling balancing on a new course is 3. A `null` threshold means balancing is off (no imbalance check).
 
 **How to test:**
-1. Dev Tools → pick a PARTNER BEGINNER course (e.g., "Bachata Beginners"; if its threshold is null, pick one with a threshold or enable role balancing first — Bachata Intermediate has threshold 3 but can't be Dev-Tools-filled due to level gating)
-2. Pick a role (e.g., Leader) → click "Create Imbalance" (button appears only for PARTNER courses)
+1. Dev Tools → pick a PARTNER BEGINNER course with balancing enabled (e.g., "Bachata Beginners" — threshold 3)
+2. Pick a role (e.g., Leader) → click "Create Imbalance" (button appears only for PARTNER courses with a non-null threshold)
 3. The UI enrolls enough LEADs to exceed `threshold + 1`
 4. Overflow LEADs appear in **Waitlist** tab with reason chip "Role imbalance" and a position number
 
