@@ -23,7 +23,7 @@ export class CourseFormService {
     registration: new FormGroup({
       maxParticipants: new FormControl<number | null>(null, { validators: [Validators.required, Validators.min(1)] }),
       roleBalancingEnabled: new FormControl(false, { nonNullable: true }),
-      roleBalanceThreshold: new FormControl<number | null>(null),
+      roleBalanceThreshold: new FormControl<number | null>(3),
     }),
     pricing: new FormGroup({
       priceModel: new FormControl('FIXED_COURSE', { nonNullable: true, validators: [Validators.required] }),
