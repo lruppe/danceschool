@@ -115,7 +115,6 @@ public class DevDataSeeder implements ApplicationRunner {
                 10, LocalTime.of(20, 0), LocalTime.of(21, 15),
                 "Studio A", "Maria, Carlos", 10, true, 2,
                 PriceModel.FIXED_COURSE, new BigDecimal("310.00")), 0, today.minusDays(5));
-        salsaAdvanced.setRequiresApproval(true);
         courses.add(salsaAdvanced);
 
         courses.add(courseService.seedCourse(owner.getId(), new CreateCourseDto(
@@ -274,8 +273,9 @@ public class DevDataSeeder implements ApplicationRunner {
                 EnrollmentStatus.PENDING_PAYMENT, now.minus(2, ChronoUnit.DAYS), null);
         partnerCourse.setEnrolledStudents(5);
 
-        // courses[2] = "Salsa Advanced" (PARTNER, ADVANCED, requiresApproval=true)
+        // courses[2] = "Salsa Advanced" (PARTNER, ADVANCED)
         // Seed two PENDING_APPROVAL rows so the Approve tab has visible content.
+        // Both route via level mismatch against ADVANCED salsa.
         // students[0] Anna: INTERMEDIATE salsa (under-level)
         // students[5] Jan de Vries: no salsa level at all
         Course salsaAdvanced = courses.get(2);
