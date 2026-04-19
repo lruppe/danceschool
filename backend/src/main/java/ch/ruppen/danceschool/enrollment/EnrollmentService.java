@@ -220,10 +220,6 @@ public class EnrollmentService {
             return EnrollmentStatus.PENDING_PAYMENT;
         }
 
-        if (course.isRequiresApproval()) {
-            return EnrollmentStatus.PENDING_APPROVAL;
-        }
-
         CourseLevel studentLevel = findStudentLevel(student, course.getDanceStyle());
         if (studentLevel == null || studentLevel.ordinal() < course.getLevel().ordinal()) {
             return EnrollmentStatus.PENDING_APPROVAL;
