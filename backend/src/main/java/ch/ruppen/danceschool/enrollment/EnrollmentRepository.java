@@ -1,5 +1,6 @@
 package ch.ruppen.danceschool.enrollment;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,6 +10,10 @@ import java.util.Optional;
 
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
+    // Kills the 1 + 2N lazy loads in EnrollmentService.toListDto (student fields,
+    // student.danceLevels, course.danceStyle). "course" is sufficient because its
+    // basic columns (including danceStyle) are eager once the entity is loaded.
+    @EntityGraph(attributePaths = {"student", "student.danceLevels", "course"})
     List<Enrollment> findAllByCourseId(Long courseId);
 
     Optional<Enrollment> findByIdAndCourseSchoolId(Long id, Long schoolId);

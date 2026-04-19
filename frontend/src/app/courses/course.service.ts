@@ -56,6 +56,10 @@ export interface CourseDetail {
 export class CourseService {
   private http = inject(HttpClient);
 
+  getCourses(): Observable<CourseListItem[]> {
+    return this.http.get<CourseListItem[]>(`${environment.apiUrl}/api/courses/me`);
+  }
+
   getCoursesByStatus(status: string): Observable<CourseListItem[]> {
     return this.http.get<CourseListItem[]>(`${environment.apiUrl}/api/courses/me`, {
       params: { status },

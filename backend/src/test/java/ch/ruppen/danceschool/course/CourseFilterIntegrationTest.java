@@ -78,11 +78,12 @@ class CourseFilterIntegrationTest {
     }
 
     @Test
-    void noFilter_returnsAllCourses() throws Exception {
+    void noFilter_returnsActiveCoursesExcludingFinished() throws Exception {
         mockMvc.perform(get("/api/courses/me")
                         .with(authentication(authToken(ownerA))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(4));
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[?(@.status=='FINISHED')]").isEmpty());
     }
 
     @Test

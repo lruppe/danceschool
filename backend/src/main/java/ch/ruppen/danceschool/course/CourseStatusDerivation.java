@@ -25,7 +25,9 @@ import java.time.temporal.TemporalAdjusters;
  *
  * <h3>Where the rules live (important!)</h3>
  * These same rules are duplicated in {@link CourseRepository} as JPQL queries for
- * database-level filtering ({@code findDraftBySchoolId}, {@code findOpenBySchoolId}, etc.).
+ * database-level filtering ({@code findDraftBySchoolId}, {@code findOpenBySchoolId},
+ * {@code findRunningBySchoolId}, {@code findFinishedBySchoolId}, and the
+ * {@code findActiveBySchoolId} union used as the default no-filter view).
  * If you change the derivation logic here, you <b>must</b> update the corresponding repository
  * queries and their integration tests in {@code CourseFilterIntegrationTest}.
  *

@@ -16,8 +16,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -46,5 +46,5 @@ public class Student {
     private String phoneNumber;
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<StudentDanceLevel> danceLevels = new ArrayList<>();
+    private Set<StudentDanceLevel> danceLevels = new LinkedHashSet<>();
 }
