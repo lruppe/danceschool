@@ -19,16 +19,13 @@ interface StudentRepository extends JpaRepository<Student, Long> {
 
     /**
      * Returns students for a school along with the count of their "active" courses —
-     * seat-holding enrollments in courses currently RUNNING. The RUNNING predicate
-     * (publishedAt set, startDate ≤ today ≤ endDate) mirrors
-     * {@link ch.ruppen.danceschool.course.CourseRepository#findRunningBySchoolId};
-     * keep the two in sync if the derivation changes.
+     * seat-holding enrollments in courses that are published and not yet finished
+     * (covers both OPEN, i.e. published with a future start date, and RUNNING).
      */
     @Query("""
             SELECT new ch.ruppen.danceschool.student.StudentListDto(
                 s.id, s.name, s.email, s.phoneNumber,
                 COUNT(DISTINCT CASE WHEN c.publishedAt IS NOT NULL
-                                     AND c.startDate <= :today
                                      AND c.endDate   >= :today
                                     THEN c.id END)
             )

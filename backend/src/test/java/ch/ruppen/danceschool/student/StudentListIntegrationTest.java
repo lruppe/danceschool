@@ -103,17 +103,15 @@ class StudentListIntegrationTest {
     }
 
     @Test
-    void list_countsSeatHoldingEnrollmentsInRunningCoursesOnly() throws Exception {
+    void list_countsSeatHoldingEnrollmentsInPublishedNotFinishedCoursesOnly() throws Exception {
         LocalDate today = LocalDate.now();
 
-        Course running1 = createCourse(schoolA, "Running 1",
+        Course running = createCourse(schoolA, "Running",
                 today.minusDays(1), today.minusWeeks(3), today.plusWeeks(3));
-        Course running2 = createCourse(schoolA, "Running 2",
-                today.minusDays(1), today.minusWeeks(2), today.plusWeeks(4));
-        Course finished = createCourse(schoolA, "Finished",
-                today.minusMonths(3), today.minusMonths(2), today.minusDays(2));
         Course open = createCourse(schoolA, "Open",
                 today.minusDays(1), today.plusDays(7), today.plusWeeks(8));
+        Course finished = createCourse(schoolA, "Finished",
+                today.minusMonths(3), today.minusMonths(2), today.minusDays(2));
         Course draft = createCourse(schoolA, "Draft",
                 null, today.plusDays(10), today.plusWeeks(10));
 
@@ -121,25 +119,24 @@ class StudentListIntegrationTest {
         Student oneActive = createStudent(schoolA, "One Active", "one@example.com");
         Student twoActive = createStudent(schoolA, "Two Active", "two@example.com");
 
-        // zeroActive: enrolled only in non-RUNNING courses, or non-seat-holding status
+        // zeroActive: only non-counting courses, or non-seat-holding statuses on a counted course
         createEnrollment(finished, zeroActive, EnrollmentStatus.CONFIRMED);
-        createEnrollment(open, zeroActive, EnrollmentStatus.CONFIRMED);
         createEnrollment(draft, zeroActive, EnrollmentStatus.CONFIRMED);
-        createEnrollment(running1, zeroActive, EnrollmentStatus.WAITLISTED);
-        createEnrollment(running1, zeroActive, EnrollmentStatus.REJECTED);
-        createEnrollment(running1, zeroActive, EnrollmentStatus.PENDING_APPROVAL);
+        createEnrollment(running, zeroActive, EnrollmentStatus.WAITLISTED);
+        createEnrollment(running, zeroActive, EnrollmentStatus.REJECTED);
+        createEnrollment(running, zeroActive, EnrollmentStatus.PENDING_APPROVAL);
 
-        // oneActive: one seat-holding enrollment in a RUNNING course
-        createEnrollment(running1, oneActive, EnrollmentStatus.CONFIRMED);
+        // oneActive: a single seat-holding enrollment in an OPEN course (now counts)
+        createEnrollment(open, oneActive, EnrollmentStatus.CONFIRMED);
         // plus noise that must not count
         createEnrollment(finished, oneActive, EnrollmentStatus.CONFIRMED);
-        createEnrollment(running2, oneActive, EnrollmentStatus.WAITLISTED);
+        createEnrollment(running, oneActive, EnrollmentStatus.WAITLISTED);
 
-        // twoActive: two seat-holding enrollments in RUNNING courses (one CONFIRMED, one PENDING_PAYMENT)
-        // Plus a duplicate CONFIRMED enrollment on running1 — DISTINCT in the query collapses it to 1.
-        createEnrollment(running1, twoActive, EnrollmentStatus.CONFIRMED);
-        createEnrollment(running1, twoActive, EnrollmentStatus.CONFIRMED);
-        createEnrollment(running2, twoActive, EnrollmentStatus.PENDING_PAYMENT);
+        // twoActive: seat-holding in one RUNNING and one OPEN course (one CONFIRMED, one PENDING_PAYMENT).
+        // Plus a duplicate CONFIRMED enrollment on the RUNNING course — DISTINCT collapses it to 1.
+        createEnrollment(running, twoActive, EnrollmentStatus.CONFIRMED);
+        createEnrollment(running, twoActive, EnrollmentStatus.CONFIRMED);
+        createEnrollment(open, twoActive, EnrollmentStatus.PENDING_PAYMENT);
 
         entityManager.flush();
 
