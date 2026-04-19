@@ -1,0 +1,60 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-4);
+}
+
+.students-table {
+  ::ng-deep .mat-column-name          { width: 30%; }
+  ::ng-deep .mat-column-email         { width: 32%; }
+  ::ng-deep .mat-column-phone         { width: 20%; }
+  ::ng-deep .mat-column-activeCourses { width: 18%; }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--ds-spacing-12) var(--ds-spacing-6);
+}
+
+.empty-state-icon {
+  font-size: var(--ds-spacing-16);
+  width: var(--ds-spacing-16);
+  height: var(--ds-spacing-16);
+  color: var(--mat-sys-on-surface-variant);
+  margin-bottom: var(--ds-spacing-4);
+}
+
+.empty-state-title {
+  font: var(--mat-sys-headline-small);
+  color: var(--mat-sys-on-surface);
+  margin: 0 0 var(--ds-spacing-2);
+}
+
+.empty-state-text {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 var(--ds-spacing-6);
+  max-width: var(--ds-max-width-narrow);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--ds-spacing-12);
+
+  p {
+    font: var(--mat-sys-body-large);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.error-text {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-error);
+  text-align: center;
+  padding: var(--ds-spacing-12);
+}
