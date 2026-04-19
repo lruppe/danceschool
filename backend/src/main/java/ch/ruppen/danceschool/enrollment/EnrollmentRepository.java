@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
+interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     // Kills the 1 + 2N lazy loads in EnrollmentService.toListDto (student fields,
     // student.danceLevels, course.danceStyle). "course" is sufficient because its

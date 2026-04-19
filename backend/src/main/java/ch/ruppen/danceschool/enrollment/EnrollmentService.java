@@ -2,7 +2,7 @@ package ch.ruppen.danceschool.enrollment;
 
 import ch.ruppen.danceschool.course.Course;
 import ch.ruppen.danceschool.course.CourseLevel;
-import ch.ruppen.danceschool.course.CourseService;
+import ch.ruppen.danceschool.course.CourseRepository;
 import ch.ruppen.danceschool.course.CourseType;
 import ch.ruppen.danceschool.course.DanceStyle;
 import ch.ruppen.danceschool.school.School;
@@ -22,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -31,7 +33,7 @@ public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
     private final SchoolService schoolService;
-    private final CourseService courseService;
+    private final CourseRepository courseRepository;
     private final StudentService studentService;
     private final SchoolMemberService schoolMemberService;
     private final Clock clock;
@@ -40,7 +42,7 @@ public class EnrollmentService {
     @BusinessOperation(event = "StudentEnrolled")
     public EnrollmentResponseDto enrollStudent(Long userId, Long courseId, EnrollStudentDto dto) {
         School school = schoolService.findSchoolByMember(userId);
-        Course course = courseService.findCourseByIdAndSchool(courseId, school);
+        Course course = loadCourseInSchool(courseId, school);
         Student student = studentService.findStudentByIdAndSchool(dto.studentId(), school);
 
         validateDanceRole(course, dto.danceRole());
@@ -117,9 +119,48 @@ public class EnrollmentService {
     }
 
     @Transactional(readOnly = true)
+    public Map<Long, RoleCounts> countSeatHoldersByRoleGroupedByCourse(List<Long> courseIds) {
+        if (courseIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, RoleCounts> result = new HashMap<>();
+        for (Object[] row : enrollmentRepository.countByRoleGroupedByCourse(courseIds, EnrollmentStatus.SEAT_HOLDING_STATI)) {
+            Long courseId = (Long) row[0];
+            DanceRole role = (DanceRole) row[1];
+            int count = ((Number) row[2]).intValue();
+            RoleCounts existing = result.getOrDefault(courseId, RoleCounts.EMPTY);
+            result.put(courseId, existing.plus(role, count));
+        }
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Integer> countSeatHoldersGroupedByCourse(List<Long> courseIds) {
+        if (courseIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, Integer> result = new HashMap<>();
+        for (Object[] row : enrollmentRepository.countGroupedByCourse(courseIds, EnrollmentStatus.SEAT_HOLDING_STATI)) {
+            result.put((Long) row[0], ((Number) row[1]).intValue());
+        }
+        return result;
+    }
+
+    @Transactional(readOnly = true)
+    public int countSeatHoldersByCourse(Long courseId) {
+        return (int) enrollmentRepository.countByCourseIdAndStatusIn(
+                courseId, EnrollmentStatus.SEAT_HOLDING_STATI);
+    }
+
+    private Course loadCourseInSchool(Long courseId, School school) {
+        return courseRepository.findByIdAndSchoolId(courseId, school.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
+    }
+
+    @Transactional(readOnly = true)
     public List<EnrollmentListDto> getEnrollments(Long userId, Long courseId) {
         School school = schoolService.findSchoolByMember(userId);
-        courseService.findCourseByIdAndSchool(courseId, school);
+        loadCourseInSchool(courseId, school);
 
         return enrollmentRepository.findAllByCourseId(courseId).stream()
                 .map(this::toListDto)
