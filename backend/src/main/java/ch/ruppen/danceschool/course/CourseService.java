@@ -1,8 +1,7 @@
 package ch.ruppen.danceschool.course;
 
-import ch.ruppen.danceschool.enrollment.DanceRole;
-import ch.ruppen.danceschool.enrollment.EnrollmentRepository;
-import ch.ruppen.danceschool.enrollment.EnrollmentStatus;
+import ch.ruppen.danceschool.enrollment.EnrollmentService;
+import ch.ruppen.danceschool.enrollment.RoleCounts;
 import ch.ruppen.danceschool.school.School;
 import ch.ruppen.danceschool.school.SchoolService;
 import ch.ruppen.danceschool.shared.error.DomainRuleViolationException;
@@ -16,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +25,7 @@ import java.util.Map;
 public class CourseService {
 
     private final CourseRepository courseRepository;
-    private final EnrollmentRepository enrollmentRepository;
+    private final EnrollmentService enrollmentService;
     private final SchoolService schoolService;
     private final Clock clock;
 
@@ -37,49 +35,13 @@ public class CourseService {
         List<Course> courses = fetchCourses(school.getId(), statusFilter);
         LocalDate today = LocalDate.now(clock);
         List<Long> courseIds = courses.stream().map(Course::getId).toList();
-        Map<Long, RoleCounts> roleCounts = fetchRoleCounts(courseIds);
-        Map<Long, Integer> committedCounts = fetchCommittedCounts(courseIds);
+        Map<Long, RoleCounts> roleCounts = enrollmentService.countSeatHoldersByRoleGroupedByCourse(courseIds);
+        Map<Long, Integer> committedCounts = enrollmentService.countSeatHoldersGroupedByCourse(courseIds);
         return courses.stream()
                 .map(c -> toListDto(c, today,
                         committedCounts.getOrDefault(c.getId(), 0),
                         roleCounts.getOrDefault(c.getId(), RoleCounts.EMPTY)))
                 .toList();
-    }
-
-    private Map<Long, RoleCounts> fetchRoleCounts(List<Long> courseIds) {
-        if (courseIds.isEmpty()) {
-            return Map.of();
-        }
-        Map<Long, RoleCounts> result = new HashMap<>();
-        for (Object[] row : enrollmentRepository.countByRoleGroupedByCourse(courseIds, EnrollmentStatus.SEAT_HOLDING_STATI)) {
-            Long courseId = (Long) row[0];
-            DanceRole role = (DanceRole) row[1];
-            int count = ((Number) row[2]).intValue();
-            RoleCounts existing = result.getOrDefault(courseId, RoleCounts.EMPTY);
-            result.put(courseId, existing.plus(role, count));
-        }
-        return result;
-    }
-
-    private Map<Long, Integer> fetchCommittedCounts(List<Long> courseIds) {
-        if (courseIds.isEmpty()) {
-            return Map.of();
-        }
-        Map<Long, Integer> result = new HashMap<>();
-        for (Object[] row : enrollmentRepository.countGroupedByCourse(courseIds, EnrollmentStatus.SEAT_HOLDING_STATI)) {
-            result.put((Long) row[0], ((Number) row[1]).intValue());
-        }
-        return result;
-    }
-
-    private record RoleCounts(int leads, int follows) {
-        static final RoleCounts EMPTY = new RoleCounts(0, 0);
-
-        RoleCounts plus(DanceRole role, int count) {
-            if (role == DanceRole.LEAD) return new RoleCounts(leads + count, follows);
-            if (role == DanceRole.FOLLOW) return new RoleCounts(leads, follows + count);
-            return this;
-        }
     }
 
     @Transactional
@@ -186,12 +148,6 @@ public class CourseService {
     }
 
     @Transactional(readOnly = true)
-    public Course findCourseByIdAndSchool(Long courseId, School school) {
-        return courseRepository.findByIdAndSchoolId(courseId, school.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
-    }
-
-    @Transactional(readOnly = true)
     public boolean hasCoursesForMember(Long userId) {
         School school = schoolService.findSchoolByMember(userId);
         return courseRepository.existsBySchoolId(school.getId());
@@ -274,8 +230,7 @@ public class CourseService {
     }
 
     private CourseDetailDto toDetailDto(Course course, LocalDate today) {
-        int enrolledStudents = (int) enrollmentRepository.countByCourseIdAndStatusIn(
-                course.getId(), EnrollmentStatus.SEAT_HOLDING_STATI);
+        int enrolledStudents = enrollmentService.countSeatHoldersByCourse(course.getId());
         return new CourseDetailDto(
                 course.getId(),
                 course.getTitle(),
