@@ -49,6 +49,24 @@ Multiple worktrees may run visual tests in parallel — using a random port avoi
 - **Never use `browser_navigate` / `page.goto()` after the initial login** — direct URL navigation reloads the page and loses the Angular auth session. Always navigate via sidebar links and in-app buttons instead. The only `browser_navigate` call should be to the login page.
 - **Always take a final screenshot before committing** style or layout changes
 
+## Phase 4.5 — Code Review (non-trivial only)
+
+Skip for trivial issues (same heuristic as Phase 2). For everything else:
+
+1. **Invoke the reviewer:** Use the `Agent` tool with `subagent_type: code-reviewer`. Pass:
+   - The issue number
+   - A one-line summary of the chosen approach (from the Phase 2 plan)
+
+   The subagent inherits this worktree, so it diffs `origin/main...HEAD` itself — don't pass the branch name.
+
+2. **Triage the findings:**
+   - **Blockers** — fix, then re-invoke the reviewer on the updated diff
+   - **Suggestions** — apply, defer (note in PR description), or reject (note why in PR description)
+   - **Nits** — judgment call; usually fold into the same commit if cheap
+   - **Notes / ambiguity** — resolve before shipping; ask the user if you can't decide
+
+3. Only proceed to Phase 5 when the verdict is `APPROVE` or `APPROVE_WITH_SUGGESTIONS` (with all suggestions handled).
+
 ## Phase 5 — Ship
 
 1. **Commit:** Stage changed files and commit with a clear message describing the change

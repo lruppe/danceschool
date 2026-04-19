@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```
 danceschool/
-├── frontend/          ← Angular 21 (SCSS, standalone components)
-├── backend/           ← Spring Boot backend (Java 21)
+├── frontend/          ← Angular 21 (SCSS, standalone components) — see frontend/CLAUDE.md
+├── backend/           ← Spring Boot backend (Java 21) — see backend/src/CLAUDE.md
 │   ├── Dockerfile
 │   ├── pom.xml
 │   ├── mvnw
