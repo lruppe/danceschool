@@ -29,6 +29,8 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Reserved for Phase 2 (student login). Always null today; populated once the student app
+    // lets students sign in and claim their admin-created row.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "app_user_id")
     private AppUser user;

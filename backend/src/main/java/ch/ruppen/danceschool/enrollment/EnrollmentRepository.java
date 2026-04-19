@@ -22,9 +22,11 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     long countByCourseIdAndDanceRoleAndStatusIn(Long courseId, DanceRole danceRole, List<EnrollmentStatus> statuses);
 
-    long countByCourseIdAndStatus(Long courseId, EnrollmentStatus status);
+    @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.course.id = :courseId AND e.status = ch.ruppen.danceschool.enrollment.EnrollmentStatus.WAITLISTED")
+    long countWaitlistedByCourse(@Param("courseId") Long courseId);
 
-    long countByCourseIdAndStatusAndDanceRole(Long courseId, EnrollmentStatus status, DanceRole danceRole);
+    @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.course.id = :courseId AND e.danceRole = :danceRole AND e.status = ch.ruppen.danceschool.enrollment.EnrollmentStatus.WAITLISTED")
+    long countWaitlistedByCourseAndRole(@Param("courseId") Long courseId, @Param("danceRole") DanceRole danceRole);
 
     boolean existsByStudentIdAndCourseIdAndStatusNot(Long studentId, Long courseId, EnrollmentStatus status);
 

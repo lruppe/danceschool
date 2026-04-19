@@ -74,29 +74,16 @@
 }
 
 .enrollment-table {
-  // Column widths matching Figma: Name 260, Phone 200, Role 120, Status 140, Enrolled on 180, rest flexible
-  .mat-column-name {
-    width: 260px;
-  }
+  // Percentages match the Courses list pattern (courses.scss) — see _table.scss header.
+  .mat-column-name       { width: 24%; }
+  .mat-column-phone      { width: 18%; }
+  .mat-column-role       { width: 11%; }
+  .mat-column-status     { width: 16%; }
+  .mat-column-enrolledAt { width: 16%; }
+  .mat-column-lastColumn { width: 15%; }
 
-  .mat-column-phone {
-    width: 200px;
-  }
-
-  .mat-column-role {
-    width: 120px;
-  }
-
-  .mat-column-status {
-    width: 170px;
-
-    .ds-chip {
-      white-space: nowrap;
-    }
-  }
-
-  .mat-column-enrolledAt {
-    width: 180px;
+  .mat-column-status .ds-chip {
+    white-space: nowrap;
   }
 }
 

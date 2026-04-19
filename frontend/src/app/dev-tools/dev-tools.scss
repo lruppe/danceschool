@@ -50,10 +50,10 @@
 }
 
 .role-select {
-  width: 140px;
+  width: var(--ds-size-filter-select);
 
-  --mat-form-field-container-height: 36px;
-  --mat-form-field-container-vertical-padding: 6px;
+  --mat-form-field-container-height: var(--ds-form-field-dense-height);
+  --mat-form-field-container-vertical-padding: var(--ds-spacing-1-5);
 }
 
 .cell-name {

@@ -201,8 +201,8 @@ public class EnrollmentService {
 
     private int nextPosition(Long courseId, DanceRole role) {
         long existing = (role == null)
-                ? enrollmentRepository.countByCourseIdAndStatus(courseId, EnrollmentStatus.WAITLISTED)
-                : enrollmentRepository.countByCourseIdAndStatusAndDanceRole(courseId, EnrollmentStatus.WAITLISTED, role);
+                ? enrollmentRepository.countWaitlistedByCourse(courseId)
+                : enrollmentRepository.countWaitlistedByCourseAndRole(courseId, role);
         return (int) existing + 1;
     }
 
