@@ -8,9 +8,9 @@ Testable business workflows and their expected behaviors. Use Dev Tools to simul
 2. Log in as **Owner 1** (`owner@test.com` / `password`) or **Owner 2** (`owner2@test.com` / `password`)
 3. The database resets on every backend restart with fresh seed data
 
-## Seed Data Overview
+## Seed Data
 
-School 1 comes pre-loaded with 7 courses (mix of solo/partner, beginner through advanced, in various lifecycle stages), 7 students with different dance levels, and enrollments across two running courses. School 2 has 2 courses and 3 students with no enrollments. This gives you both populated and empty courses to test against.
+Seed content (courses, students, enrollments, statuses) is defined in [`backend/src/main/java/ch/ruppen/danceschool/dev/DevDataSeeder.java`](../backend/src/main/java/ch/ruppen/danceschool/dev/DevDataSeeder.java). Read that file for the authoritative layout. It is designed to cover every enrollment state out of the box (courses in each lifecycle stage, students with varying dance levels, and seeded rows for CONFIRMED, PENDING_PAYMENT, and PENDING_APPROVAL). School 2 has no seeded enrollments — useful for empty-course and tenant-isolation tests.
 
 ---
 
@@ -18,13 +18,13 @@ School 1 comes pre-loaded with 7 courses (mix of solo/partner, beginner through 
 
 **Business case:** A school owner registers a new student for a course.
 
-**How to test:** Use Dev Tools to pick a course and add a student. For partner dance courses (e.g., Bachata), choose whether the student dances as Leader or Follower.
+**How to test:** In **Dev Tools**, pick a course and click "Add Student". For PARTNER courses, pick Leader or Follower with the role dropdown first.
 
 **Expected:**
-- The student appears in the enrollment list with status "Pending Payment"
-- Partner courses show the dance role; solo courses do not
-- A full course rejects further enrollments
-- Students without the required dance level are rejected from intermediate/advanced courses
+- On a BEGINNER/STARTER course with spare capacity → new enrollment lands in **Open Payment** tab (status `PENDING_PAYMENT`)
+- On an INTERMEDIATE+ course → new enrollment lands in **Approve** tab (status `PENDING_APPROVAL`) because Dev Tools' generated students have no dance levels
+- Role selector is harmless for SOLO courses (the value is ignored)
+- The Course Overview tab counts update
 
 ---
 
@@ -32,15 +32,15 @@ School 1 comes pre-loaded with 7 courses (mix of solo/partner, beginner through 
 
 **Business case:** Simulate a fully booked course to test capacity limits and the enrollment experience at scale.
 
-**How to test:** Use Dev Tools "Fill Course" on an empty beginner-level course.
+**How to test:** In **Dev Tools**, select an empty BEGINNER course and click "Fill Course".
 
 **Expected:**
-- Students are created and enrolled until the course reaches its max capacity
-- Partner courses get an alternating mix of leaders and followers
-- All enrollments start in "Pending Payment" status
-- Attempting to fill an already-full course is rejected
+- Students are created and enrolled sequentially until capacity is reached (alternating LEAD/FOLLOW for PARTNER courses)
+- All enrollments land in **Open Payment** (`PENDING_PAYMENT`)
+- Clicking "Fill Course" on an already-full course shows the "Course is already full" snack bar
+- Trying "Add Student" on a full course sends the new enrollment to **Waitlist** with reason `CAPACITY` (see waitlist flow below)
 
-**Limitation:** Fill Course only works reliably on beginner-level courses. Higher-level courses reject the generated students because they lack dance experience records.
+**Limitation:** Fill Course reliably works **only on BEGINNER-level courses**. For INTERMEDIATE/ADVANCED courses, generated students have no dance level records and enrollments land in `PENDING_APPROVAL`, not `PENDING_PAYMENT`. The "Enrolled X students" snack bar message can be misleading in that case.
 
 ---
 
@@ -48,45 +48,122 @@ School 1 comes pre-loaded with 7 courses (mix of solo/partner, beginner through 
 
 **Business case:** After students sign up, the school owner confirms that payment has been received.
 
-**How to test (bulk via Dev Tools):** Select a course with pending payments and use "Simulate Payment" to confirm all at once.
+**How to test (bulk, via Dev Tools):** Select a course with pending payments and click "Simulate Payment" to confirm all at once.
 
-**How to test (individual via Course Overview):** Open a course, go to the "Open Payment" tab, and mark individual students as paid.
+**How to test (individual, via Course Overview):** Open a course → **Open Payment** tab → click "Mark Paid" on a row.
 
 **Expected:**
-- Payment confirmation moves students from "Pending Payment" to "Confirmed"
-- The enrollment tab counts update to reflect the change
-- Confirmed students show a payment date
+- Payment confirmation moves rows from **Open Payment** (`PENDING_PAYMENT`) → **Enrolled** (`CONFIRMED`)
+- The Course Overview tab counts update
+- The **Enrolled** tab shows a Paid date on the row; Open Payment entries without an `approvedAt` show a "Mark Paid" button
+
+---
+
+## Approval Flow (level-gated)
+
+**Business case:** INTERMEDIATE+ courses require the owner to approve students who don't have the required dance level on record.
+
+**How it triggers:**
+- A student enrolls in a course with `level >= INTERMEDIATE`
+- The student's dance-level record for that style is missing, or lower than the course level
+- The enrollment is created with status `PENDING_APPROVAL` (BEGINNER/STARTER courses always skip approval)
+- Note: `PENDING_APPROVAL` rows do **not** count toward capacity
+
+**How to test:**
+1. Use the seeded Salsa Advanced course (already has 2 PENDING_APPROVAL rows), **or** go to Dev Tools and Add Student to any INTERMEDIATE+ course
+2. Open the course → **Approve** tab → use the ✔ (approve) or ✖ (reject) icon buttons
+3. On approve: the student's dance level is upserted (registered if missing, upgraded if lower), then the enrollment re-checks capacity:
+   - Space available → `PENDING_PAYMENT` (moves to Open Payment tab)
+   - Course full → `WAITLISTED` with reason `CAPACITY` (moves to Waitlist tab)
+4. On reject: enrollment becomes `REJECTED` and disappears from the Approve tab
+
+**Expected:**
+- Approve tab shows each pending row with a student-level chip and the approve/reject icon buttons
+- After approve, the student keeps their new dance level (important side effect: approving also certifies the student's level for that style)
+- Reject is terminal — the row is gone from all enrollment tabs
+
+---
+
+## Waitlist Flow
+
+**Business case:** When a course is full or role-imbalanced, further enrollments are held on the waitlist in FIFO order (per role for PARTNER courses).
+
+### Waitlist by capacity
+
+**How it triggers:** Committed enrollments (`PENDING_PAYMENT + CONFIRMED`) have reached `maxParticipants`. A further enrollment attempt produces `WAITLISTED` with reason `CAPACITY`.
+
+**How to test:**
+1. Dev Tools → empty BEGINNER course → Fill Course (reaches capacity)
+2. Add Student → new row lands in **Waitlist** tab with reason chip "Capacity" and position `#1`
+3. Add Student again → second row on waitlist with position `#2` (or `#2` within the same role for PARTNER courses)
+
+### Waitlist by role imbalance
+
+**How it triggers:** Only for PARTNER courses with `roleBalancingEnabled = true`. If adding another `LEAD` would push `leads - follows > threshold`, the new LEAD enrollment is waitlisted with reason `ROLE_IMBALANCE`. Default threshold is 3.
+
+**How to test:**
+1. Dev Tools → pick a PARTNER BEGINNER course (e.g., "Bachata Beginners"; if its threshold is null, pick one with a threshold or enable role balancing first — Bachata Intermediate has threshold 3 but can't be Dev-Tools-filled due to level gating)
+2. Pick a role (e.g., Leader) → click "Create Imbalance" (button appears only for PARTNER courses)
+3. The UI enrolls enough LEADs to exceed `threshold + 1`
+4. Overflow LEADs appear in **Waitlist** tab with reason chip "Role imbalance" and a position number
+
+**Expected:**
+- Waitlist tab shows each row with position chip (`#1`, `#2`, …) + reason chip
+- Positions are FIFO per role; solo courses use a single queue
+- **No auto-promotion:** when a seat opens, the waitlist does not auto-advance — it's manual for now
+
+### Promotion via approval
+
+**Side effect of the approval flow:** Approving a `PENDING_APPROVAL` row when the course is full routes the student to `WAITLISTED (CAPACITY)` instead of `PENDING_PAYMENT`. This is the only way rows enter the waitlist through the UI without Dev Tools.
 
 ---
 
 ## Reviewing Enrollment Status by Course
 
-**Business case:** A school owner wants to see who is enrolled, who is on the waitlist, who needs approval, and who still owes payment for a specific course.
+**Business case:** An owner wants to see who is enrolled, on the waitlist, awaiting approval, or still owes payment for a specific course.
 
-**How to test:** Open any course from the Courses page and browse the enrollment tabs.
+**How to test:** Open any non-DRAFT course from the Courses page and click through the tabs.
+
+**Expected tabs (in this order):**
+
+| # | Tab | Shows | Last-column content |
+|---|---|---|---|
+| 0 | **Enrolled** | `CONFIRMED` rows only | Paid date |
+| 1 | **Waitlist** | `WAITLISTED` rows | Position chip + reason chip (Capacity / Role imbalance) |
+| 2 | **Approve** | `PENDING_APPROVAL` rows | Level chip + approve/reject icon buttons |
+| 3 | **Open Payment** | `PENDING_PAYMENT` rows | Approved-on date, or "Mark Paid" button if never approved |
+
+- Every tab shows a count badge next to the label
+- PARTNER course rows show a role chip in the Role column; SOLO course rows show "—"
+- DRAFT courses do **not** show tabs — only the Course Summary and a "Publish" button
+
+---
+
+## Courses List — Role Distribution Column
+
+**Business case:** A quick glance at the Courses page should show how balanced enrollment is for PARTNER courses.
+
+**How to test:** Visit the Courses page and view the **Enrollment** column.
 
 **Expected:**
-- **Enrolled** — confirmed, paid students
-- **Open Payment** — students awaiting payment, each with a "Mark Paid" action
-- **Waitlist** — students waiting for a spot
-- **Approve** — students awaiting manual approval
-- Each tab shows a count badge
-- Partner courses display each student's dance role; solo courses do not
+- SOLO courses show `X / maxParticipants`
+- PARTNER courses additionally show `XL / YF` beneath, where X = leads enrolled, Y = follows enrolled (both count `PENDING_PAYMENT + CONFIRMED` — waitlisted and pending-approval rows excluded)
 
 ---
 
 ## Full Enrollment Lifecycle (End-to-End)
 
-**Business case:** Walk through the complete journey from sign-up to confirmed enrollment.
+**Business case:** Walk through the complete journey from sign-up to confirmed enrollment on a beginner partner course.
 
 **How to test:**
-1. Enroll a couple of students into an empty partner course (one leader, one follower)
-2. Confirm their payments via Dev Tools or the Course Overview
-3. Verify they appear as confirmed in the course's Enrolled tab
-4. Enroll one more student without paying
-5. Verify they appear under Open Payment and can be individually marked as paid
+1. Dev Tools → pick "Bachata Beginners" (empty, PARTNER, BEGINNER) → add one LEAD and one FOLLOW
+2. Simulate Payment → both move to **Enrolled**
+3. Add one more student (any role) → new row in **Open Payment**
+4. Open Payment tab → click "Mark Paid" → row moves to **Enrolled**
+5. Fill Course → remaining seats fill up with `PENDING_PAYMENT` rows
+6. Add one more student → lands on **Waitlist** (Capacity)
 
-**Expected:** Each student progresses through: Enrollment (Pending Payment) → Payment Confirmed. The course overview reflects the current state at every step.
+**Expected:** each tab reflects the current state at every step; tab counts are consistent with row counts; the courses-list role distribution updates after step 1 and again after step 2.
 
 ---
 
@@ -100,7 +177,9 @@ School 1 comes pre-loaded with 7 courses (mix of solo/partner, beginner through 
 
 ---
 
-## Dev Tools Restrictions
+## Dev Tools Restrictions and Quirks
 
-- **Fill Course / Add Student only works for beginner-level courses.** Dev Tools generates students without dance level records, so the enrollment API correctly rejects them from intermediate, advanced, and masterclass courses.
-- **Role selector is always visible.** The Leader/Follower dropdown appears even for solo courses. It is harmless (the value is ignored), but may be confusing.
+- **Fill Course / Add Student on non-BEGINNER courses** — generated students have no dance-level records, so the backend routes their enrollments to `PENDING_APPROVAL` instead of `PENDING_PAYMENT`. The "Enrolled X students" snack bar message still says "Enrolled" — the rows actually land in the Approve tab.
+- **Role selector is always visible** — the Leader/Follower dropdown also appears for SOLO courses. The value is ignored; the dropdown is harmless but can confuse.
+- **Create Imbalance** only appears for PARTNER courses. It enrolls enough students of the selected role to exceed the threshold and produce at least one `WAITLISTED (ROLE_IMBALANCE)` row.
+- **No waitlist auto-promotion** — there is no UI or backend job that moves a waitlisted student into `PENDING_PAYMENT` when a seat frees up. This is known / intentional for now.

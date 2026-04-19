@@ -8,6 +8,7 @@
 - **Teachers field** — `Course.teachers` is a plain String (e.g. "Maria, Carlos"). Needs to become a `@ManyToMany` relation to `SchoolMember` (role=TEACHER) when teacher signup/invite flow is built.
 - **Server-side pagination** — all table endpoints currently return the full list. Payments table will need backend `Pageable` support as transaction volume grows (rule of thumb: >500 rows).
 - **Mobile table layout** — tables are desktop-only. Needs a design decision (horizontal scroll, card layout, or hidden columns) before mobile support.
+- **Waitlist auto-promotion** — when a committed seat is freed, the next waitlisted enrollment should be promoted to `PENDING_PAYMENT` (per role for partner courses, FIFO). Currently not implemented because no flow frees seats: there is no cancel/withdraw endpoint and no rejection path for confirmed enrollments. Design alongside the first flow that frees a seat (likely a student cancellation or admin refund flow). Documented as a known limitation in `docs/TESTING_WORKFLOWS.md`.
 
 ## Tenant Isolation
 
