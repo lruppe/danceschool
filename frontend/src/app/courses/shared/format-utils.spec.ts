@@ -1,5 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { enrollmentStatusChipClass, formatDate, formatDayShort, formatDayFull, formatEnrollmentStatus, formatTime } from './format-utils';
+import {
+  enrollmentStatusChipClass,
+  formatDate,
+  formatDayShort,
+  formatDayFull,
+  formatEnrollmentStatus,
+  formatLevel,
+  formatTime,
+  formatWaitlistReason,
+  levelChipClass,
+  statusChipClass,
+  waitlistReasonChipClass,
+} from './format-utils';
 
 describe('formatDate', () => {
   it('formats ISO date to European format', () => {
@@ -61,5 +73,78 @@ describe('formatEnrollmentStatus', () => {
 
   it('leaves single-word statuses unchanged', () => {
     expect(formatEnrollmentStatus('CONFIRMED')).toBe('CONFIRMED');
+  });
+});
+
+describe('statusChipClass', () => {
+  it('maps OPEN to success', () => {
+    expect(statusChipClass('OPEN')).toBe('ds-chip-success');
+  });
+
+  it('maps RUNNING to primary', () => {
+    expect(statusChipClass('RUNNING')).toBe('ds-chip-primary');
+  });
+
+  it('maps DRAFT and FINISHED to default', () => {
+    expect(statusChipClass('DRAFT')).toBe('ds-chip-default');
+    expect(statusChipClass('FINISHED')).toBe('ds-chip-default');
+  });
+
+  it('falls back to default for unknown status', () => {
+    expect(statusChipClass('UNKNOWN')).toBe('ds-chip-default');
+  });
+});
+
+describe('levelChipClass', () => {
+  it('maps BEGINNER to info', () => {
+    expect(levelChipClass('BEGINNER')).toBe('ds-chip-info');
+  });
+
+  it('maps INTERMEDIATE and MASTERCLASS to primary', () => {
+    expect(levelChipClass('INTERMEDIATE')).toBe('ds-chip-primary');
+    expect(levelChipClass('MASTERCLASS')).toBe('ds-chip-primary');
+  });
+
+  it('maps ADVANCED to success', () => {
+    expect(levelChipClass('ADVANCED')).toBe('ds-chip-success');
+  });
+
+  it('maps STARTER and null to default', () => {
+    expect(levelChipClass('STARTER')).toBe('ds-chip-default');
+    expect(levelChipClass(null)).toBe('ds-chip-default');
+  });
+});
+
+describe('formatLevel', () => {
+  it('title-cases known levels', () => {
+    expect(formatLevel('BEGINNER')).toBe('Beginner');
+    expect(formatLevel('MASTERCLASS')).toBe('Masterclass');
+  });
+
+  it('returns "No level" for null', () => {
+    expect(formatLevel(null)).toBe('No level');
+  });
+});
+
+describe('waitlistReasonChipClass', () => {
+  it('maps ROLE_IMBALANCE to info', () => {
+    expect(waitlistReasonChipClass('ROLE_IMBALANCE')).toBe('ds-chip-info');
+  });
+
+  it('maps CAPACITY and null to default', () => {
+    expect(waitlistReasonChipClass('CAPACITY')).toBe('ds-chip-default');
+    expect(waitlistReasonChipClass(null)).toBe('ds-chip-default');
+  });
+});
+
+describe('formatWaitlistReason', () => {
+  it('formats CAPACITY and ROLE_IMBALANCE', () => {
+    expect(formatWaitlistReason('CAPACITY')).toBe('Capacity');
+    expect(formatWaitlistReason('ROLE_IMBALANCE')).toBe('Role imbalance');
+  });
+
+  it('returns em dash for null or unknown', () => {
+    expect(formatWaitlistReason(null)).toBe('—');
+    expect(formatWaitlistReason('SOMETHING_ELSE')).toBe('—');
   });
 });

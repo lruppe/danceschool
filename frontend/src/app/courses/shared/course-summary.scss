@@ -22,8 +22,8 @@
   outline: none;
 
   &:focus-visible {
-    outline: 2px solid var(--mat-sys-primary);
-    outline-offset: 2px;
+    outline: var(--ds-focus-width) solid var(--mat-sys-primary);
+    outline-offset: var(--ds-focus-offset);
     border-radius: var(--ds-radius-md);
   }
 }

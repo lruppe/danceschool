@@ -9,9 +9,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { CourseDetail, CourseService } from '../course.service';
 import { CourseSummaryComponent, CourseSummaryData } from '../shared/course-summary';
-import { EnrollmentListItem, EnrollmentService } from '../enrollment.service';
+import { EnrollmentListItem, EnrollmentResponse, EnrollmentService } from '../enrollment.service';
 import { enrollmentStatusChipClass, formatDate, formatDayFull, formatEnrollmentStatus, formatLevel, formatTime, formatWaitlistReason, levelChipClass, statusChipClass, waitlistReasonChipClass } from '../shared/format-utils';
 import { extractErrorMessage } from '../../shared/error-utils';
 
@@ -91,7 +92,7 @@ export class CourseOverviewComponent implements OnInit {
     this.loadCourse(+id);
   }
 
-  protected get summaryData(): CourseSummaryData | null {
+  protected summaryData = computed<CourseSummaryData | null>(() => {
     const c = this.course();
     if (!c) return null;
     return {
@@ -117,7 +118,7 @@ export class CourseOverviewComponent implements OnInit {
       priceModel: c.priceModel,
       price: c.price,
     };
-  }
+  });
 
   protected statusChipClass = statusChipClass;
   protected levelChipClass = levelChipClass;
@@ -143,43 +144,46 @@ export class CourseOverviewComponent implements OnInit {
   }
 
   protected onMarkPaid(enrollmentId: number): void {
-    this.enrollmentService.markPaid(enrollmentId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.snackBar.open('Payment confirmed', 'Close', { duration: 3000, panelClass: 'snackbar-success' });
-        const courseId = this.course()?.id;
-        if (courseId) this.loadEnrollments(courseId);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.snackBar.open(extractErrorMessage(err, 'Failed to confirm payment'), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
-      },
-    });
+    this.runEnrollmentAction(
+      this.enrollmentService.markPaid(enrollmentId),
+      () => 'Payment confirmed',
+      'Failed to confirm payment',
+    );
   }
 
   protected onApprove(enrollmentId: number): void {
-    this.enrollmentService.approve(enrollmentId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (response) => {
-        const message = response.status === 'WAITLISTED'
-          ? 'Approved — course is full, moved to waitlist'
-          : 'Enrollment approved';
-        this.snackBar.open(message, 'Close', { duration: 4000, panelClass: 'snackbar-success' });
-        const courseId = this.course()?.id;
-        if (courseId) this.loadEnrollments(courseId);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.snackBar.open(extractErrorMessage(err, 'Failed to approve enrollment'), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
-      },
-    });
+    this.runEnrollmentAction(
+      this.enrollmentService.approve(enrollmentId),
+      (response) => response.status === 'WAITLISTED'
+        ? 'Approved — course is full, moved to waitlist'
+        : 'Enrollment approved',
+      'Failed to approve enrollment',
+      4000,
+    );
   }
 
   protected onReject(enrollmentId: number): void {
-    this.enrollmentService.reject(enrollmentId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.snackBar.open('Enrollment rejected', 'Close', { duration: 3000, panelClass: 'snackbar-success' });
+    this.runEnrollmentAction(
+      this.enrollmentService.reject(enrollmentId),
+      () => 'Enrollment rejected',
+      'Failed to reject enrollment',
+    );
+  }
+
+  private runEnrollmentAction(
+    op$: Observable<EnrollmentResponse>,
+    successMessage: (response: EnrollmentResponse) => string,
+    errorFallback: string,
+    successDuration = 3000,
+  ): void {
+    op$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (response) => {
+        this.snackBar.open(successMessage(response), 'Close', { duration: successDuration, panelClass: 'snackbar-success' });
         const courseId = this.course()?.id;
         if (courseId) this.loadEnrollments(courseId);
       },
       error: (err: HttpErrorResponse) => {
-        this.snackBar.open(extractErrorMessage(err, 'Failed to reject enrollment'), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
+        this.snackBar.open(extractErrorMessage(err, errorFallback), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
       },
     });
   }
@@ -228,7 +232,10 @@ export class CourseOverviewComponent implements OnInit {
   private loadEnrollments(courseId: number): void {
     this.enrollmentService.getEnrollments(courseId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => this.enrollments.set(data),
-      error: () => this.enrollments.set([]),
+      error: (err: HttpErrorResponse) => {
+        this.enrollments.set([]);
+        this.snackBar.open(extractErrorMessage(err, 'Failed to load enrollments'), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
+      },
     });
   }
 }

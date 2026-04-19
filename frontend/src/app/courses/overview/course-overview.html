@@ -1,6 +1,7 @@
 @if (!loading()) {
   @let c = course();
-  @if (c && summaryData) {
+  @let summary = summaryData();
+  @if (c && summary) {
     <!-- Header -->
     <div class="overview-header">
       <a class="back-link" routerLink="/app/courses">← Back to Courses</a>
@@ -149,7 +150,7 @@
     <!-- Content Card -->
     <div class="content-card">
       <h2 class="content-card-title">Course Summary</h2>
-      <app-course-summary [data]="summaryData" [defaultOpen]="false" (edit)="onEdit($event)" />
+      <app-course-summary [data]="summary" [defaultOpen]="false" (edit)="onEdit($event)" />
     </div>
   }
 } @else {
