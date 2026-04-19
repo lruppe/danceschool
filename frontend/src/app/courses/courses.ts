@@ -10,7 +10,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
-import { forkJoin } from 'rxjs';
 import { CourseListItem, CourseService } from './course.service';
 import { statusChipClass } from './shared/format-utils';
 
@@ -22,14 +21,20 @@ interface TabConfig {
 const COLUMNS = ['status', 'title', 'danceStyle', 'level', 'dateRange', 'enrollment'];
 
 const TAB_CONFIGS: TabConfig[] = [
-  { status: 'ALL', label: 'All' },
+  { status: 'ACTIVE', label: 'Active' },
   { status: 'DRAFT', label: 'Draft' },
   { status: 'OPEN', label: 'Open' },
   { status: 'RUNNING', label: 'Running' },
   { status: 'FINISHED', label: 'Finished' },
 ];
 
-const DEFAULT_TAB_INDEX = 0; // All tab
+const ACTIVE_TAB_INDEX = 0;
+const DRAFT_TAB_INDEX = 1;
+const OPEN_TAB_INDEX = 2;
+const RUNNING_TAB_INDEX = 3;
+const FINISHED_TAB_INDEX = 4;
+
+const DEFAULT_TAB_INDEX = ACTIVE_TAB_INDEX;
 
 const DAY_ORDER: Record<string, number> = {
   MONDAY: 1, TUESDAY: 2, WEDNESDAY: 3,
@@ -55,6 +60,7 @@ export class CoursesComponent implements OnInit {
   protected activeTabIndex = signal(DEFAULT_TAB_INDEX);
   protected loaded = signal(false);
   protected error = signal(false);
+  protected finishedError = signal(false);
   protected hasAnyCourses = signal(false);
 
   // Per-tab data
@@ -66,6 +72,8 @@ export class CoursesComponent implements OnInit {
   protected columns = COLUMNS;
   protected activeDataSource = computed(() => this.tabData[this.activeTabIndex()]);
   protected activeTab = computed(() => TAB_CONFIGS[this.activeTabIndex()]);
+
+  private finishedLoaded = false;
 
   @ViewChild(MatSort) set sort(sort: MatSort) {
     if (sort) {
@@ -83,22 +91,10 @@ export class CoursesComponent implements OnInit {
       };
     });
 
-    const statusTabs = TAB_CONFIGS.slice(1);
-    forkJoin(
-      statusTabs.map(tab => this.courseService.getCoursesByStatus(tab.status))
-    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (results) => {
-        const counts: number[] = [0];
-        const all: CourseListItem[] = [];
-        results.forEach((courses, i) => {
-          this.tabData[i + 1].data = courses;
-          counts.push(courses.length);
-          all.push(...courses);
-        });
-        counts[0] = all.length;
-        this.tabData[0].data = all;
-        this.tabCounts.set(counts);
-        this.hasAnyCourses.set(all.length > 0);
+    this.courseService.getCourses().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (courses) => {
+        this.partitionActiveCourses(courses);
+        this.hasAnyCourses.set(courses.length > 0);
         this.loaded.set(true);
       },
       error: () => {
@@ -110,6 +106,50 @@ export class CoursesComponent implements OnInit {
 
   protected selectTab(index: number): void {
     this.activeTabIndex.set(index);
+    if (index === FINISHED_TAB_INDEX && !this.finishedLoaded) {
+      this.finishedError.set(false);
+      this.loadFinishedCourses();
+    }
+  }
+
+  private partitionActiveCourses(courses: CourseListItem[]): void {
+    const draft: CourseListItem[] = [];
+    const open: CourseListItem[] = [];
+    const running: CourseListItem[] = [];
+    for (const c of courses) {
+      if (c.status === 'DRAFT') draft.push(c);
+      else if (c.status === 'OPEN') open.push(c);
+      else if (c.status === 'RUNNING') running.push(c);
+    }
+    this.tabData[ACTIVE_TAB_INDEX].data = courses;
+    this.tabData[DRAFT_TAB_INDEX].data = draft;
+    this.tabData[OPEN_TAB_INDEX].data = open;
+    this.tabData[RUNNING_TAB_INDEX].data = running;
+
+    const counts = this.tabCounts().slice();
+    counts[ACTIVE_TAB_INDEX] = courses.length;
+    counts[DRAFT_TAB_INDEX] = draft.length;
+    counts[OPEN_TAB_INDEX] = open.length;
+    counts[RUNNING_TAB_INDEX] = running.length;
+    this.tabCounts.set(counts);
+  }
+
+  private loadFinishedCourses(): void {
+    this.finishedLoaded = true;
+    this.courseService.getCoursesByStatus('FINISHED').pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (courses) => {
+        this.tabData[FINISHED_TAB_INDEX].data = courses;
+        const counts = this.tabCounts().slice();
+        counts[FINISHED_TAB_INDEX] = courses.length;
+        this.tabCounts.set(counts);
+        if (courses.length > 0) this.hasAnyCourses.set(true);
+      },
+      error: () => {
+        // Allow retry on next tab activation
+        this.finishedLoaded = false;
+        this.finishedError.set(true);
+      },
+    });
   }
 
   protected applyFilter(): void {

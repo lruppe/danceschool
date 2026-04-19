@@ -9,8 +9,6 @@ import java.util.Optional;
 
 interface CourseRepository extends JpaRepository<Course, Long> {
 
-    List<Course> findAllBySchoolId(Long schoolId);
-
     boolean existsBySchoolId(Long schoolId);
 
     Optional<Course> findByIdAndSchoolId(Long id, Long schoolId);
@@ -26,4 +24,7 @@ interface CourseRepository extends JpaRepository<Course, Long> {
 
     @Query("SELECT c FROM Course c WHERE c.school.id = :schoolId AND c.endDate < :today")
     List<Course> findFinishedBySchoolId(Long schoolId, LocalDate today);
+
+    @Query("SELECT c FROM Course c WHERE c.school.id = :schoolId AND (c.publishedAt IS NULL OR c.endDate >= :today)")
+    List<Course> findActiveBySchoolId(Long schoolId, LocalDate today);
 }

@@ -29,6 +29,9 @@
     </div>
 
     <mat-tab-nav-panel #coursesTabPanel>
+      @if (activeTabIndex() === 4 && finishedError()) {
+        <p class="error-text">Could not load finished courses. Select the tab again to retry.</p>
+      }
       <div class="ds-table-card courses-table">
         <table mat-table [dataSource]="activeDataSource()" matSort>
           <ng-container matColumnDef="status">

@@ -53,89 +53,145 @@ describe('CoursesComponent', () => {
     httpTesting.verify();
   });
 
-  function flushAllTabs(data: {
-    running?: CourseListItem[];
-    open?: CourseListItem[];
-    draft?: CourseListItem[];
-    finished?: CourseListItem[];
-  } = {}): void {
+  /**
+   * Flushes the single init request (GET /api/courses/me without status) with `courses`.
+   * The backend excludes FINISHED from this response; the component lazy-loads FINISHED
+   * on first activation.
+   */
+  function flushInit(courses: CourseListItem[] = []): void {
     fixture.detectChanges();
-    const reqs = httpTesting.match(req => req.url.includes('/api/courses/me'));
-    reqs.forEach(req => {
-      const status = req.request.params.get('status');
-      switch (status) {
-        case 'RUNNING': req.flush(data.running ?? []); break;
-        case 'OPEN': req.flush(data.open ?? []); break;
-        case 'DRAFT': req.flush(data.draft ?? []); break;
-        case 'FINISHED': req.flush(data.finished ?? []); break;
-        default: req.flush([]);
-      }
-    });
+    const reqs = httpTesting.match(req =>
+      req.url.includes('/api/courses/me') && !req.params.has('status'));
+    expect(reqs.length).toBe(1);
+    reqs[0].flush(courses);
     fixture.detectChanges();
   }
+
+  it('fires exactly one GET /api/courses/me (no status) on init', () => {
+    fixture.detectChanges();
+    const noStatus = httpTesting.match(req =>
+      req.url.includes('/api/courses/me') && !req.params.has('status'));
+    const withStatus = httpTesting.match(req =>
+      req.url.includes('/api/courses/me') && req.params.has('status'));
+    expect(noStatus.length).toBe(1);
+    expect(withStatus.length).toBe(0);
+    noStatus[0].flush([]);
+  });
+
+  it('surfaces an error and allows retry when FINISHED fetch fails', () => {
+    flushInit([makeCourse({ id: 1, status: 'RUNNING' })]);
+
+    const component = fixture.componentInstance as any;
+    component.selectTab(4);
+    fixture.detectChanges();
+
+    const failed = httpTesting.match(req =>
+      req.url.includes('/api/courses/me') && req.params.get('status') === 'FINISHED');
+    expect(failed.length).toBe(1);
+    failed[0].error(new ProgressEvent('error'));
+    fixture.detectChanges();
+
+    expect(el.querySelector('.error-text')).toBeTruthy();
+    expect(component.finishedError()).toBe(true);
+
+    // Re-activating the tab retries the fetch
+    component.selectTab(4);
+    fixture.detectChanges();
+    const retried = httpTesting.match(req =>
+      req.url.includes('/api/courses/me') && req.params.get('status') === 'FINISHED');
+    expect(retried.length).toBe(1);
+    retried[0].flush([]);
+  });
+
+  it('loads FINISHED lazily on first Finished tab activation and caches it', () => {
+    flushInit([makeCourse({ id: 1, status: 'RUNNING' })]);
+
+    // No FINISHED request before the tab is activated
+    expect(httpTesting.match(req =>
+      req.url.includes('/api/courses/me') && req.params.get('status') === 'FINISHED').length).toBe(0);
+
+    const component = fixture.componentInstance as any;
+    component.selectTab(4);
+    fixture.detectChanges();
+
+    const finishedReqs = httpTesting.match(req =>
+      req.url.includes('/api/courses/me') && req.params.get('status') === 'FINISHED');
+    expect(finishedReqs.length).toBe(1);
+    finishedReqs[0].flush([makeCourse({ id: 9, status: 'FINISHED' })]);
+    fixture.detectChanges();
+
+    // Switch away and back: no refetch
+    component.selectTab(0);
+    fixture.detectChanges();
+    component.selectTab(4);
+    fixture.detectChanges();
+    expect(httpTesting.match(req =>
+      req.url.includes('/api/courses/me') && req.params.get('status') === 'FINISHED').length).toBe(0);
+  });
 
   it('should display loading state initially', () => {
     fixture.detectChanges();
     expect(el.querySelector('.loading')).toBeTruthy();
 
-    flushAllTabs();
+    flushInit();
   });
 
-  it('should display empty state when no courses in any tab', () => {
-    flushAllTabs();
+  it('should display empty state when no active courses', () => {
+    flushInit([]);
     expect(el.querySelector('.empty-state')).toBeTruthy();
     expect(el.querySelector('.empty-state-title')?.textContent?.trim()).toBe('No courses yet');
   });
 
-  it('should render 5 tabs with labels and counts (All + 4 statuses)', () => {
-    flushAllTabs({
-      running: [makeCourse({ id: 1 }), makeCourse({ id: 2 })],
-      open: [makeCourse({ id: 3, status: 'OPEN' })],
-      draft: [],
-      finished: [makeCourse({ id: 4, status: 'FINISHED' })],
-    });
+  it('should render 5 tabs (Active + 4 statuses) with labels and counts', () => {
+    flushInit([
+      makeCourse({ id: 1, status: 'RUNNING' }),
+      makeCourse({ id: 2, status: 'RUNNING' }),
+      makeCourse({ id: 3, status: 'OPEN' }),
+      makeCourse({ id: 4, status: 'DRAFT' }),
+    ]);
 
     const tabs = el.querySelectorAll('a[mat-tab-link]');
     expect(tabs.length).toBe(5);
 
     const labels = Array.from(tabs).map(t => t.querySelector('.ds-tab-label')?.textContent?.trim());
     const counts = Array.from(tabs).map(t => t.querySelector('.ds-tab-count')?.textContent?.trim());
-    expect(labels).toEqual(['All', 'Draft', 'Open', 'Running', 'Finished']);
-    expect(counts).toEqual(['4', '0', '1', '2', '1']);
+    expect(labels).toEqual(['Active', 'Draft', 'Open', 'Running', 'Finished']);
+    // Active = DRAFT + OPEN + RUNNING; Finished is 0 until lazy-loaded
+    expect(counts).toEqual(['4', '1', '1', '2', '0']);
   });
 
-  it('should show unified column set across tabs', () => {
-    flushAllTabs({ running: [makeCourse()] });
+  it('shows unified column set across tabs', () => {
+    flushInit([makeCourse()]);
 
     const headers = Array.from(el.querySelectorAll('th')).map(th => th.textContent?.trim());
     expect(headers).toEqual(['Status', 'Course Name', 'Type', 'Level', 'Start / End', 'Enrollment']);
   });
 
-  it('should display enrollment for non-draft courses', () => {
-    flushAllTabs({ running: [makeCourse({ enrolledStudents: 12, maxParticipants: 20 })] });
+  it('displays enrollment for non-draft courses', () => {
+    flushInit([makeCourse({ enrolledStudents: 12, maxParticipants: 20 })]);
 
     const cells = Array.from(el.querySelectorAll('td')).map(td => td.textContent?.trim());
     expect(cells.some(c => c?.includes('12 / 20'))).toBe(true);
   });
 
-  it('should show leads/follows sub-line for PARTNER courses', () => {
-    flushAllTabs({ running: [makeCourse({ courseType: 'PARTNER', leadCount: 5, followCount: 7 })] });
+  it('shows leads/follows sub-line for PARTNER courses', () => {
+    flushInit([makeCourse({ courseType: 'PARTNER', leadCount: 5, followCount: 7 })]);
 
     const cell = el.querySelector('td.mat-column-enrollment');
     expect(cell?.querySelector('.ds-cell-primary')?.textContent?.trim()).toBe('12 / 20');
     expect(cell?.querySelector('.ds-cell-secondary')?.textContent?.trim()).toBe('5L / 7F');
   });
 
-  it('should NOT show leads/follows sub-line for SOLO courses', () => {
-    flushAllTabs({ running: [makeCourse({ courseType: 'SOLO', leadCount: 0, followCount: 0 })] });
+  it('does NOT show leads/follows sub-line for SOLO courses', () => {
+    flushInit([makeCourse({ courseType: 'SOLO', leadCount: 0, followCount: 0 })]);
 
     const cell = el.querySelector('td.mat-column-enrollment');
     expect(cell?.querySelector('.ds-cell-primary')?.textContent?.trim()).toBe('12 / 20');
     expect(cell?.querySelector('.ds-cell-secondary')).toBeNull();
   });
 
-  it('should leave enrollment blank for draft courses', () => {
-    flushAllTabs({ draft: [makeCourse({ status: 'DRAFT', enrolledStudents: 0, maxParticipants: 20 })] });
+  it('leaves enrollment blank for draft courses', () => {
+    flushInit([makeCourse({ status: 'DRAFT', enrolledStudents: 0, maxParticipants: 20 })]);
     // Switch to Draft tab (index 1)
     const component = fixture.componentInstance as any;
     component.selectTab(1);
@@ -146,42 +202,40 @@ describe('CoursesComponent', () => {
     expect(enrollmentCells[0].textContent?.trim()).toBe('');
   });
 
-  it('should display status chip with dot indicator', () => {
-    flushAllTabs({ running: [makeCourse()] });
+  it('displays status chip with dot indicator', () => {
+    flushInit([makeCourse()]);
 
     const chip = el.querySelector('.ds-chip');
     expect(chip?.querySelector('.ds-chip__dot')).toBeTruthy();
     expect(chip?.textContent?.trim()).toContain('Running');
   });
 
-  it('should show correct count in table footer', () => {
-    flushAllTabs({ running: [makeCourse({ id: 1 }), makeCourse({ id: 2 })] });
+  it('shows correct count in table footer', () => {
+    flushInit([makeCourse({ id: 1 }), makeCourse({ id: 2 })]);
     const footer = el.querySelector('.ds-table-footer')?.textContent?.trim();
-    // All tab is default and aggregates all statuses
+    // Active tab is default and contains all non-FINISHED courses from the init response
     expect(footer).toContain('2 of 2');
   });
 
-  it('should aggregate all statuses into the All tab', () => {
-    flushAllTabs({
-      running: [makeCourse({ id: 1 }), makeCourse({ id: 2 })],
-      open: [makeCourse({ id: 3, status: 'OPEN' })],
-      draft: [makeCourse({ id: 4, status: 'DRAFT' })],
-      finished: [makeCourse({ id: 5, status: 'FINISHED' }), makeCourse({ id: 6, status: 'FINISHED' })],
-    });
+  it('aggregates non-FINISHED statuses into the Active tab', () => {
+    flushInit([
+      makeCourse({ id: 1, status: 'RUNNING' }),
+      makeCourse({ id: 2, status: 'RUNNING' }),
+      makeCourse({ id: 3, status: 'OPEN' }),
+      makeCourse({ id: 4, status: 'DRAFT' }),
+    ]);
 
     const component = fixture.componentInstance as any;
-    expect(component.tabCounts()[0]).toBe(6);
-    expect(component.tabData[0].data.map((c: CourseListItem) => c.id).sort()).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(component.tabCounts()[0]).toBe(4);
+    expect(component.tabData[0].data.map((c: CourseListItem) => c.id).sort()).toEqual([1, 2, 3, 4]);
   });
 
   describe('search filter', () => {
     it('matches title case-insensitively', () => {
-      flushAllTabs({
-        running: [
-          makeCourse({ id: 1, title: 'Bachata Fundamentals', danceStyle: 'BACHATA' }),
-          makeCourse({ id: 2, title: 'Salsa Intermediate', danceStyle: 'SALSA' }),
-        ],
-      });
+      flushInit([
+        makeCourse({ id: 1, title: 'Bachata Fundamentals', danceStyle: 'BACHATA' }),
+        makeCourse({ id: 2, title: 'Salsa Intermediate', danceStyle: 'SALSA' }),
+      ]);
       const component = fixture.componentInstance as any;
       component.searchText = 'fundamentals';
       component.applyFilter();
@@ -190,12 +244,10 @@ describe('CoursesComponent', () => {
     });
 
     it('matches dance style, level, and day of week', () => {
-      flushAllTabs({
-        running: [
-          makeCourse({ id: 1, danceStyle: 'BACHATA', level: 'BEGINNER', dayOfWeek: 'FRIDAY' }),
-          makeCourse({ id: 2, danceStyle: 'SALSA', level: 'ADVANCED', dayOfWeek: 'MONDAY' }),
-        ],
-      });
+      flushInit([
+        makeCourse({ id: 1, danceStyle: 'BACHATA', level: 'BEGINNER', dayOfWeek: 'FRIDAY' }),
+        makeCourse({ id: 2, danceStyle: 'SALSA', level: 'ADVANCED', dayOfWeek: 'MONDAY' }),
+      ]);
       const component = fixture.componentInstance as any;
 
       component.searchText = 'salsa';
@@ -212,7 +264,7 @@ describe('CoursesComponent', () => {
     });
   });
 
-  it('should display error state', () => {
+  it('displays error state', () => {
     fixture.detectChanges();
     const reqs = httpTesting.match(req => req.url.includes('/api/courses/me'));
     if (reqs.length > 0) {
@@ -224,7 +276,7 @@ describe('CoursesComponent', () => {
   });
 
   describe('helper methods', () => {
-    it('should return correct status chip class', () => {
+    it('returns correct status chip class', () => {
       const component = fixture.componentInstance as any;
       expect(component.statusChipClass('OPEN')).toBe('ds-chip-success');
       expect(component.statusChipClass('RUNNING')).toBe('ds-chip-primary');
@@ -232,13 +284,13 @@ describe('CoursesComponent', () => {
       expect(component.statusChipClass('FINISHED')).toBe('ds-chip-default');
     });
 
-    it('should calculate session duration in minutes', () => {
+    it('calculates session duration in minutes', () => {
       const component = fixture.componentInstance as any;
       expect(component.sessionDuration('19:30:00', '20:45:00')).toBe(75);
       expect(component.sessionDuration('18:00:00', '19:00:00')).toBe(60);
     });
 
-    it('should format date range with short month and year on end', () => {
+    it('formats date range with short month and year on end', () => {
       const component = fixture.componentInstance as any;
       const result: string = component.formatDateRange('2026-05-15', '2026-07-03');
       expect(result).toContain('May');
@@ -247,7 +299,7 @@ describe('CoursesComponent', () => {
       expect(result).toContain('–');
     });
 
-    it('should return correct dance style chip class', () => {
+    it('returns correct dance style chip class', () => {
       const component = fixture.componentInstance as any;
       expect(component.danceStyleChipClass('BACHATA')).toBe('ds-chip-primary');
       expect(component.danceStyleChipClass('SALSA')).toBe('ds-chip-info');

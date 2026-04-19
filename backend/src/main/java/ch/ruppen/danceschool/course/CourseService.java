@@ -198,10 +198,11 @@ public class CourseService {
     }
 
     private List<Course> fetchCourses(Long schoolId, CourseLifecycleStatus statusFilter) {
-        if (statusFilter == null) {
-            return courseRepository.findAllBySchoolId(schoolId);
-        }
         LocalDate today = LocalDate.now(clock);
+        if (statusFilter == null) {
+            // FINISHED grows unbounded; fetched explicitly when the client requests them.
+            return courseRepository.findActiveBySchoolId(schoolId, today);
+        }
         return switch (statusFilter) {
             case DRAFT -> courseRepository.findDraftBySchoolId(schoolId);
             case OPEN -> courseRepository.findOpenBySchoolId(schoolId, today);
