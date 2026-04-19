@@ -585,8 +585,69 @@ class EnrollmentIntegrationTest {
         Enrollment updated = entityManager.find(Enrollment.class, pendingId);
         org.junit.jupiter.api.Assertions.assertEquals(EnrollmentStatus.WAITLISTED, updated.getStatus());
         org.junit.jupiter.api.Assertions.assertEquals(WaitlistReason.CAPACITY, updated.getWaitlistReason());
+        org.junit.jupiter.api.Assertions.assertEquals(1, updated.getWaitlistPosition());
         // approvedAt is still set — approval decision is separate from slot outcome.
         org.junit.jupiter.api.Assertions.assertNotNull(updated.getApprovedAt());
+    }
+
+    @Test
+    void approve_toWaitlist_assignsPositionFifoPerRole_acrossEnrollAndApprovePaths() throws Exception {
+        // Capacity 2 ADVANCED partner course: qualified students fill seats, under-leveled students
+        // queue for approval. Interleave enroll-time waitlisting with approve-time routing to verify
+        // the per-role FIFO counter is shared between both entry points.
+        Course advancedCourse = createCourse(school, "Salsa Advanced FIFO", DanceStyle.SALSA,
+                CourseLevel.ADVANCED, CourseType.PARTNER, 2, false, null);
+        entityManager.flush();
+
+        Student qualifiedLead = createStudent(school, "Q Lead", "qlead@example.com", null);
+        addDanceLevel(qualifiedLead, DanceStyle.SALSA, CourseLevel.ADVANCED);
+        Student qualifiedFollow = createStudent(school, "Q Follow", "qfollow@example.com", null);
+        addDanceLevel(qualifiedFollow, DanceStyle.SALSA, CourseLevel.ADVANCED);
+        Student waitlistLead = createStudent(school, "W Lead", "wlead@example.com", null);
+        addDanceLevel(waitlistLead, DanceStyle.SALSA, CourseLevel.ADVANCED);
+        // Under-leveled applicants (no SALSA level) route to PENDING_APPROVAL.
+        Student pendingLead = createStudent(school, "P Lead", "plead@example.com", null);
+        Student pendingFollow = createStudent(school, "P Follow", "pfollow@example.com", null);
+        entityManager.flush();
+
+        // Fill the two committed seats.
+        enrollPartner(advancedCourse.getId(), qualifiedLead.getId(), "LEAD", "PENDING_PAYMENT");
+        enrollPartner(advancedCourse.getId(), qualifiedFollow.getId(), "FOLLOW", "PENDING_PAYMENT");
+
+        // Two applicants enter PENDING_APPROVAL without reserving seats.
+        String pendingLeadResp = enrollPartner(advancedCourse.getId(), pendingLead.getId(), "LEAD", "PENDING_APPROVAL");
+        Long pendingLeadId = com.jayway.jsonpath.JsonPath.parse(pendingLeadResp).read("$.enrollmentId", Long.class);
+        String pendingFollowResp = enrollPartner(advancedCourse.getId(), pendingFollow.getId(), "FOLLOW", "PENDING_APPROVAL");
+        Long pendingFollowId = com.jayway.jsonpath.JsonPath.parse(pendingFollowResp).read("$.enrollmentId", Long.class);
+
+        // Direct-enroll at capacity → WAITLISTED LEAD position 1.
+        String waitlistLeadResp = enrollPartner(advancedCourse.getId(), waitlistLead.getId(), "LEAD", "WAITLISTED");
+        Long waitlistLeadId = com.jayway.jsonpath.JsonPath.parse(waitlistLeadResp).read("$.enrollmentId", Long.class);
+
+        // Approve pendingLead → WAITLISTED, LEAD position 2 (continues the same per-role counter).
+        mockMvc.perform(put("/api/enrollments/{id}/approve", pendingLeadId)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("WAITLISTED"));
+
+        // Approve pendingFollow → WAITLISTED, FOLLOW position 1 (separate counter per role).
+        mockMvc.perform(put("/api/enrollments/{id}/approve", pendingFollowId)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("WAITLISTED"));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Enrollment waitlistLeadE = entityManager.find(Enrollment.class, waitlistLeadId);
+        Enrollment approvedLead = entityManager.find(Enrollment.class, pendingLeadId);
+        Enrollment approvedFollow = entityManager.find(Enrollment.class, pendingFollowId);
+
+        org.junit.jupiter.api.Assertions.assertEquals(1, waitlistLeadE.getWaitlistPosition());
+        org.junit.jupiter.api.Assertions.assertEquals(WaitlistReason.CAPACITY, approvedLead.getWaitlistReason());
+        org.junit.jupiter.api.Assertions.assertEquals(2, approvedLead.getWaitlistPosition());
+        org.junit.jupiter.api.Assertions.assertEquals(WaitlistReason.CAPACITY, approvedFollow.getWaitlistReason());
+        org.junit.jupiter.api.Assertions.assertEquals(1, approvedFollow.getWaitlistPosition());
     }
 
     @Test

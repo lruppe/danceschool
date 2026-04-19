@@ -117,9 +117,12 @@ public class EnrollmentService {
         long committedCount = enrollmentRepository.countByCourseIdAndStatusIn(
                 course.getId(), COMMITTED_STATUSES);
         if (committedCount >= course.getMaxParticipants()) {
+            // Compute position BEFORE flipping to WAITLISTED so Hibernate's auto-flush
+            // doesn't count this enrollment against itself.
+            int position = nextPosition(course.getId(), enrollment.getDanceRole());
             enrollment.setStatus(EnrollmentStatus.WAITLISTED);
             enrollment.setWaitlistReason(WaitlistReason.CAPACITY);
-            enrollment.setWaitlistPosition(nextPosition(course.getId(), enrollment.getDanceRole()));
+            enrollment.setWaitlistPosition(position);
         } else {
             enrollment.setStatus(EnrollmentStatus.PENDING_PAYMENT);
         }
