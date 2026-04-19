@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 020-drop-enrolled-students-from-course
+      author: claude
+      changes:
+        - dropColumn:
+            tableName: course
+            columnName: enrolled_students

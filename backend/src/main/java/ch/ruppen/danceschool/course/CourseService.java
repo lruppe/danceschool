@@ -26,10 +26,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CourseService {
 
-    private static final List<EnrollmentStatus> COMMITTED_STATUSES = List.of(
-            EnrollmentStatus.PENDING_PAYMENT,
-            EnrollmentStatus.CONFIRMED);
-
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final SchoolService schoolService;
@@ -40,24 +36,38 @@ public class CourseService {
         School school = schoolService.findSchoolByMember(userId);
         List<Course> courses = fetchCourses(school.getId(), statusFilter);
         LocalDate today = LocalDate.now(clock);
-        Map<Long, RoleCounts> roleCounts = fetchRoleCounts(courses);
+        List<Long> courseIds = courses.stream().map(Course::getId).toList();
+        Map<Long, RoleCounts> roleCounts = fetchRoleCounts(courseIds);
+        Map<Long, Integer> committedCounts = fetchCommittedCounts(courseIds);
         return courses.stream()
-                .map(c -> toListDto(c, today, roleCounts.getOrDefault(c.getId(), RoleCounts.EMPTY)))
+                .map(c -> toListDto(c, today,
+                        committedCounts.getOrDefault(c.getId(), 0),
+                        roleCounts.getOrDefault(c.getId(), RoleCounts.EMPTY)))
                 .toList();
     }
 
-    private Map<Long, RoleCounts> fetchRoleCounts(List<Course> courses) {
-        List<Long> courseIds = courses.stream().map(Course::getId).toList();
+    private Map<Long, RoleCounts> fetchRoleCounts(List<Long> courseIds) {
         if (courseIds.isEmpty()) {
             return Map.of();
         }
         Map<Long, RoleCounts> result = new HashMap<>();
-        for (Object[] row : enrollmentRepository.countByRoleGroupedByCourse(courseIds, COMMITTED_STATUSES)) {
+        for (Object[] row : enrollmentRepository.countByRoleGroupedByCourse(courseIds, EnrollmentStatus.SEAT_HOLDING_STATI)) {
             Long courseId = (Long) row[0];
             DanceRole role = (DanceRole) row[1];
             int count = ((Number) row[2]).intValue();
             RoleCounts existing = result.getOrDefault(courseId, RoleCounts.EMPTY);
             result.put(courseId, existing.plus(role, count));
+        }
+        return result;
+    }
+
+    private Map<Long, Integer> fetchCommittedCounts(List<Long> courseIds) {
+        if (courseIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, Integer> result = new HashMap<>();
+        for (Object[] row : enrollmentRepository.countGroupedByCourse(courseIds, EnrollmentStatus.SEAT_HOLDING_STATI)) {
+            result.put((Long) row[0], ((Number) row[1]).intValue());
         }
         return result;
     }
@@ -166,12 +176,11 @@ public class CourseService {
      * Seeds a course for dev/test data. Skips domain validation (seed data may have past dates).
      */
     @Transactional
-    public Course seedCourse(Long userId, CreateCourseDto dto, int enrolledStudents, LocalDate publishedAt) {
+    public Course seedCourse(Long userId, CreateCourseDto dto, LocalDate publishedAt) {
         School school = schoolService.findSchoolByMember(userId);
         Course course = new Course();
         course.setSchool(school);
         applyDto(course, dto);
-        course.setEnrolledStudents(enrolledStudents);
         course.setPublishedAt(publishedAt);
         return courseRepository.save(course);
     }
@@ -243,7 +252,7 @@ public class CourseService {
         return startDate.plusWeeks((long) (numberOfSessions - 1) * intervalWeeks);
     }
 
-    private CourseListDto toListDto(Course course, LocalDate today, RoleCounts roleCounts) {
+    private CourseListDto toListDto(Course course, LocalDate today, int enrolledStudents, RoleCounts roleCounts) {
         return new CourseListDto(
                 course.getId(),
                 course.getTitle(),
@@ -256,7 +265,7 @@ public class CourseService {
                 course.getNumberOfSessions(),
                 course.getStartDate(),
                 course.getEndDate(),
-                course.getEnrolledStudents(),
+                enrolledStudents,
                 roleCounts.leads(),
                 roleCounts.follows(),
                 course.getMaxParticipants(),
@@ -269,6 +278,8 @@ public class CourseService {
     }
 
     private CourseDetailDto toDetailDto(Course course, LocalDate today) {
+        int enrolledStudents = (int) enrollmentRepository.countByCourseIdAndStatusIn(
+                course.getId(), EnrollmentStatus.SEAT_HOLDING_STATI);
         return new CourseDetailDto(
                 course.getId(),
                 course.getTitle(),
@@ -293,7 +304,7 @@ public class CourseService {
                 CourseStatusDerivation.deriveStatus(
                         course.getPublishedAt(), course.getStartDate(), course.getEndDate(), today),
                 course.getPublishedAt(),
-                course.getEnrolledStudents(),
+                enrolledStudents,
                 CourseStatusDerivation.deriveCompletedSessions(
                         course.getStartDate(), course.getDayOfWeek(), course.getNumberOfSessions(), today)
         );
