@@ -75,10 +75,14 @@ public class DevDataSeeder implements ApplicationRunner {
 
         List<Course> courses1 = seedCourses(owner);
         List<Course> courses2 = seedCoursesForOwner2(owner2);
-        List<Student> students1 = seedStudents(owner, owner2);
-        seedEnrollments(owner, courses1, students1);
+        SeededStudents students = seedStudents(owner, owner2);
+        seedEnrollments(courses1, students.school1());
+        seedEnrollmentsForOwner2(courses2, students.school2());
 
         log.info("Dev data seeded: owner@test.com (School 1), owner2@test.com (School 2)");
+    }
+
+    private record SeededStudents(List<Student> school1, List<Student> school2) {
     }
 
     private List<Course> seedCourses(AppUser owner) {
@@ -182,15 +186,16 @@ public class DevDataSeeder implements ApplicationRunner {
         return courses;
     }
 
-    private List<Student> seedStudents(AppUser owner, AppUser owner2) {
+    private SeededStudents seedStudents(AppUser owner, AppUser owner2) {
         if (studentService.hasStudentsForSchool(owner.getId())) {
-            return List.of();
+            return new SeededStudents(List.of(), List.of());
         }
 
         School school1 = schoolService.findSchoolByMember(owner.getId());
         School school2 = schoolService.findSchoolByMember(owner2.getId());
 
         List<Student> students = new ArrayList<>();
+        List<Student> students2 = new ArrayList<>();
 
         // School 1: 7 students with varied dance levels
         students.add(studentService.seedStudent(school1, "Anna Mueller", "anna.mueller@example.com", "+41 79 100 0001",
@@ -220,21 +225,31 @@ public class DevDataSeeder implements ApplicationRunner {
                         new CreateStudentDto.DanceLevelEntry(DanceStyle.BACHATA, CourseLevel.INTERMEDIATE),
                         new CreateStudentDto.DanceLevelEntry(DanceStyle.ZOUK, CourseLevel.BEGINNER))));
 
-        // School 2: 3 students
-        studentService.seedStudent(school2, "Elena Fischer", "elena.fischer@example.com", "+41 79 200 0001",
-                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.BEGINNER)));
+        // School 2: 6 students
+        students2.add(studentService.seedStudent(school2, "Elena Fischer", "elena.fischer@example.com", "+41 79 200 0001",
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.BEGINNER))));
 
-        studentService.seedStudent(school2, "Thomas Bauer", "thomas.bauer@example.com", "+41 79 200 0002",
+        students2.add(studentService.seedStudent(school2, "Thomas Bauer", "thomas.bauer@example.com", "+41 79 200 0002",
                 List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.BACHATA, CourseLevel.INTERMEDIATE),
-                        new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.INTERMEDIATE)));
+                        new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.INTERMEDIATE))));
 
-        studentService.seedStudent(school2, "Mia Schmidt", "mia.schmidt@example.com", null,
-                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.STARTER)));
+        students2.add(studentService.seedStudent(school2, "Mia Schmidt", "mia.schmidt@example.com", null,
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.STARTER))));
 
-        return students;
+        students2.add(studentService.seedStudent(school2, "Lukas Huber", "lukas.huber@example.com", "+41 79 200 0004",
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.BEGINNER),
+                        new CreateStudentDto.DanceLevelEntry(DanceStyle.BACHATA, CourseLevel.STARTER))));
+
+        students2.add(studentService.seedStudent(school2, "Clara Meier", "clara.meier@example.com", "+41 79 200 0005",
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.BACHATA, CourseLevel.ADVANCED))));
+
+        students2.add(studentService.seedStudent(school2, "Pedro Alvarez", "pedro.alvarez@example.com", null,
+                List.of(new CreateStudentDto.DanceLevelEntry(DanceStyle.SALSA, CourseLevel.INTERMEDIATE))));
+
+        return new SeededStudents(students, students2);
     }
 
-    private void seedEnrollments(AppUser owner, List<Course> courses, List<Student> students) {
+    private void seedEnrollments(List<Course> courses, List<Student> students) {
         if (courses.isEmpty() || students.isEmpty()) {
             return;
         }
@@ -281,5 +296,54 @@ public class DevDataSeeder implements ApplicationRunner {
                 EnrollmentStatus.PENDING_APPROVAL, now.minus(1, ChronoUnit.DAYS), null);
         enrollmentService.seedEnrollment(salsaAdvanced, students.get(5), DanceRole.LEAD,
                 EnrollmentStatus.PENDING_APPROVAL, now.minus(12, ChronoUnit.HOURS), null);
+
+        // courses[3] = "Bachata Beginners" (PARTNER, BEGINNER)
+        // Mix of CONFIRMED-with-paidAt and PENDING_PAYMENT so the Payments page has
+        // ≥5 of each status to demo Open / Completed tabs meaningfully.
+        Course bachataBeginners = courses.get(3);
+        enrollmentService.seedEnrollment(bachataBeginners, students.get(2), DanceRole.FOLLOW,
+                EnrollmentStatus.CONFIRMED, now.minus(6, ChronoUnit.DAYS), now.minus(4, ChronoUnit.DAYS));
+        enrollmentService.seedEnrollment(bachataBeginners, students.get(3), DanceRole.LEAD,
+                EnrollmentStatus.CONFIRMED, now.minus(5, ChronoUnit.DAYS), now.minus(3, ChronoUnit.DAYS));
+        enrollmentService.seedEnrollment(bachataBeginners, students.get(0), DanceRole.FOLLOW,
+                EnrollmentStatus.PENDING_PAYMENT, now.minus(4, ChronoUnit.DAYS), null);
+        enrollmentService.seedEnrollment(bachataBeginners, students.get(1), DanceRole.LEAD,
+                EnrollmentStatus.PENDING_PAYMENT, now.minus(1, ChronoUnit.DAYS), null);
+        enrollmentService.seedEnrollment(bachataBeginners, students.get(5), DanceRole.LEAD,
+                EnrollmentStatus.PENDING_PAYMENT, now.minus(6, ChronoUnit.HOURS), null);
+    }
+
+    private void seedEnrollmentsForOwner2(List<Course> courses, List<Student> students) {
+        if (courses.isEmpty() || students.isEmpty()) {
+            return;
+        }
+
+        Instant now = Instant.now();
+
+        // courses[0] = "Salsa Beginners" (PARTNER, BEGINNER, max 20)
+        Course salsaBeginners = courses.get(0);
+        enrollmentService.seedEnrollment(salsaBeginners, students.get(0), DanceRole.FOLLOW,
+                EnrollmentStatus.CONFIRMED, now.minus(9, ChronoUnit.DAYS), now.minus(7, ChronoUnit.DAYS));
+        enrollmentService.seedEnrollment(salsaBeginners, students.get(1), DanceRole.LEAD,
+                EnrollmentStatus.CONFIRMED, now.minus(8, ChronoUnit.DAYS), now.minus(6, ChronoUnit.DAYS));
+        enrollmentService.seedEnrollment(salsaBeginners, students.get(2), DanceRole.FOLLOW,
+                EnrollmentStatus.CONFIRMED, now.minus(7, ChronoUnit.DAYS), now.minus(5, ChronoUnit.DAYS));
+        enrollmentService.seedEnrollment(salsaBeginners, students.get(3), DanceRole.LEAD,
+                EnrollmentStatus.PENDING_PAYMENT, now.minus(5, ChronoUnit.DAYS), null);
+        enrollmentService.seedEnrollment(salsaBeginners, students.get(5), DanceRole.LEAD,
+                EnrollmentStatus.PENDING_PAYMENT, now.minus(3, ChronoUnit.DAYS), null);
+        enrollmentService.seedEnrollment(salsaBeginners, students.get(4), DanceRole.FOLLOW,
+                EnrollmentStatus.PENDING_PAYMENT, now.minus(2, ChronoUnit.DAYS), null);
+
+        // courses[1] = "Bachata Sensual" (PARTNER, ADVANCED, max 12) — for owner2
+        Course bachataSensual = courses.get(1);
+        enrollmentService.seedEnrollment(bachataSensual, students.get(4), DanceRole.FOLLOW,
+                EnrollmentStatus.CONFIRMED, now.minus(11, ChronoUnit.DAYS), now.minus(8, ChronoUnit.DAYS));
+        enrollmentService.seedEnrollment(bachataSensual, students.get(1), DanceRole.LEAD,
+                EnrollmentStatus.CONFIRMED, now.minus(10, ChronoUnit.DAYS), now.minus(6, ChronoUnit.DAYS));
+        enrollmentService.seedEnrollment(bachataSensual, students.get(0), DanceRole.FOLLOW,
+                EnrollmentStatus.PENDING_PAYMENT, now.minus(4, ChronoUnit.DAYS), null);
+        enrollmentService.seedEnrollment(bachataSensual, students.get(2), DanceRole.LEAD,
+                EnrollmentStatus.PENDING_PAYMENT, now.minus(1, ChronoUnit.DAYS), null);
     }
 }
