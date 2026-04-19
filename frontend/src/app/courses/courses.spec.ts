@@ -11,6 +11,7 @@ function makeCourse(overrides: Partial<CourseListItem> = {}): CourseListItem {
     title: 'Bachata Fundamentals',
     danceStyle: 'BACHATA',
     level: 'BEGINNER',
+    courseType: 'PARTNER',
     dayOfWeek: 'FRIDAY',
     startTime: '19:30:00',
     endTime: '20:45:00',
@@ -18,6 +19,8 @@ function makeCourse(overrides: Partial<CourseListItem> = {}): CourseListItem {
     startDate: '2026-05-15',
     endDate: '2026-07-03',
     enrolledStudents: 12,
+    leadCount: 5,
+    followCount: 7,
     maxParticipants: 20,
     price: 166.5,
     status: 'RUNNING',
@@ -113,6 +116,22 @@ describe('CoursesComponent', () => {
 
     const cells = Array.from(el.querySelectorAll('td')).map(td => td.textContent?.trim());
     expect(cells.some(c => c?.includes('12 / 20'))).toBe(true);
+  });
+
+  it('should show leads/follows sub-line for PARTNER courses', () => {
+    flushAllTabs({ running: [makeCourse({ courseType: 'PARTNER', leadCount: 5, followCount: 7 })] });
+
+    const cell = el.querySelector('td.mat-column-enrollment');
+    expect(cell?.querySelector('.ds-cell-primary')?.textContent?.trim()).toBe('12 / 20');
+    expect(cell?.querySelector('.ds-cell-secondary')?.textContent?.trim()).toBe('5L / 7F');
+  });
+
+  it('should NOT show leads/follows sub-line for SOLO courses', () => {
+    flushAllTabs({ running: [makeCourse({ courseType: 'SOLO', leadCount: 0, followCount: 0 })] });
+
+    const cell = el.querySelector('td.mat-column-enrollment');
+    expect(cell?.querySelector('.ds-cell-primary')?.textContent?.trim()).toBe('12 / 20');
+    expect(cell?.querySelector('.ds-cell-secondary')).toBeNull();
   });
 
   it('should leave enrollment blank for draft courses', () => {

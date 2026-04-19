@@ -9,6 +9,7 @@ export interface CourseListItem {
   title: string;
   danceStyle: DanceStyle;
   level: CourseLevel;
+  courseType: 'PARTNER' | 'SOLO';
   dayOfWeek: string;
   startTime: string;
   endTime: string;
@@ -16,6 +17,8 @@ export interface CourseListItem {
   startDate: string;
   endDate: string;
   enrolledStudents: number;
+  leadCount: number;
+  followCount: number;
   maxParticipants: number;
   price: number;
   status: string;

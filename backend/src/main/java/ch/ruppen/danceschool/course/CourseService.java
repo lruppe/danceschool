@@ -1,5 +1,8 @@
 package ch.ruppen.danceschool.course;
 
+import ch.ruppen.danceschool.enrollment.DanceRole;
+import ch.ruppen.danceschool.enrollment.EnrollmentRepository;
+import ch.ruppen.danceschool.enrollment.EnrollmentStatus;
 import ch.ruppen.danceschool.school.School;
 import ch.ruppen.danceschool.school.SchoolService;
 import ch.ruppen.danceschool.shared.error.DomainRuleViolationException;
@@ -13,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +26,12 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CourseService {
 
+    private static final List<EnrollmentStatus> COMMITTED_STATUSES = List.of(
+            EnrollmentStatus.PENDING_PAYMENT,
+            EnrollmentStatus.CONFIRMED);
+
     private final CourseRepository courseRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final SchoolService schoolService;
     private final Clock clock;
 
@@ -31,9 +40,36 @@ public class CourseService {
         School school = schoolService.findSchoolByMember(userId);
         List<Course> courses = fetchCourses(school.getId(), statusFilter);
         LocalDate today = LocalDate.now(clock);
+        Map<Long, RoleCounts> roleCounts = fetchRoleCounts(courses);
         return courses.stream()
-                .map(c -> toListDto(c, today))
+                .map(c -> toListDto(c, today, roleCounts.getOrDefault(c.getId(), RoleCounts.EMPTY)))
                 .toList();
+    }
+
+    private Map<Long, RoleCounts> fetchRoleCounts(List<Course> courses) {
+        List<Long> courseIds = courses.stream().map(Course::getId).toList();
+        if (courseIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Long, RoleCounts> result = new HashMap<>();
+        for (Object[] row : enrollmentRepository.countByRoleGroupedByCourse(courseIds, COMMITTED_STATUSES)) {
+            Long courseId = (Long) row[0];
+            DanceRole role = (DanceRole) row[1];
+            int count = ((Number) row[2]).intValue();
+            RoleCounts existing = result.getOrDefault(courseId, RoleCounts.EMPTY);
+            result.put(courseId, existing.plus(role, count));
+        }
+        return result;
+    }
+
+    private record RoleCounts(int leads, int follows) {
+        static final RoleCounts EMPTY = new RoleCounts(0, 0);
+
+        RoleCounts plus(DanceRole role, int count) {
+            if (role == DanceRole.LEAD) return new RoleCounts(leads + count, follows);
+            if (role == DanceRole.FOLLOW) return new RoleCounts(leads, follows + count);
+            return this;
+        }
     }
 
     @Transactional
@@ -207,12 +243,13 @@ public class CourseService {
         return startDate.plusWeeks((long) (numberOfSessions - 1) * intervalWeeks);
     }
 
-    private CourseListDto toListDto(Course course, LocalDate today) {
+    private CourseListDto toListDto(Course course, LocalDate today, RoleCounts roleCounts) {
         return new CourseListDto(
                 course.getId(),
                 course.getTitle(),
                 course.getDanceStyle(),
                 course.getLevel(),
+                course.getCourseType(),
                 course.getDayOfWeek(),
                 course.getStartTime(),
                 course.getEndTime(),
@@ -220,6 +257,8 @@ public class CourseService {
                 course.getStartDate(),
                 course.getEndDate(),
                 course.getEnrolledStudents(),
+                roleCounts.leads(),
+                roleCounts.follows(),
                 course.getMaxParticipants(),
                 course.getPrice(),
                 CourseStatusDerivation.deriveStatus(

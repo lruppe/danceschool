@@ -72,7 +72,10 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Enrollment</th>
             <td mat-cell *matCellDef="let course">
               @if (course.status !== 'DRAFT') {
-                {{ course.enrolledStudents }} / {{ course.maxParticipants }}
+                <div class="ds-cell-primary">{{ course.enrolledStudents }} / {{ course.maxParticipants }}</div>
+                @if (course.courseType === 'PARTNER') {
+                  <div class="ds-cell-secondary">{{ course.leadCount }}L / {{ course.followCount }}F</div>
+                }
               }
             </td>
           </ng-container>
