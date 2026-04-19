@@ -56,19 +56,7 @@ public class EnrollmentService {
         enrollment.setEnrolledAt(Instant.now(clock));
         enrollment.setEnrolledBy(enrolledBy);
 
-        EnrollmentStatus bookingStatus = resolveBookingStatus(course, student);
-        // PENDING_APPROVAL applicants queue for owner review — they don't reserve seats at enroll time,
-        // so capacity / role-balance only gate the committed (direct-pay) path. Approval re-checks capacity.
-        WaitlistDecision waitlist = (bookingStatus == EnrollmentStatus.PENDING_PAYMENT)
-                ? resolveWaitlist(course, dto.danceRole())
-                : null;
-        if (waitlist != null) {
-            enrollment.setStatus(EnrollmentStatus.WAITLISTED);
-            enrollment.setWaitlistReason(waitlist.reason());
-            enrollment.setWaitlistPosition(waitlist.position());
-        } else {
-            enrollment.setStatus(bookingStatus);
-        }
+        applyBookingDecision(enrollment);
 
         enrollmentRepository.save(enrollment);
         return new EnrollmentResponseDto(enrollment.getId(), enrollment.getStatus());
@@ -106,19 +94,9 @@ public class EnrollmentService {
         Course course = enrollment.getCourse();
         upsertStudentDanceLevel(enrollment.getStudent(), course.getDanceStyle(), course.getLevel());
 
-        // If the course filled up between application and approval, route to the waitlist.
-        long committedCount = enrollmentRepository.countByCourseIdAndStatusIn(
-                course.getId(), EnrollmentStatus.SEAT_HOLDING_STATI);
-        if (committedCount >= course.getMaxParticipants()) {
-            // Compute position BEFORE flipping to WAITLISTED so Hibernate's auto-flush
-            // doesn't count this enrollment against itself.
-            int position = nextPosition(course.getId(), enrollment.getDanceRole());
-            enrollment.setStatus(EnrollmentStatus.WAITLISTED);
-            enrollment.setWaitlistReason(WaitlistReason.CAPACITY);
-            enrollment.setWaitlistPosition(position);
-        } else {
-            enrollment.setStatus(EnrollmentStatus.PENDING_PAYMENT);
-        }
+        // Order matters: upsert first so the level gate now passes, then apply the same
+        // capacity + role-balance checks the direct-pay path runs.
+        applyBookingDecision(enrollment);
 
         return new EnrollmentResponseDto(enrollment.getId(), enrollment.getStatus());
     }
@@ -174,6 +152,23 @@ public class EnrollmentService {
         if (enrollmentRepository.existsByStudentIdAndCourseIdAndStatusNot(
                 studentId, courseId, EnrollmentStatus.REJECTED)) {
             throw new DomainRuleViolationException("Student is already enrolled in this course");
+        }
+    }
+
+    private void applyBookingDecision(Enrollment enrollment) {
+        Course course = enrollment.getCourse();
+        EnrollmentStatus bookingStatus = resolveBookingStatus(course, enrollment.getStudent());
+        // PENDING_APPROVAL doesn't reserve a seat, so skip capacity/role-balance until approval
+        // promotes it to a committed status.
+        WaitlistDecision waitlist = (bookingStatus == EnrollmentStatus.PENDING_PAYMENT)
+                ? resolveWaitlist(course, enrollment.getDanceRole())
+                : null;
+        if (waitlist != null) {
+            enrollment.setStatus(EnrollmentStatus.WAITLISTED);
+            enrollment.setWaitlistReason(waitlist.reason());
+            enrollment.setWaitlistPosition(waitlist.position());
+        } else {
+            enrollment.setStatus(bookingStatus);
         }
     }
 

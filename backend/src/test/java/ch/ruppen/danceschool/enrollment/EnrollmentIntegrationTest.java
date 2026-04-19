@@ -601,6 +601,55 @@ class EnrollmentIntegrationTest {
     }
 
     @Test
+    void approve_whenRoleImbalanceExceeded_routesToWaitlistWithImbalanceReason() throws Exception {
+        // Capacity well above demand, but role-balance threshold of 2: the approval path must apply
+        // the same imbalance check as the enroll-time path. Under-leveled LEAD applies first, then
+        // qualified LEADs fill the lead side; approving the applicant would push the lead/follow
+        // diff past the threshold.
+        Course advancedCourse = createCourse(school, "Salsa Advanced Imbalance", DanceStyle.SALSA,
+                CourseLevel.ADVANCED, CourseType.PARTNER, 10, 2);
+        entityManager.flush();
+
+        // Under-leveled LEAD applies → PENDING_APPROVAL, no seat reserved.
+        String pendingResponse = mockMvc.perform(post("/api/courses/{id}/enrollments", advancedCourse.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"studentId": %d, "danceRole": "LEAD"}
+                                """.formatted(student.getId()))
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("PENDING_APPROVAL"))
+                .andReturn().getResponse().getContentAsString();
+        Long pendingId = com.jayway.jsonpath.JsonPath.parse(pendingResponse).read("$.enrollmentId", Long.class);
+
+        // Two qualified LEADs sign up directly: 0→1 and 1→2, both within the +2 threshold vs zero FOLLOWs.
+        Student qualifiedLead1 = createStudent(school, "Q Lead 1", "qlead1@example.com", null);
+        addDanceLevel(qualifiedLead1, DanceStyle.SALSA, CourseLevel.ADVANCED);
+        Student qualifiedLead2 = createStudent(school, "Q Lead 2", "qlead2@example.com", null);
+        addDanceLevel(qualifiedLead2, DanceStyle.SALSA, CourseLevel.ADVANCED);
+        entityManager.flush();
+
+        enrollPartner(advancedCourse.getId(), qualifiedLead1.getId(), "LEAD", "PENDING_PAYMENT");
+        enrollPartner(advancedCourse.getId(), qualifiedLead2.getId(), "LEAD", "PENDING_PAYMENT");
+
+        // Approve: 2 LEADs vs 0 FOLLOWs, +1 would make diff = 3 > threshold 2 → ROLE_IMBALANCE.
+        mockMvc.perform(put("/api/enrollments/{id}/approve", pendingId)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("WAITLISTED"));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Enrollment updated = entityManager.find(Enrollment.class, pendingId);
+        org.junit.jupiter.api.Assertions.assertEquals(EnrollmentStatus.WAITLISTED, updated.getStatus());
+        org.junit.jupiter.api.Assertions.assertEquals(WaitlistReason.ROLE_IMBALANCE, updated.getWaitlistReason());
+        org.junit.jupiter.api.Assertions.assertEquals(1, updated.getWaitlistPosition());
+        // approvedAt is still set — approval decision is separate from slot outcome.
+        org.junit.jupiter.api.Assertions.assertNotNull(updated.getApprovedAt());
+    }
+
+    @Test
     void approve_toWaitlist_assignsPositionFifoPerRole_acrossEnrollAndApprovePaths() throws Exception {
         // Capacity 2 ADVANCED partner course: qualified students fill seats, under-leveled students
         // queue for approval. Interleave enroll-time waitlisting with approve-time routing to verify
