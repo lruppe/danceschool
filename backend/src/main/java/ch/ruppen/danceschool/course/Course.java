@@ -70,8 +70,6 @@ public class Course {
 
     private int maxParticipants;
 
-    private boolean roleBalancingEnabled;
-
     private Integer roleBalanceThreshold;
 
     @Enumerated(EnumType.STRING)

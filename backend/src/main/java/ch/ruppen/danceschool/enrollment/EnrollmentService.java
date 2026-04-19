@@ -184,7 +184,6 @@ public class EnrollmentService {
         }
 
         if (course.getCourseType() == CourseType.PARTNER
-                && course.isRoleBalancingEnabled()
                 && course.getRoleBalanceThreshold() != null
                 && role != null) {
             DanceRole other = (role == DanceRole.LEAD) ? DanceRole.FOLLOW : DanceRole.LEAD;

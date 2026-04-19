@@ -72,6 +72,10 @@ export class DevToolsComponent implements OnInit {
     return this.courseDetail()?.courseType === 'PARTNER';
   }
 
+  protected hasRoleBalancing(): boolean {
+    return this.isPartnerCourse() && this.courseDetail()?.roleBalanceThreshold != null;
+  }
+
   protected onFillCourse(): void {
     const courseId = this.selectedCourseId();
     if (!courseId) return;
@@ -161,9 +165,9 @@ export class DevToolsComponent implements OnInit {
   protected onCreateImbalance(): void {
     const courseId = this.selectedCourseId();
     const course = this.courseDetail();
-    if (!courseId || !course || course.courseType !== 'PARTNER') return;
+    if (!courseId || !course || course.courseType !== 'PARTNER' || course.roleBalanceThreshold == null) return;
 
-    const threshold = course.roleBalanceThreshold ?? 3;
+    const threshold = course.roleBalanceThreshold;
     const role = this.danceRole();
     const other = role === 'LEAD' ? 'FOLLOW' : 'LEAD';
 

@@ -6,7 +6,6 @@ import ch.ruppen.danceschool.schoolmember.MemberRole;
 import ch.ruppen.danceschool.schoolmember.SchoolMember;
 import ch.ruppen.danceschool.shared.security.AuthenticatedUser;
 import ch.ruppen.danceschool.user.AppUser;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -45,9 +44,6 @@ class CourseCrudIntegrationTest {
     @Autowired
     private EntityManager entityManager;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     private AppUser ownerA;
     private AppUser ownerB;
     private School schoolA;
@@ -78,7 +74,6 @@ class CourseCrudIntegrationTest {
                   "location": "Studio A",
                   "teachers": "Maria",
                   "maxParticipants": 15,
-                  "roleBalancingEnabled": false,
                   "priceModel": "FIXED_COURSE",
                   "price": 180.00
                 }
@@ -190,7 +185,7 @@ class CourseCrudIntegrationTest {
                     .andExpect(jsonPath("$.endTime").value("21:15:00"))
                     .andExpect(jsonPath("$.location").value("Studio A"))
                     .andExpect(jsonPath("$.maxParticipants").value(12))
-                    .andExpect(jsonPath("$.roleBalancingEnabled").value(false))
+                    .andExpect(jsonPath("$.roleBalanceThreshold").doesNotExist())
                     .andExpect(jsonPath("$.priceModel").value("FIXED_COURSE"))
                     .andExpect(jsonPath("$.price").value(310.00))
                     .andExpect(jsonPath("$.status").value("OPEN"))
@@ -294,24 +289,22 @@ class CourseCrudIntegrationTest {
         }
 
         @Test
-        void rejects_whenThresholdSetWithoutBalancingEnabled() throws Exception {
+        void rejects_whenRoleBalanceThresholdIsNegative() throws Exception {
             String json = validCourseJson()
-                    .replace("\"priceModel\"", "\"roleBalanceThreshold\": 3, \"priceModel\"");
+                    .replace("\"priceModel\"", "\"roleBalanceThreshold\": -1, \"priceModel\"");
 
             mockMvc.perform(post("/api/courses")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(json)
                             .with(authentication(authToken(ownerA))))
-                    .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.detail").value(
-                            "Role balance threshold requires role balancing to be enabled"));
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.fieldErrors.roleBalanceThreshold").exists());
         }
 
         @Test
-        void accepts_partnerCourseWithRoleBalancingEnabled() throws Exception {
+        void accepts_partnerCourseWithRoleBalanceThreshold() throws Exception {
             String json = validCourseJson()
-                    .replace("\"roleBalancingEnabled\": false",
-                            "\"roleBalancingEnabled\": true, \"roleBalanceThreshold\": 3");
+                    .replace("\"priceModel\"", "\"roleBalanceThreshold\": 3, \"priceModel\"");
 
             mockMvc.perform(post("/api/courses")
                             .contentType(MediaType.APPLICATION_JSON)

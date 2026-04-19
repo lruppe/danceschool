@@ -25,7 +25,6 @@ function makeCourseDetail(overrides: Partial<CourseDetail> = {}): CourseDetail {
     location: 'Studio A',
     teachers: null,
     maxParticipants: 20,
-    roleBalancingEnabled: true,
     roleBalanceThreshold: 2,
     priceModel: 'FIXED_COURSE',
     price: 166.5,

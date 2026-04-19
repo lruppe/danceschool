@@ -130,7 +130,6 @@ class EnrollmentListSqlBudgetTest {
         c.setLevel(CourseLevel.INTERMEDIATE);
         c.setCourseType(CourseType.PARTNER);
         c.setMaxParticipants(50);
-        c.setRoleBalancingEnabled(false);
         c.setStartDate(LocalDate.now().plusWeeks(2));
         c.setEndDate(LocalDate.now().plusWeeks(10));
         c.setLocation("Studio A");

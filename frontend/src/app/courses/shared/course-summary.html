@@ -127,9 +127,9 @@
       @if (d.courseType === 'PARTNER') {
         <div class="summary-field">
           <span class="summary-label">Role Balancing</span>
-          <span class="summary-value">{{ d.roleBalancingEnabled ? 'Enabled' : 'Disabled' }}</span>
+          <span class="summary-value">{{ d.roleBalanceThreshold !== null ? 'Enabled' : 'Disabled' }}</span>
         </div>
-        @if (d.roleBalancingEnabled && d.roleBalanceThreshold) {
+        @if (d.roleBalanceThreshold !== null) {
           <div class="summary-field">
             <span class="summary-label">Max Imbalance</span>
             <span class="summary-value">{{ d.roleBalanceThreshold }}</span>

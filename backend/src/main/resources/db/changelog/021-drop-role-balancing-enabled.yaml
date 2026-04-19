@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 021-drop-role-balancing-enabled
+      author: claude
+      changes:
+        - sql:
+            sql: >-
+              UPDATE course SET role_balance_threshold = 3
+              WHERE role_balancing_enabled = TRUE AND role_balance_threshold IS NULL
+        - dropColumn:
+            tableName: course
+            columnName: role_balancing_enabled

@@ -24,8 +24,7 @@ export interface CourseSummaryData {
   location: string;
   teachers?: string | null;
   maxParticipants: number;
-  roleBalancingEnabled: boolean;
-  roleBalanceThreshold?: number | null;
+  roleBalanceThreshold: number | null;
   priceModel: string;
   price: number;
 }

@@ -18,7 +18,6 @@ function makeSummaryData(overrides: Partial<CourseSummaryData> = {}): CourseSumm
     location: 'Studio A',
     teachers: null,
     maxParticipants: 20,
-    roleBalancingEnabled: true,
     roleBalanceThreshold: 2,
     priceModel: 'FIXED_COURSE',
     price: 166.5,
@@ -116,11 +115,23 @@ describe('CourseSummaryComponent', () => {
     expect(labels).not.toContain('Description');
   });
 
-  it('should show role balancing fields for partner courses', () => {
-    setup(makeSummaryData({ courseType: 'PARTNER', roleBalancingEnabled: true, roleBalanceThreshold: 3 }));
+  it('should show role balancing fields for partner courses with a threshold', () => {
+    setup(makeSummaryData({ courseType: 'PARTNER', roleBalanceThreshold: 3 }));
     const labels = Array.from(el.querySelectorAll('.summary-label')).map(e => e.textContent?.trim());
     expect(labels).toContain('Role Balancing');
     expect(labels).toContain('Max Imbalance');
+    const values = Array.from(el.querySelectorAll('.summary-value')).map(e => e.textContent?.trim());
+    expect(values).toContain('Enabled');
+    expect(values).toContain('3');
+  });
+
+  it('should show Role Balancing disabled (no Max Imbalance) for partner courses with null threshold', () => {
+    setup(makeSummaryData({ courseType: 'PARTNER', roleBalanceThreshold: null }));
+    const labels = Array.from(el.querySelectorAll('.summary-label')).map(e => e.textContent?.trim());
+    expect(labels).toContain('Role Balancing');
+    expect(labels).not.toContain('Max Imbalance');
+    const values = Array.from(el.querySelectorAll('.summary-value')).map(e => e.textContent?.trim());
+    expect(values).toContain('Disabled');
   });
 
   it('should hide role balancing fields for solo courses', () => {
