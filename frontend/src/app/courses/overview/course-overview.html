@@ -13,9 +13,14 @@
           </span>
         </div>
         @if (c.status === 'DRAFT') {
-          <button mat-flat-button class="publish-button" (click)="onPublish()" [disabled]="publishing()">
-            Publish
-          </button>
+          <div class="draft-actions">
+            <button mat-stroked-button class="delete-button" (click)="onDelete()" [disabled]="deleting() || publishing()">
+              Delete
+            </button>
+            <button mat-flat-button class="publish-button" (click)="onPublish()" [disabled]="publishing() || deleting()">
+              Publish
+            </button>
+          </div>
         }
       </div>
     </div>

@@ -83,4 +83,8 @@ export class CourseService {
   publishCourse(id: number): Observable<CourseDetail> {
     return this.http.post<CourseDetail>(`${environment.apiUrl}/api/courses/${id}/publish`, null);
   }
+
+  deleteCourse(id: number): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/api/courses/${id}`);
+  }
 }
