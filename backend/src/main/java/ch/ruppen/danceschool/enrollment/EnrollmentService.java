@@ -17,6 +17,8 @@ import ch.ruppen.danceschool.student.StudentDanceLevel;
 import ch.ruppen.danceschool.student.StudentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,11 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class EnrollmentService {
+
+    // Dedicated logger shared with BusinessLoggingAspect — auto-promote emits directly
+    // (self-invocation bypasses the aspect) but must land on the same logger so downstream
+    // filters treat both paths identically.
+    private static final Logger businessLog = LoggerFactory.getLogger("business");
 
     private final EnrollmentRepository enrollmentRepository;
     private final SchoolService schoolService;
@@ -267,7 +274,8 @@ public class EnrollmentService {
                 candidate.setWaitlistPosition(null);
                 // Matches the BusinessLoggingAspect output format; emitted directly because
                 // self-invocation bypasses the aspect.
-                log.info("BUSINESS | EnrollmentAutoPromoted | enrollmentId={}", candidate.getId());
+                businessLog.info("event=EnrollmentAutoPromoted enrollmentId={} status={}",
+                        candidate.getId(), EnrollmentStatus.PENDING_PAYMENT);
                 committed++;
                 anyPromoted = true;
                 if (committed >= course.getMaxParticipants()) {

@@ -5,17 +5,21 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.StringJoiner;
 
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-@Slf4j
 class BusinessLoggingAspect {
+
+    // Dedicated logger name — downstream filters/levels can target business events independently
+    // of the aspect's package, and log aggregators see a clean `logger=business` field.
+    private static final Logger log = LoggerFactory.getLogger("business");
 
     @AfterReturning(pointcut = "@annotation(op)", returning = "result")
     void logBusinessEvent(JoinPoint joinPoint, BusinessOperation op, Object result) {
@@ -24,12 +28,13 @@ class BusinessLoggingAspect {
         extractResultDetails(result, details);
 
         StringJoiner joiner = new StringJoiner(" ");
+        joiner.add("event=" + op.event());
         details.forEach((key, value) ->
                 joiner.add(value instanceof String
                         ? key + "=\"" + value + "\""
                         : key + "=" + value));
 
-        log.info("BUSINESS | {} | {}", op.event(), joiner);
+        log.info("{}", joiner);
     }
 
     private void extractArgumentDetails(JoinPoint joinPoint, Map<String, Object> details) {
@@ -66,9 +71,11 @@ class BusinessLoggingAspect {
             return;
         }
         extractAccessor(result, "id", details);
+        extractAccessor(result, "enrollmentId", details);
         extractAccessor(result, "name", details);
         extractAccessor(result, "title", details);
         extractAccessor(result, "role", details);
+        extractAccessor(result, "status", details);
         extractNestedId(result, "school", "schoolId", details);
         extractNestedId(result, "user", "userId", details);
     }
