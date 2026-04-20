@@ -20,6 +20,6 @@ export class PaymentService {
   private http = inject(HttpClient);
 
   getPayments(): Observable<Payment[]> {
-    return this.http.get<Payment[]>(`${environment.apiUrl}/api/me/payments`);
+    return this.http.get<Payment[]>(`${environment.apiUrl}/api/payments/me`);
   }
 }

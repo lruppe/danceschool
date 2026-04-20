@@ -82,7 +82,7 @@ class PaymentIntegrationTest {
                 EnrollmentStatus.CONFIRMED, t1, t2);
         entityManager.flush();
 
-        mockMvc.perform(get("/api/me/payments").with(authentication(authToken(owner))))
+        mockMvc.perform(get("/api/payments/me").with(authentication(authToken(owner))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 // Default order: billingDate DESC → paid (t2) before open (t1)
@@ -106,7 +106,7 @@ class PaymentIntegrationTest {
                 EnrollmentStatus.CONFIRMED, enrolled, paid);
         entityManager.flush();
 
-        mockMvc.perform(get("/api/me/payments").with(authentication(authToken(owner))))
+        mockMvc.perform(get("/api/payments/me").with(authentication(authToken(owner))))
                 .andExpect(status().isOk())
                 // First row (paid, sorted by billingDate=paid DESC)
                 .andExpect(jsonPath("$[0].billingDate").value(paid.toString()))
@@ -128,7 +128,7 @@ class PaymentIntegrationTest {
         Long openId = createEnrollment(course, s4, EnrollmentStatus.PENDING_PAYMENT, now, null);
         entityManager.flush();
 
-        mockMvc.perform(get("/api/me/payments").with(authentication(authToken(owner))))
+        mockMvc.perform(get("/api/payments/me").with(authentication(authToken(owner))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].enrollmentId").value(openId))
@@ -143,7 +143,7 @@ class PaymentIntegrationTest {
         Long id = createEnrollment(course, student, EnrollmentStatus.REJECTED, t.minusSeconds(60), t);
         entityManager.flush();
 
-        mockMvc.perform(get("/api/me/payments").with(authentication(authToken(owner))))
+        mockMvc.perform(get("/api/payments/me").with(authentication(authToken(owner))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].enrollmentId").value(id))
@@ -164,7 +164,7 @@ class PaymentIntegrationTest {
                 base.minus(1, ChronoUnit.DAYS), null);
         entityManager.flush();
 
-        mockMvc.perform(get("/api/me/payments").with(authentication(authToken(owner))))
+        mockMvc.perform(get("/api/payments/me").with(authentication(authToken(owner))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].enrollmentId").value(newest))
                 .andExpect(jsonPath("$[1].enrollmentId").value(middle))
@@ -181,12 +181,12 @@ class PaymentIntegrationTest {
         Long otherId = createEnrollment(otherCourse, otherStudent, EnrollmentStatus.PENDING_PAYMENT, now, null);
         entityManager.flush();
 
-        mockMvc.perform(get("/api/me/payments").with(authentication(authToken(owner))))
+        mockMvc.perform(get("/api/payments/me").with(authentication(authToken(owner))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].courseTitle").value("Bachata Beginners"));
 
-        mockMvc.perform(get("/api/me/payments").with(authentication(authToken(owner2))))
+        mockMvc.perform(get("/api/payments/me").with(authentication(authToken(owner2))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].enrollmentId").value(otherId))

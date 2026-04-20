@@ -91,11 +91,6 @@ public class StudentService {
     }
 
     @Transactional(readOnly = true)
-    public List<Student> findAllBySchool(School school) {
-        return studentRepository.findAllBySchoolId(school.getId());
-    }
-
-    @Transactional(readOnly = true)
     public boolean hasStudentsForSchool(Long userId) {
         School school = schoolService.findSchoolByMember(userId);
         return studentRepository.existsBySchoolId(school.getId());

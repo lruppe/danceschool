@@ -24,7 +24,6 @@ function makeCourse(overrides: Partial<CourseListItem> = {}): CourseListItem {
     maxParticipants: 20,
     price: 166.5,
     status: 'RUNNING',
-    completedSessions: 3,
     ...overrides,
   };
 }

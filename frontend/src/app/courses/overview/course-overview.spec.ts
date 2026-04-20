@@ -31,7 +31,6 @@ function makeCourseDetail(overrides: Partial<CourseDetail> = {}): CourseDetail {
     status: 'OPEN',
     publishedAt: null,
     enrolledStudents: 12,
-    completedSessions: 0,
     editTier: 'FULLY_EDITABLE',
     ...overrides,
   };

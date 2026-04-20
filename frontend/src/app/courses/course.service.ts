@@ -22,7 +22,6 @@ export interface CourseListItem {
   maxParticipants: number;
   price: number;
   status: string;
-  completedSessions: number;
 }
 
 export type CourseEditTier = 'FULLY_EDITABLE' | 'RESTRICTED' | 'READ_ONLY';
@@ -50,7 +49,6 @@ export interface CourseDetail {
   status: string;
   publishedAt: string | null;
   enrolledStudents: number;
-  completedSessions: number;
   editTier: CourseEditTier;
 }
 

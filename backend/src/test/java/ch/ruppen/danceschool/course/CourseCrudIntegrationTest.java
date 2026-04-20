@@ -197,8 +197,7 @@ class CourseCrudIntegrationTest {
                     .andExpect(jsonPath("$.priceModel").value("FIXED_COURSE"))
                     .andExpect(jsonPath("$.price").value(310.00))
                     .andExpect(jsonPath("$.status").value("OPEN"))
-                    .andExpect(jsonPath("$.enrolledStudents").value(0))
-                    .andExpect(jsonPath("$.completedSessions").value(0));
+                    .andExpect(jsonPath("$.enrolledStudents").value(0));
         }
 
         @Test

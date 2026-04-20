@@ -44,7 +44,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Proves /api/me/payments fires a constant number of SQL statements regardless of
+ * Proves /api/payments/me fires a constant number of SQL statements regardless of
  * payment count — the JPQL constructor expression projects scalar fields directly,
  * so no per-row lazy load is triggered.
  */
@@ -89,14 +89,14 @@ class PaymentListSqlBudgetTest {
         stats.setStatisticsEnabled(true);
         stats.clear();
 
-        mockMvc.perform(get("/api/me/payments")
+        mockMvc.perform(get("/api/payments/me")
                         .with(authentication(authToken(owner))))
                 .andExpect(status().isOk());
 
         // 1 query for school resolution + 1 for the payment list = 2.
         // Allow a small headroom for security/auth bookkeeping.
         assertThat(stats.getPrepareStatementCount())
-                .as("SQL budget for /api/me/payments with N=%d", n)
+                .as("SQL budget for /api/payments/me with N=%d", n)
                 .isLessThanOrEqualTo(3);
     }
 
