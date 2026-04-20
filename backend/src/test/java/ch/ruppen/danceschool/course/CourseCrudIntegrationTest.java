@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -258,6 +259,82 @@ class CourseCrudIntegrationTest {
     }
 
     @Nested
+    class Delete {
+
+        @Test
+        void deleteCourse_returns204_whenDraft() throws Exception {
+            Course course = createDraftCourse(schoolA, "Draft Course");
+            Long id = course.getId();
+            entityManager.flush();
+
+            mockMvc.perform(delete("/api/courses/{id}", id)
+                            .with(authentication(authToken(ownerA))))
+                    .andExpect(status().isNoContent());
+
+            entityManager.flush();
+            entityManager.clear();
+            mockMvc.perform(get("/api/courses/{id}", id)
+                            .with(authentication(authToken(ownerA))))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void deleteCourse_returns409_whenOpen() throws Exception {
+            // Published, startDate in future → OPEN
+            Course course = createPublishedCourse(schoolA, "Open Course",
+                    LocalDate.now().plusDays(30), LocalDate.now().minusDays(1));
+            entityManager.flush();
+
+            mockMvc.perform(delete("/api/courses/{id}", course.getId())
+                            .with(authentication(authToken(ownerA))))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.detail").value(
+                            "Course " + course.getId() + " cannot be deleted: only unpublished (DRAFT) courses can be deleted."));
+        }
+
+        @Test
+        void deleteCourse_returns409_whenRunning() throws Exception {
+            // Published, startDate in past, endDate in future → RUNNING
+            Course course = createPublishedCourse(schoolA, "Running Course",
+                    LocalDate.now().minusDays(7), LocalDate.now().minusDays(14));
+            entityManager.flush();
+
+            mockMvc.perform(delete("/api/courses/{id}", course.getId())
+                            .with(authentication(authToken(ownerA))))
+                    .andExpect(status().isConflict());
+        }
+
+        @Test
+        void deleteCourse_returns409_whenFinished() throws Exception {
+            // Published, endDate in past → FINISHED
+            Course course = createPublishedCourse(schoolA, "Finished Course",
+                    LocalDate.now().minusDays(90), LocalDate.now().minusDays(120));
+            entityManager.flush();
+
+            mockMvc.perform(delete("/api/courses/{id}", course.getId())
+                            .with(authentication(authToken(ownerA))))
+                    .andExpect(status().isConflict());
+        }
+
+        @Test
+        void deleteCourse_returns404_forOtherSchoolsCourse() throws Exception {
+            Course course = createDraftCourse(schoolB, "School B Draft");
+            entityManager.flush();
+
+            mockMvc.perform(delete("/api/courses/{id}", course.getId())
+                            .with(authentication(authToken(ownerA))))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        void deleteCourse_returns404_forNonExistentId() throws Exception {
+            mockMvc.perform(delete("/api/courses/{id}", 99999)
+                            .with(authentication(authToken(ownerA))))
+                    .andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
     class DomainRules {
 
         @Test
@@ -338,7 +415,14 @@ class CourseCrudIntegrationTest {
     }
 
     private Course createCourse(School school, String title) {
-        LocalDate startDate = LocalDate.now().plusDays(30);
+        return createPublishedCourse(school, title, LocalDate.now().plusDays(30), LocalDate.now());
+    }
+
+    private Course createDraftCourse(School school, String title) {
+        return createPublishedCourse(school, title, LocalDate.now().plusDays(30), null);
+    }
+
+    private Course createPublishedCourse(School school, String title, LocalDate startDate, LocalDate publishedAt) {
         Course course = new Course();
         course.setSchool(school);
         course.setTitle(title);
@@ -356,7 +440,7 @@ class CourseCrudIntegrationTest {
         course.setMaxParticipants(12);
         course.setPriceModel(PriceModel.FIXED_COURSE);
         course.setPrice(new BigDecimal("310.00"));
-        course.setPublishedAt(LocalDate.now());
+        course.setPublishedAt(publishedAt);
         entityManager.persist(course);
         return course;
     }
