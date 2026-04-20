@@ -17,7 +17,6 @@ import ch.ruppen.danceschool.student.StudentDanceLevel;
 import ch.ruppen.danceschool.student.StudentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,9 +38,6 @@ public class EnrollmentService {
     private final StudentService studentService;
     private final SchoolMemberService schoolMemberService;
     private final Clock clock;
-    // Self-reference via ObjectProvider so auto-promote calls go through the Spring proxy,
-    // which is required for @BusinessOperation to fire on each promotion.
-    private final ObjectProvider<EnrollmentService> selfProvider;
 
     @Transactional
     @BusinessOperation(event = "StudentEnrolled")
@@ -266,8 +262,12 @@ public class EnrollmentService {
         boolean anyPromoted = false;
         for (Enrollment candidate : candidates) {
             if (resolveWaitlist(course, candidate.getDanceRole()) == null) {
-                // Self-invocation through the proxy fires @BusinessOperation per promotion.
-                selfProvider.getObject().autoPromoteEnrollment(candidate.getId());
+                candidate.setStatus(EnrollmentStatus.PENDING_PAYMENT);
+                candidate.setWaitlistReason(null);
+                candidate.setWaitlistPosition(null);
+                // Matches the BusinessLoggingAspect output format; emitted directly because
+                // self-invocation bypasses the aspect.
+                log.info("BUSINESS | EnrollmentAutoPromoted | enrollmentId={}", candidate.getId());
                 committed++;
                 anyPromoted = true;
                 if (committed >= course.getMaxParticipants()) {
@@ -278,23 +278,6 @@ public class EnrollmentService {
         if (anyPromoted) {
             renumberWaitlistPositions(course);
         }
-    }
-
-    /**
-     * Internal — do not expose via controller. Public only so the Spring proxy can fire
-     * the {@link BusinessOperation} aspect on self-invocation; no school-scope check here
-     * because the caller ({@link #autoPromoteWaitlist}) has already resolved the enrollment
-     * from a tenant-scoped course.
-     */
-    @Transactional
-    @BusinessOperation(event = "EnrollmentAutoPromoted")
-    public EnrollmentResponseDto autoPromoteEnrollment(Long enrollmentId) {
-        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Enrollment", enrollmentId));
-        enrollment.setStatus(EnrollmentStatus.PENDING_PAYMENT);
-        enrollment.setWaitlistReason(null);
-        enrollment.setWaitlistPosition(null);
-        return new EnrollmentResponseDto(enrollment.getId(), enrollment.getStatus());
     }
 
     private void renumberWaitlistPositions(Course course) {

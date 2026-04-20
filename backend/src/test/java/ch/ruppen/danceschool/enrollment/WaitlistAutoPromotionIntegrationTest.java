@@ -74,12 +74,12 @@ class WaitlistAutoPromotionIntegrationTest {
 
         logAppender = new ListAppender<>();
         logAppender.start();
-        ((Logger) LoggerFactory.getLogger("ch.ruppen.danceschool.shared.logging.BusinessLoggingAspect")).addAppender(logAppender);
+        ((Logger) LoggerFactory.getLogger(EnrollmentService.class.getName())).addAppender(logAppender);
     }
 
     @AfterEach
     void tearDown() {
-        ((Logger) LoggerFactory.getLogger("ch.ruppen.danceschool.shared.logging.BusinessLoggingAspect")).detachAppender(logAppender);
+        ((Logger) LoggerFactory.getLogger(EnrollmentService.class.getName())).detachAppender(logAppender);
     }
 
     // --- Direct-pay path ---
