@@ -76,6 +76,21 @@ public class CourseService {
     }
 
     @Transactional
+    @BusinessOperation(event = "CourseDeleted")
+    public void deleteCourse(Long userId, Long courseId) {
+        School school = schoolService.findSchoolByMember(userId);
+        Course course = courseRepository.findByIdAndSchoolId(courseId, school.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
+
+        if (course.getPublishedAt() != null) {
+            throw new DomainRuleViolationException(
+                    "Course " + courseId + " cannot be deleted: only unpublished (DRAFT) courses can be deleted.");
+        }
+
+        courseRepository.delete(course);
+    }
+
+    @Transactional
     @BusinessOperation(event = "CoursePublished")
     public CourseDetailDto publishCourse(Long userId, Long courseId) {
         School school = schoolService.findSchoolByMember(userId);
