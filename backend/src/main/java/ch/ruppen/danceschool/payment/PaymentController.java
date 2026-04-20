@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/me/payments")
+@RequestMapping("/api/payments")
 @RequiredArgsConstructor
 public class PaymentController {
 
     private final PaymentService paymentService;
 
-    @GetMapping
-    public List<PaymentDto> list(@AuthenticationPrincipal AuthenticatedUser principal) {
+    @GetMapping("/me")
+    public List<PaymentDto> listMine(@AuthenticationPrincipal AuthenticatedUser principal) {
         return paymentService.listForCurrentUser(principal.userId());
     }
 }

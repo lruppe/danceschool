@@ -15,7 +15,6 @@ export interface CourseSummaryData {
   dayOfWeek: string;
   recurrenceType: string;
   numberOfSessions: number;
-  completedSessions?: number;
   status?: string;
   publishedAt?: string | null;
   endDate?: string | null;

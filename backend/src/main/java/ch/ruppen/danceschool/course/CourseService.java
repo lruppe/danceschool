@@ -261,9 +261,7 @@ public class CourseService {
                 course.getMaxParticipants(),
                 course.getPrice(),
                 CourseStatusDerivation.deriveStatus(
-                        course.getPublishedAt(), course.getStartDate(), course.getEndDate(), today),
-                CourseStatusDerivation.deriveCompletedSessions(
-                        course.getStartDate(), course.getDayOfWeek(), course.getNumberOfSessions(), today)
+                        course.getPublishedAt(), course.getStartDate(), course.getEndDate(), today)
         );
     }
 
@@ -296,8 +294,6 @@ public class CourseService {
                 status,
                 course.getPublishedAt(),
                 enrolledStudents,
-                CourseStatusDerivation.deriveCompletedSessions(
-                        course.getStartDate(), course.getDayOfWeek(), course.getNumberOfSessions(), today),
                 editTier
         );
     }

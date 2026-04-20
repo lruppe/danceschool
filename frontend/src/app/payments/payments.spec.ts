@@ -43,7 +43,7 @@ describe('PaymentsComponent', () => {
   });
 
   function flushPayments(payments: Payment[]): void {
-    httpTesting.expectOne(req => req.url.includes('/api/me/payments')).flush(payments);
+    httpTesting.expectOne(req => req.url.includes('/api/payments/me')).flush(payments);
   }
 
   it('shows loading state then renders the table when payments arrive', () => {
@@ -195,7 +195,7 @@ describe('PaymentsComponent', () => {
     markPaidReq.flush({ enrollmentId: 99, status: 'CONFIRMED' });
 
     // Refetch
-    httpTesting.expectOne(req => req.url.includes('/api/me/payments')).flush([]);
+    httpTesting.expectOne(req => req.url.includes('/api/payments/me')).flush([]);
   });
 
   it('Mark Paid error path shows snackbar and does not refetch', () => {
@@ -240,7 +240,7 @@ describe('PaymentsComponent', () => {
 
   it('shows error state when the payments request fails', () => {
     fixture.detectChanges();
-    httpTesting.expectOne(req => req.url.includes('/api/me/payments'))
+    httpTesting.expectOne(req => req.url.includes('/api/payments/me'))
       .flush({ detail: 'oops' }, { status: 500, statusText: 'Server Error' });
     fixture.detectChanges();
 

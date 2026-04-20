@@ -106,7 +106,6 @@ export class CourseOverviewComponent implements OnInit {
       dayOfWeek: formatDayFull(c.dayOfWeek),
       recurrenceType: c.recurrenceType,
       numberOfSessions: c.numberOfSessions,
-      completedSessions: c.completedSessions,
       status: c.status,
       publishedAt: formatDate(c.publishedAt ?? ''),
       endDate: formatDate(c.endDate),
