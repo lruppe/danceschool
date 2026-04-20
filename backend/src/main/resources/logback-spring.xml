@@ -1,18 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Adds schoolId/userId MDC keys (populated by TenantContextFilter) to every log line so log
-  aggregators can filter/group by tenant. Keys render empty for unauthenticated requests
-  (login, health, static resources) and for non-request threads (startup, shutdown).
+  Inherits Spring Boot's default logback config (pattern, colors, PID, thread, logger) and
+  only extends LOG_LEVEL_PATTERN to append [schoolId=… userId=…] from the MDC. Keys are
+  populated per-request by TenantContextFilter and render empty on non-request threads.
 -->
 <configuration>
-    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-
-    <property name="CONSOLE_LOG_PATTERN"
-              value="%clr(%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd'T'HH:mm:ss.SSSXXX}}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr([schoolId=%X{schoolId:-} userId=%X{userId:-}]){faint} %clr(${PID: }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
-
-    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
-
-    <root level="INFO">
-        <appender-ref ref="CONSOLE"/>
-    </root>
+    <property name="LOG_LEVEL_PATTERN" value="%5p [schoolId=%X{schoolId:-} userId=%X{userId:-}]"/>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
 </configuration>
