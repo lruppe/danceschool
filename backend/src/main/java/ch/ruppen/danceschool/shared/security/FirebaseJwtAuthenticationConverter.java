@@ -1,5 +1,6 @@
 package ch.ruppen.danceschool.shared.security;
 
+import ch.ruppen.danceschool.schoolmember.SchoolMemberService;
 import ch.ruppen.danceschool.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class FirebaseJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     private final UserService userService;
+    private final SchoolMemberService schoolMemberService;
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
@@ -22,7 +24,8 @@ public class FirebaseJwtAuthenticationConverter implements Converter<Jwt, Abstra
         String name = jwt.getClaimAsString("name");
 
         var appUser = userService.findOrCreateByFirebaseUid(firebaseUid, email, name);
-        var principal = new AuthenticatedUser(appUser.getId(), appUser.getEmail());
+        Long schoolId = schoolMemberService.findSchoolIdByUserId(appUser.getId()).orElse(null);
+        var principal = new AuthenticatedUser(appUser.getId(), appUser.getEmail(), schoolId);
 
         var token = new JwtAuthenticationToken(jwt, AuthorityUtils.createAuthorityList("ROLE_USER"));
         return new FirebaseAuthenticationToken(principal, jwt, token.getAuthorities());

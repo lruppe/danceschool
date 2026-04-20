@@ -74,12 +74,12 @@ class WaitlistAutoPromotionIntegrationTest {
 
         logAppender = new ListAppender<>();
         logAppender.start();
-        ((Logger) LoggerFactory.getLogger(EnrollmentService.class.getName())).addAppender(logAppender);
+        ((Logger) LoggerFactory.getLogger("business")).addAppender(logAppender);
     }
 
     @AfterEach
     void tearDown() {
-        ((Logger) LoggerFactory.getLogger(EnrollmentService.class.getName())).detachAppender(logAppender);
+        ((Logger) LoggerFactory.getLogger("business")).detachAppender(logAppender);
     }
 
     // --- Direct-pay path ---
@@ -424,9 +424,9 @@ class WaitlistAutoPromotionIntegrationTest {
     private void assertBusinessEventFired(String event, int expectedCount) {
         long count = logAppender.list.stream()
                 .map(ILoggingEvent::getFormattedMessage)
-                .filter(m -> m.startsWith("BUSINESS | " + event + " |"))
+                .filter(m -> m.startsWith("event=" + event + " ") || m.equals("event=" + event))
                 .count();
-        assertThat(count).as("count of '%s' BUSINESS logs", event).isEqualTo(expectedCount);
+        assertThat(count).as("count of '%s' business logs", event).isEqualTo(expectedCount);
     }
 
     private Course createCourse(String title, CourseType type, int maxParticipants, Integer threshold) {
@@ -535,7 +535,7 @@ class WaitlistAutoPromotionIntegrationTest {
     }
 
     private UsernamePasswordAuthenticationToken authToken(AppUser user) {
-        AuthenticatedUser principal = new AuthenticatedUser(user.getId(), user.getEmail());
+        AuthenticatedUser principal = new AuthenticatedUser(user.getId(), user.getEmail(), null);
         return new UsernamePasswordAuthenticationToken(
                 principal, null, AuthorityUtils.createAuthorityList("ROLE_USER"));
     }

@@ -25,13 +25,13 @@ class BusinessLoggingAspectTest {
     void setUp() {
         logAppender = new ListAppender<>();
         logAppender.start();
-        Logger logger = (Logger) LoggerFactory.getLogger(BusinessLoggingAspect.class);
+        Logger logger = (Logger) LoggerFactory.getLogger("business");
         logger.addAppender(logAppender);
     }
 
     @AfterEach
     void tearDown() {
-        Logger logger = (Logger) LoggerFactory.getLogger(BusinessLoggingAspect.class);
+        Logger logger = (Logger) LoggerFactory.getLogger("business");
         logger.detachAppender(logAppender);
     }
 
@@ -44,7 +44,7 @@ class BusinessLoggingAspectTest {
 
         aspect.logBusinessEvent(joinPoint, op, null);
 
-        assertLogContains("BUSINESS | UserOnboarded | userId=3 email=\"leon@test.com\"");
+        assertLogContains("event=UserOnboarded userId=3 email=\"leon@test.com\"");
     }
 
     @Test
@@ -56,7 +56,7 @@ class BusinessLoggingAspectTest {
 
         aspect.logBusinessEvent(joinPoint, op, 12L);
 
-        assertLogContains("BUSINESS | CourseCreated | userId=3 title=\"Bachata Beginners\" resultId=12");
+        assertLogContains("event=CourseCreated userId=3 title=\"Bachata Beginners\" resultId=12");
     }
 
     @Test
@@ -68,7 +68,7 @@ class BusinessLoggingAspectTest {
 
         aspect.logBusinessEvent(joinPoint, op, new SampleResult(5L, "Tanzwerk"));
 
-        assertLogContains("BUSINESS | SchoolCreated | userId=3 id=5 name=\"Tanzwerk\"");
+        assertLogContains("event=SchoolCreated userId=3 id=5 name=\"Tanzwerk\"");
     }
 
     @Test
@@ -88,7 +88,7 @@ class BusinessLoggingAspectTest {
         aspect.logBusinessEvent(joinPoint, op, result);
 
         String logLine = lastLogMessage();
-        assertThat(logLine).contains("BUSINESS | MembershipCreated");
+        assertThat(logLine).contains("event=MembershipCreated");
         assertThat(logLine).contains("role=\"OWNER\"");
         assertThat(logLine).contains("schoolId=5");
         assertThat(logLine).contains("userId=7");
@@ -118,7 +118,22 @@ class BusinessLoggingAspectTest {
 
         aspect.logBusinessEvent(joinPoint, op, null);
 
-        assertLogContains("BUSINESS | TestEvent | userId=3");
+        assertLogContains("event=TestEvent userId=3");
+    }
+
+    @Test
+    void logsStatusFieldFromResult() {
+        JoinPoint joinPoint = mockJoinPoint(
+                new String[]{"userId"},
+                new Object[]{3L});
+        BusinessOperation op = mockOperation("StudentEnrolled");
+
+        aspect.logBusinessEvent(joinPoint, op, new SampleEnrollmentResult(42L, "WAITLISTED"));
+
+        String logLine = lastLogMessage();
+        assertThat(logLine).contains("event=StudentEnrolled");
+        assertThat(logLine).contains("enrollmentId=42");
+        assertThat(logLine).contains("status=\"WAITLISTED\"");
     }
 
     // --- helpers ---
@@ -155,6 +170,8 @@ class BusinessLoggingAspectTest {
     record SampleResult(Long id, String name) {}
 
     record SampleDetailResult(Long id, String title) {}
+
+    record SampleEnrollmentResult(Long enrollmentId, String status) {}
 
     static class SampleParent {
         private final Long id;
