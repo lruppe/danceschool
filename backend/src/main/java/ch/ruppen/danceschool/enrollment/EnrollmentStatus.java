@@ -15,4 +15,13 @@ public enum EnrollmentStatus {
      * PENDING_APPROVAL does not reserve a seat until approved; WAITLISTED / REJECTED never do.
      */
     public static final List<EnrollmentStatus> SEAT_HOLDING_STATI = List.of(PENDING_PAYMENT, CONFIRMED);
+
+    /**
+     * Enrollments whose lifecycle is still live — anything except REJECTED. Used by
+     * {@code CourseEditPolicy} to decide whether a published course is edit-restricted: a
+     * student who applied or waitlisted signed up against the course's published contract,
+     * so changing locked fields under them must be rejected.
+     */
+    public static final List<EnrollmentStatus> NON_TERMINAL_STATI =
+            List.of(PENDING_APPROVAL, PENDING_PAYMENT, CONFIRMED, WAITLISTED);
 }

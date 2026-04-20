@@ -89,6 +89,89 @@ describe('CourseFormService.toDto', () => {
   });
 });
 
+describe('CourseFormService.isFieldLocked (edit-tier signal)', () => {
+  let service: CourseFormService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [CourseFormService] });
+    service = TestBed.inject(CourseFormService);
+  });
+
+  function populateWith(editTier: string | undefined): void {
+    service.populate({
+      title: 'T',
+      danceStyle: 'BACHATA',
+      level: 'BEGINNER',
+      courseType: 'PARTNER',
+      description: '',
+      startDate: '2030-01-01',
+      recurrenceType: 'WEEKLY',
+      numberOfSessions: 8,
+      startTime: '19:30',
+      endTime: '20:45',
+      location: 'Studio A',
+      teachers: '',
+      maxParticipants: 20,
+      roleBalanceThreshold: null,
+      priceModel: 'FIXED_COURSE',
+      price: 100,
+      editTier,
+    });
+  }
+
+  it('FULLY_EDITABLE tier: no field is locked', () => {
+    populateWith('FULLY_EDITABLE');
+    expect(service.isFieldLocked('title')).toBe(false);
+    expect(service.isFieldLocked('danceStyle')).toBe(false);
+    expect(service.isFieldLocked('price')).toBe(false);
+    expect(service.isFieldLocked('startTime')).toBe(false);
+  });
+
+  it('RESTRICTED tier: locks the locked-field list, leaves cosmetic fields editable', () => {
+    populateWith('RESTRICTED');
+    expect(service.isFieldLocked('courseType')).toBe(true);
+    expect(service.isFieldLocked('price')).toBe(true);
+    expect(service.isFieldLocked('danceStyle')).toBe(true);
+    expect(service.isFieldLocked('startDate')).toBe(true);
+    expect(service.isFieldLocked('numberOfSessions')).toBe(true);
+
+    expect(service.isFieldLocked('title')).toBe(false);
+    expect(service.isFieldLocked('description')).toBe(false);
+    expect(service.isFieldLocked('teachers')).toBe(false);
+    expect(service.isFieldLocked('location')).toBe(false);
+    expect(service.isFieldLocked('maxParticipants')).toBe(false);
+    expect(service.isFieldLocked('roleBalanceThreshold')).toBe(false);
+  });
+
+  it('READ_ONLY tier: every field is locked', () => {
+    populateWith('READ_ONLY');
+    expect(service.isFieldLocked('title')).toBe(true);
+    expect(service.isFieldLocked('maxParticipants')).toBe(true);
+    expect(service.isFieldLocked('danceStyle')).toBe(true);
+  });
+
+  it('missing editTier defaults to FULLY_EDITABLE', () => {
+    populateWith(undefined);
+    expect(service.isFieldLocked('danceStyle')).toBe(false);
+  });
+
+  it('RESTRICTED tier disables the locked form controls', () => {
+    populateWith('RESTRICTED');
+    expect(service.form.controls.details.controls.danceStyle.disabled).toBe(true);
+    expect(service.form.controls.pricing.controls.price.disabled).toBe(true);
+    expect(service.form.controls.schedule.controls.startTime.disabled).toBe(true);
+    expect(service.form.controls.details.controls.title.disabled).toBe(false);
+    expect(service.form.controls.schedule.controls.location.disabled).toBe(false);
+  });
+
+  it('READ_ONLY tier disables every form control', () => {
+    populateWith('READ_ONLY');
+    expect(service.form.controls.details.controls.title.disabled).toBe(true);
+    expect(service.form.controls.schedule.controls.location.disabled).toBe(true);
+    expect(service.form.controls.registration.controls.maxParticipants.disabled).toBe(true);
+  });
+});
+
 describe('CourseFormService role-balancing toggle', () => {
   let service: CourseFormService;
 
