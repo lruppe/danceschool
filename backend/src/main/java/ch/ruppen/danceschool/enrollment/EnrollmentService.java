@@ -17,11 +17,13 @@ import ch.ruppen.danceschool.student.StudentDanceLevel;
 import ch.ruppen.danceschool.student.StudentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +39,9 @@ public class EnrollmentService {
     private final StudentService studentService;
     private final SchoolMemberService schoolMemberService;
     private final Clock clock;
+    // Self-reference via ObjectProvider so auto-promote calls go through the Spring proxy,
+    // which is required for @BusinessOperation to fire on each promotion.
+    private final ObjectProvider<EnrollmentService> selfProvider;
 
     @Transactional
     @BusinessOperation(event = "StudentEnrolled")
@@ -61,6 +66,10 @@ public class EnrollmentService {
         applyBookingDecision(enrollment);
 
         enrollmentRepository.save(enrollment);
+
+        if (enrollment.getStatus() == EnrollmentStatus.PENDING_PAYMENT) {
+            autoPromoteWaitlist(course);
+        }
         return new EnrollmentResponseDto(enrollment.getId(), enrollment.getStatus());
     }
 
@@ -100,6 +109,9 @@ public class EnrollmentService {
         // capacity + role-balance checks the direct-pay path runs.
         applyBookingDecision(enrollment);
 
+        if (enrollment.getStatus() == EnrollmentStatus.PENDING_PAYMENT) {
+            autoPromoteWaitlist(course);
+        }
         return new EnrollmentResponseDto(enrollment.getId(), enrollment.getStatus());
     }
 
@@ -233,6 +245,73 @@ public class EnrollmentService {
         }
 
         return null;
+    }
+
+    /**
+     * Re-evaluates role-imbalance waitlist after a seat-holding enrollment lands.
+     * Short-circuits when the course is full; capacity-waitlisted entries can only
+     * exist in that state, so they are never touched by this flow.
+     */
+    private void autoPromoteWaitlist(Course course) {
+        long committed = enrollmentRepository.countByCourseIdAndStatusIn(
+                course.getId(), EnrollmentStatus.SEAT_HOLDING_STATI);
+        if (committed >= course.getMaxParticipants()) {
+            return;
+        }
+
+        List<Enrollment> candidates = enrollmentRepository
+                .findByCourseIdAndStatusOrderByWaitlistPositionAsc(
+                        course.getId(), EnrollmentStatus.WAITLISTED);
+
+        boolean anyPromoted = false;
+        for (Enrollment candidate : candidates) {
+            if (resolveWaitlist(course, candidate.getDanceRole()) == null) {
+                // Self-invocation through the proxy fires @BusinessOperation per promotion.
+                selfProvider.getObject().autoPromoteEnrollment(candidate.getId());
+                committed++;
+                anyPromoted = true;
+                if (committed >= course.getMaxParticipants()) {
+                    break;
+                }
+            }
+        }
+        if (anyPromoted) {
+            renumberWaitlistPositions(course);
+        }
+    }
+
+    /**
+     * Internal — do not expose via controller. Public only so the Spring proxy can fire
+     * the {@link BusinessOperation} aspect on self-invocation; no school-scope check here
+     * because the caller ({@link #autoPromoteWaitlist}) has already resolved the enrollment
+     * from a tenant-scoped course.
+     */
+    @Transactional
+    @BusinessOperation(event = "EnrollmentAutoPromoted")
+    public EnrollmentResponseDto autoPromoteEnrollment(Long enrollmentId) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Enrollment", enrollmentId));
+        enrollment.setStatus(EnrollmentStatus.PENDING_PAYMENT);
+        enrollment.setWaitlistReason(null);
+        enrollment.setWaitlistPosition(null);
+        return new EnrollmentResponseDto(enrollment.getId(), enrollment.getStatus());
+    }
+
+    private void renumberWaitlistPositions(Course course) {
+        List<Enrollment> remaining = enrollmentRepository
+                .findByCourseIdAndStatusOrderByWaitlistPositionAsc(
+                        course.getId(), EnrollmentStatus.WAITLISTED);
+
+        Map<DanceRole, List<Enrollment>> byRole = new HashMap<>();
+        for (Enrollment e : remaining) {
+            byRole.computeIfAbsent(e.getDanceRole(), k -> new ArrayList<>()).add(e);
+        }
+        for (List<Enrollment> entries : byRole.values()) {
+            int pos = 1;
+            for (Enrollment e : entries) {
+                e.setWaitlistPosition(pos++);
+            }
+        }
     }
 
     private int nextPosition(Long courseId, DanceRole role) {
