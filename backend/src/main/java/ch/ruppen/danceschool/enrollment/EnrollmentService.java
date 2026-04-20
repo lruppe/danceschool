@@ -167,6 +167,12 @@ public class EnrollmentService {
                 courseId, EnrollmentStatus.SEAT_HOLDING_STATI);
     }
 
+    @Transactional(readOnly = true)
+    public int countNonTerminalByCourse(Long courseId) {
+        return (int) enrollmentRepository.countByCourseIdAndStatusIn(
+                courseId, EnrollmentStatus.NON_TERMINAL_STATI);
+    }
+
     private Course loadCourseInSchool(Long courseId, School school) {
         return courseRepository.findByIdAndSchoolId(courseId, school.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
@@ -251,11 +257,19 @@ public class EnrollmentService {
     }
 
     /**
-     * Re-evaluates role-imbalance waitlist after a seat-holding enrollment lands.
-     * Short-circuits when the course is full; capacity-waitlisted entries can only
-     * exist in that state, so they are never touched by this flow.
+     * Re-evaluates the waitlist against current capacity and role-balance rules and promotes
+     * any entries that no longer violate them. Called after:
+     * <ul>
+     *   <li>a seat-holding enrollment lands (may free up role-imbalance waitlisted entries of
+     *       the opposite role)</li>
+     *   <li>a course's {@code maxParticipants} is raised (promotes capacity-waitlisted entries
+     *       in waitlist order until capacity is reached)</li>
+     *   <li>a course's {@code roleBalanceThreshold} changes (promotes role-imbalance
+     *       waitlisted entries that now fit the looser rule)</li>
+     * </ul>
+     * Short-circuits when the course is already at or over capacity.
      */
-    private void autoPromoteWaitlist(Course course) {
+    public void autoPromoteWaitlist(Course course) {
         long committed = enrollmentRepository.countByCourseIdAndStatusIn(
                 course.getId(), EnrollmentStatus.SEAT_HOLDING_STATI);
         if (committed >= course.getMaxParticipants()) {

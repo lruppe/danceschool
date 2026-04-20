@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { CourseFormService } from './course-form.service';
@@ -31,7 +32,7 @@ interface StepDef {
   imports: [
     ReactiveFormsModule, RouterLink,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatButtonModule, MatSlideToggleModule,
+    MatButtonModule, MatSlideToggleModule, MatTooltipModule,
     CourseSummaryComponent,
   ],
   providers: [CourseFormService],
@@ -158,6 +159,21 @@ export class CourseCreateComponent implements OnInit, OnDestroy {
 
   protected get roleBalancingEnabled(): boolean {
     return this.formService.roleBalancingEnabled;
+  }
+
+  protected isFieldLocked(field: string): boolean {
+    return this.formService.isFieldLocked(field);
+  }
+
+  protected lockTooltip(field: string): string {
+    if (!this.formService.isFieldLocked(field)) return '';
+    return this.formService.editTier() === 'READ_ONLY'
+      ? 'This course is no longer editable.'
+      : "Locked \u2014 students have already enrolled. This field can't be changed.";
+  }
+
+  protected get isReadOnly(): boolean {
+    return this.formService.editTier() === 'READ_ONLY';
   }
 
   protected onRoleBalancingToggle(enabled: boolean): void {

@@ -41,6 +41,15 @@ class GlobalExceptionHandler {
         return problem;
     }
 
+    @ExceptionHandler(CourseEditPolicyViolationException.class)
+    ProblemDetail handleCourseEditPolicyViolation(CourseEditPolicyViolationException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        problem.setTitle("Course Edit Not Allowed");
+        problem.setProperty("tier", ex.getTier());
+        problem.setProperty("rejectedFields", ex.getRejectedFields());
+        return problem;
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,

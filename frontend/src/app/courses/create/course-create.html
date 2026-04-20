@@ -4,6 +4,12 @@
   <h1 class="wizard-title">{{ isEditMode ? 'Edit Course' : 'Create New Course' }}</h1>
 </div>
 
+@if (isReadOnly) {
+  <div class="lock-banner" role="status">
+    This course is no longer editable.
+  </div>
+}
+
 <!-- Wizard Card -->
 <div class="wizard-card">
   <!-- Stepper -->
@@ -48,7 +54,8 @@
           </mat-form-field>
 
           <div class="form-row">
-            <mat-form-field class="half-width" appearance="outline">
+            <mat-form-field class="half-width" appearance="outline"
+                            [matTooltip]="lockTooltip('danceStyle')" matTooltipPosition="above">
               <mat-label>Dance Style</mat-label>
               <mat-select formControlName="danceStyle">
                 @for (style of danceStyles; track style.value) {
@@ -60,7 +67,8 @@
               }
             </mat-form-field>
 
-            <mat-form-field class="half-width" appearance="outline">
+            <mat-form-field class="half-width" appearance="outline"
+                            [matTooltip]="lockTooltip('level')" matTooltipPosition="above">
               <mat-label>Level</mat-label>
               <mat-select formControlName="level">
                 @for (level of levels; track level.value) {
@@ -74,7 +82,8 @@
           </div>
 
           <div class="form-row">
-            <mat-form-field class="half-width" appearance="outline">
+            <mat-form-field class="half-width" appearance="outline"
+                            [matTooltip]="lockTooltip('courseType')" matTooltipPosition="above">
               <mat-label>Course Type</mat-label>
               <mat-select formControlName="courseType">
                 @for (type of courseTypes; track type.value) {
@@ -99,7 +108,8 @@
         <!-- Schedule Step -->
         <div class="schedule-step" [formGroup]="scheduleGroup">
           <div class="form-row">
-            <mat-form-field class="half-width" appearance="outline">
+            <mat-form-field class="half-width" appearance="outline"
+                            [matTooltip]="lockTooltip('startDate')" matTooltipPosition="above">
               <mat-label>Start Date</mat-label>
               <input matInput type="date" formControlName="startDate" />
               @if (scheduleGroup.controls.startDate.hasError('required')) {
@@ -109,7 +119,8 @@
               }
             </mat-form-field>
 
-            <mat-form-field class="half-width" appearance="outline">
+            <mat-form-field class="half-width" appearance="outline"
+                            [matTooltip]="lockTooltip('recurrenceType')" matTooltipPosition="above">
               <mat-label>Recurrence</mat-label>
               <mat-select formControlName="recurrenceType">
                 @for (type of recurrenceTypes; track type.value) {
@@ -120,7 +131,8 @@
           </div>
 
           <div class="form-row sessions-row">
-            <mat-form-field class="third-width" appearance="outline">
+            <mat-form-field class="third-width" appearance="outline"
+                            [matTooltip]="lockTooltip('numberOfSessions')" matTooltipPosition="above">
               <mat-label>Number of Sessions</mat-label>
               <input matInput type="number" formControlName="numberOfSessions" min="1" />
               @if (scheduleGroup.controls.numberOfSessions.hasError('required')) {
@@ -142,7 +154,8 @@
           </div>
 
           <div class="form-row">
-            <mat-form-field class="half-width" appearance="outline">
+            <mat-form-field class="half-width" appearance="outline"
+                            [matTooltip]="lockTooltip('startTime')" matTooltipPosition="above">
               <mat-label>Start Time</mat-label>
               <input matInput type="time" formControlName="startTime" />
               @if (scheduleGroup.controls.startTime.hasError('required')) {
@@ -150,7 +163,8 @@
               }
             </mat-form-field>
 
-            <mat-form-field class="half-width" appearance="outline">
+            <mat-form-field class="half-width" appearance="outline"
+                            [matTooltip]="lockTooltip('endTime')" matTooltipPosition="above">
               <mat-label>End Time</mat-label>
               <input matInput type="time" formControlName="endTime" />
               @if (scheduleGroup.controls.endTime.hasError('required')) {
@@ -218,7 +232,8 @@
         <!-- Pricing Step -->
         <div class="pricing-step" [formGroup]="pricingGroup">
           <div class="form-row">
-            <mat-form-field class="half-width" appearance="outline">
+            <mat-form-field class="half-width" appearance="outline"
+                            [matTooltip]="lockTooltip('priceModel')" matTooltipPosition="above">
               <mat-label>Price Model</mat-label>
               <mat-select formControlName="priceModel">
                 @for (model of priceModels; track model.value) {
@@ -230,7 +245,8 @@
               }
             </mat-form-field>
 
-            <mat-form-field class="half-width" appearance="outline">
+            <mat-form-field class="half-width" appearance="outline"
+                            [matTooltip]="lockTooltip('price')" matTooltipPosition="above">
               <mat-label>Price (CHF)</mat-label>
               <input matInput type="number" formControlName="price" min="0" step="0.01" />
               @if (pricingGroup.controls.price.hasError('required')) {
@@ -261,7 +277,7 @@
     <span class="nav-spacer"></span>
     @if (currentStep() < steps.length - 1) {
       <button mat-flat-button (click)="next()" type="button">Next</button>
-    } @else {
+    } @else if (!isReadOnly) {
       <button mat-flat-button (click)="save()" type="button" [disabled]="saving()">
         @if (isEditMode) {
           Save Changes

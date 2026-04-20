@@ -25,6 +25,8 @@ export interface CourseListItem {
   completedSessions: number;
 }
 
+export type CourseEditTier = 'FULLY_EDITABLE' | 'RESTRICTED' | 'READ_ONLY';
+
 export interface CourseDetail {
   id: number;
   title: string;
@@ -49,6 +51,7 @@ export interface CourseDetail {
   publishedAt: string | null;
   enrolledStudents: number;
   completedSessions: number;
+  editTier: CourseEditTier;
 }
 
 @Injectable({ providedIn: 'root' })
