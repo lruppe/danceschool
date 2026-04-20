@@ -50,6 +50,7 @@ export class CourseOverviewComponent implements OnInit {
   protected course = signal<CourseDetail | null>(null);
   protected loading = signal(true);
   protected publishing = signal(false);
+  protected deleting = signal(false);
   protected enrollments = signal<EnrollmentListItem[]>([]);
   protected activeTabIndex = signal(0);
 
@@ -184,6 +185,25 @@ export class CourseOverviewComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.snackBar.open(extractErrorMessage(err, errorFallback), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
+      },
+    });
+  }
+
+  protected onDelete(): void {
+    const c = this.course();
+    if (!c || c.status !== 'DRAFT') return;
+    if (!confirm(`Delete "${c.title}"? This cannot be undone.`)) return;
+
+    this.deleting.set(true);
+    this.courseService.deleteCourse(c.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.snackBar.open('Course deleted', 'Close', { duration: 3000, panelClass: 'snackbar-success' });
+        this.router.navigate(['/app/courses']);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.deleting.set(false);
+        this.snackBar.open(extractErrorMessage(err, 'Failed to delete course'), 'Close', { duration: 5000, panelClass: 'snackbar-error' });
       },
     });
   }
