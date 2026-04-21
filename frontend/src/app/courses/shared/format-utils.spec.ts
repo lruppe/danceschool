@@ -109,8 +109,11 @@ describe('levelChipClass', () => {
     expect(levelChipClass('ADVANCED')).toBe('ds-chip-success');
   });
 
-  it('maps STARTER and null to default', () => {
-    expect(levelChipClass('STARTER')).toBe('ds-chip-default');
+  it('maps STARTER to warning', () => {
+    expect(levelChipClass('STARTER')).toBe('ds-chip-warning');
+  });
+
+  it('maps null to default', () => {
     expect(levelChipClass(null)).toBe('ds-chip-default');
   });
 });

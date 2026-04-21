@@ -231,30 +231,76 @@ describe('CourseOverviewComponent', () => {
 
       httpTesting.expectOne(req => req.url.includes('/api/courses/1/enrollments')).flush([]);
     });
-  });
 
-  describe('Open Payment tab', () => {
-    it('renders Mark Paid button for approved-then-pending-payment enrollments (approvedAt set)', () => {
+    it('shows "Approval Reason" as the last-column header', () => {
       fixture.detectChanges();
-      flushCourseWithEnrollments([
-        makeEnrollment({
-          id: 50, studentName: 'Paid Me', status: 'PENDING_PAYMENT',
-          approvedAt: '2026-04-15T12:00:00Z', paidAt: null,
-        }),
-      ]);
+      flushCourseWithEnrollments([makeEnrollment()]);
       fixture.detectChanges();
 
       const tabLinks = el.querySelectorAll('a[mat-tab-link]');
-      (tabLinks[3] as HTMLElement).click();
+      (tabLinks[2] as HTMLElement).click();
       fixture.detectChanges();
 
-      const row = el.querySelector('tr[mat-row]');
-      expect(row).toBeTruthy();
-      expect(row?.textContent).toContain('Paid Me');
+      const headers = Array.from(el.querySelectorAll('th[mat-header-cell]')).map(h => h.textContent?.trim());
+      expect(headers).toContain('Approval Reason');
+    });
 
-      const markPaidBtn = row?.querySelector('.mark-paid-button') as HTMLButtonElement;
+    it('uses ds-chip-warning for STARTER level', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([makeEnrollment({ studentDanceLevel: 'STARTER' })]);
+      fixture.detectChanges();
+
+      const tabLinks = el.querySelectorAll('a[mat-tab-link]');
+      (tabLinks[2] as HTMLElement).click();
+      fixture.detectChanges();
+
+      const levelChip = el.querySelector('tr[mat-row] .approve-cell .ds-chip');
+      expect(levelChip?.textContent?.trim()).toBe('Starter');
+      expect(levelChip?.classList.contains('ds-chip-warning')).toBe(true);
+    });
+  });
+
+  describe('Enrolled tab', () => {
+    it('lists CONFIRMED and PENDING_PAYMENT rows together', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([
+        makeEnrollment({ id: 1, studentName: 'Confirmed Student', status: 'CONFIRMED', paidAt: '2026-04-12T10:00:00Z' }),
+        makeEnrollment({ id: 2, studentName: 'Unpaid Student', status: 'PENDING_PAYMENT', approvedAt: '2026-04-15T12:00:00Z', paidAt: null }),
+      ]);
+      fixture.detectChanges();
+
+      // Enrolled tab is the default (index 0)
+      const rows = el.querySelectorAll('tr[mat-row]');
+      expect(rows.length).toBe(2);
+      expect(rows[0].textContent).toContain('Confirmed Student');
+      expect(rows[1].textContent).toContain('Unpaid Student');
+    });
+
+    it('shows paidAt date for CONFIRMED rows and Mark Paid button for PENDING_PAYMENT rows', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([
+        makeEnrollment({ id: 1, studentName: 'Confirmed Student', status: 'CONFIRMED', paidAt: '2026-04-12T10:00:00Z' }),
+        makeEnrollment({ id: 2, studentName: 'Unpaid Student', status: 'PENDING_PAYMENT', approvedAt: '2026-04-15T12:00:00Z', paidAt: null }),
+      ]);
+      fixture.detectChanges();
+
+      const rows = el.querySelectorAll('tr[mat-row]');
+      // Confirmed row has a date, no Mark Paid button
+      expect(rows[0].querySelector('.mark-paid-button')).toBeFalsy();
+      expect(rows[0].textContent).toContain('Apr');
+      // Pending payment row has a Mark Paid button
+      const markPaidBtn = rows[1].querySelector('.mark-paid-button') as HTMLButtonElement;
       expect(markPaidBtn).toBeTruthy();
       expect(markPaidBtn.textContent?.trim()).toBe('Mark Paid');
+    });
+
+    it('shows "Paid" as the last-column header', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([makeEnrollment({ status: 'CONFIRMED' })]);
+      fixture.detectChanges();
+
+      const headers = Array.from(el.querySelectorAll('th[mat-header-cell]')).map(h => h.textContent?.trim());
+      expect(headers).toContain('Paid');
     });
 
     it('calls markPaid endpoint and refreshes list when Mark Paid clicked', () => {
@@ -262,10 +308,6 @@ describe('CourseOverviewComponent', () => {
       flushCourseWithEnrollments([
         makeEnrollment({ id: 99, status: 'PENDING_PAYMENT', approvedAt: '2026-04-15T12:00:00Z' }),
       ]);
-      fixture.detectChanges();
-
-      const tabLinks = el.querySelectorAll('a[mat-tab-link]');
-      (tabLinks[3] as HTMLElement).click();
       fixture.detectChanges();
 
       const markPaidBtn = el.querySelector('.mark-paid-button') as HTMLButtonElement;
@@ -277,6 +319,16 @@ describe('CourseOverviewComponent', () => {
       markPaidReq.flush({ enrollmentId: 99, status: 'CONFIRMED' });
 
       httpTesting.expectOne(req => req.url.includes('/api/courses/1/enrollments')).flush([]);
+    });
+
+    it('renders exactly three tabs (Enrolled, Waitlist, Approve)', () => {
+      fixture.detectChanges();
+      flushCourseWithEnrollments([]);
+      fixture.detectChanges();
+
+      const tabLabels = Array.from(el.querySelectorAll('a[mat-tab-link] .ds-tab-label'))
+        .map(e => e.textContent?.trim());
+      expect(tabLabels).toEqual(['Enrolled', 'Waitlist', 'Approve']);
     });
   });
 

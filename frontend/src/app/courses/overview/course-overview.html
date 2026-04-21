@@ -87,13 +87,21 @@
                   @switch (activeTabIndex()) {
                     @case (0) { Paid }
                     @case (1) { Waitlist }
-                    @case (2) { Level }
+                    @case (2) { Approval Reason }
                     @default { }
                   }
                 </th>
                 <td mat-cell *matCellDef="let row">
                   @switch (activeTabIndex()) {
-                    @case (0) { {{ formatEnrollmentDate(row.paidAt) }} }
+                    @case (0) {
+                      @if (row.status === 'PENDING_PAYMENT') {
+                        <button mat-stroked-button class="mark-paid-button" (click)="onMarkPaid(row.id)">
+                          Mark Paid
+                        </button>
+                      } @else {
+                        {{ formatEnrollmentDate(row.paidAt) }}
+                      }
+                    }
                     @case (1) {
                       <div class="waitlist-cell">
                         <span class="ds-chip ds-chip-default">#{{ row.waitlistPosition }}</span>
@@ -119,11 +127,6 @@
                         </div>
                       </div>
                     }
-                    @case (3) {
-                      <button mat-stroked-button class="mark-paid-button" (click)="onMarkPaid(row.id)">
-                        Mark Paid
-                      </button>
-                    }
                   }
                 </td>
               </ng-container>
@@ -135,7 +138,6 @@
                     @case (0) { No enrolled students yet }
                     @case (1) { No students on the waitlist }
                     @case (2) { No students pending approval }
-                    @case (3) { No students with open payments }
                   }
                 </td>
               </tr>

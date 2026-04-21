@@ -21,7 +21,7 @@ Seed content (courses, students, enrollments, statuses) is defined in [`backend/
 **How to test:** In **Dev Tools**, pick a course and click "Add Student". For PARTNER courses, pick Leader or Follower with the role dropdown first.
 
 **Expected:**
-- On a BEGINNER/STARTER course with spare capacity → new enrollment lands in **Open Payment** tab (status `PENDING_PAYMENT`)
+- On a BEGINNER/STARTER course with spare capacity → new enrollment lands in the **Enrolled** tab as `PENDING_PAYMENT` (shown with a "Mark Paid" button)
 - On an INTERMEDIATE+ course → new enrollment lands in **Approve** tab (status `PENDING_APPROVAL`) because Dev Tools' generated students have no dance levels
 - Role selector is harmless for SOLO courses (the value is ignored)
 - The Course Overview tab counts update
@@ -36,7 +36,7 @@ Seed content (courses, students, enrollments, statuses) is defined in [`backend/
 
 **Expected:**
 - Students are created and enrolled sequentially until capacity is reached (alternating LEAD/FOLLOW for PARTNER courses)
-- All enrollments land in **Open Payment** (`PENDING_PAYMENT`)
+- All enrollments land in the **Enrolled** tab as `PENDING_PAYMENT` (each row has a "Mark Paid" button)
 - Clicking "Fill Course" on an already-full course shows the "Course is already full" snack bar
 - Trying "Add Student" on a full course sends the new enrollment to **Waitlist** with reason `CAPACITY` (see waitlist flow below)
 
@@ -50,12 +50,12 @@ Seed content (courses, students, enrollments, statuses) is defined in [`backend/
 
 **How to test (bulk, via Dev Tools):** Select a course with pending payments and click "Simulate Payment" to confirm all at once.
 
-**How to test (individual, via Course Overview):** Open a course → **Open Payment** tab → click "Mark Paid" on a row.
+**How to test (individual, via Course Overview):** Open a course → **Enrolled** tab → click "Mark Paid" on a `PENDING_PAYMENT` row.
 
 **Expected:**
-- Payment confirmation moves rows from **Open Payment** (`PENDING_PAYMENT`) → **Enrolled** (`CONFIRMED`)
+- Payment confirmation flips the row from `PENDING_PAYMENT` to `CONFIRMED` in place on the **Enrolled** tab
 - The Course Overview tab counts update
-- The **Enrolled** tab shows a Paid date on the row; Open Payment entries without an `approvedAt` show a "Mark Paid" button
+- On the **Enrolled** tab, `CONFIRMED` rows show the Paid date; `PENDING_PAYMENT` rows show a "Mark Paid" button in the same column
 
 ---
 
@@ -73,7 +73,7 @@ Seed content (courses, students, enrollments, statuses) is defined in [`backend/
 1. Use the seeded Salsa Advanced course (already has 2 PENDING_APPROVAL rows), **or** go to Dev Tools and Add Student to any INTERMEDIATE+ course
 2. Open the course → **Approve** tab → use the ✔ (approve) or ✖ (reject) icon buttons
 3. On approve: the student's dance level is upserted (registered if missing, upgraded if lower), then the enrollment re-checks capacity:
-   - Space available → `PENDING_PAYMENT` (moves to Open Payment tab)
+   - Space available → `PENDING_PAYMENT` (moves to Enrolled tab, shown with "Mark Paid" button)
    - Course full → `WAITLISTED` with reason `CAPACITY` (moves to Waitlist tab)
 4. On reject: enrollment becomes `REJECTED` and disappears from the Approve tab
 
@@ -128,10 +128,9 @@ Seed content (courses, students, enrollments, statuses) is defined in [`backend/
 
 | # | Tab | Shows | Last-column content |
 |---|---|---|---|
-| 0 | **Enrolled** | `CONFIRMED` rows only | Paid date |
+| 0 | **Enrolled** | `CONFIRMED` + `PENDING_PAYMENT` rows | Paid date for `CONFIRMED`, "Mark Paid" button for `PENDING_PAYMENT` |
 | 1 | **Waitlist** | `WAITLISTED` rows | Position chip + reason chip (Capacity / Role imbalance) |
-| 2 | **Approve** | `PENDING_APPROVAL` rows | Level chip + approve/reject icon buttons |
-| 3 | **Open Payment** | `PENDING_PAYMENT` rows | Approved-on date, or "Mark Paid" button if never approved |
+| 2 | **Approve** | `PENDING_APPROVAL` rows | Approval-reason chip (the student's dance level, or "No level" if unset) + approve/reject icon buttons |
 
 - Every tab shows a count badge next to the label
 - PARTNER course rows show a role chip in the Role column; SOLO course rows show "—"
@@ -158,8 +157,8 @@ Seed content (courses, students, enrollments, statuses) is defined in [`backend/
 **How to test:**
 1. Dev Tools → pick "Bachata Beginners" (empty, PARTNER, BEGINNER) → add one LEAD and one FOLLOW
 2. Simulate Payment → both move to **Enrolled**
-3. Add one more student (any role) → new row in **Open Payment**
-4. Open Payment tab → click "Mark Paid" → row moves to **Enrolled**
+3. Add one more student (any role) → new `PENDING_PAYMENT` row appears on the **Enrolled** tab with a "Mark Paid" button
+4. Click "Mark Paid" on that row → it flips to `CONFIRMED` in place (the Paid date replaces the button)
 5. Fill Course → remaining seats fill up with `PENDING_PAYMENT` rows
 6. Add one more student → lands on **Waitlist** (Capacity)
 

@@ -39,11 +39,11 @@ export function statusChipClass(status: string): string {
 /** Map a dance level to its chip class. Null → neutral "No level" variant. */
 export function levelChipClass(level: string | null): string {
   switch (level) {
+    case 'STARTER': return 'ds-chip-warning';
     case 'BEGINNER': return 'ds-chip-info';
     case 'INTERMEDIATE': return 'ds-chip-primary';
     case 'ADVANCED': return 'ds-chip-success';
     case 'MASTERCLASS': return 'ds-chip-primary';
-    case 'STARTER':
     default: return 'ds-chip-default';
   }
 }
