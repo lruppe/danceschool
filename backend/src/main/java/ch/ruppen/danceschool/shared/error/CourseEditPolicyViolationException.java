@@ -2,7 +2,7 @@ package ch.ruppen.danceschool.shared.error;
 
 import java.util.List;
 
-public class CourseEditPolicyViolationException extends RuntimeException {
+public class CourseEditPolicyViolationException extends DomainRuleViolationException {
 
     private final String tier;
     private final List<String> rejectedFields;

@@ -95,11 +95,11 @@
 }
 
 .dance-level-style-select {
-  width: 240px;
+  width: var(--ds-size-form-select-wide);
 }
 
 .dance-level-select {
-  width: 200px;
+  width: var(--ds-size-form-select);
   margin-left: auto;
 }
 
