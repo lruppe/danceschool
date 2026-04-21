@@ -1,0 +1,110 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-6);
+}
+
+.detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-2);
+}
+
+.back-link {
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-primary);
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.detail-title {
+  font: var(--mat-sys-headline-medium);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+}
+
+.detail-card {
+  background: var(--mat-sys-surface);
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-card-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-4);
+}
+
+.detail-card-title {
+  font: var(--mat-sys-title-medium);
+  color: var(--mat-sys-on-surface);
+  margin: 0;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--ds-spacing-4);
+  margin: 0;
+}
+
+.contact-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-1);
+
+  dt {
+    font: var(--mat-sys-label-medium);
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  dd {
+    font: var(--mat-sys-body-large);
+    color: var(--mat-sys-on-surface);
+    margin: 0;
+  }
+}
+
+.dance-level-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-spacing-2);
+}
+
+.dance-level-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-spacing-4);
+  padding: var(--ds-spacing-3) 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.dance-level-style {
+  font: var(--mat-sys-body-large);
+  color: var(--mat-sys-on-surface);
+}
+
+.dance-level-empty {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--ds-spacing-24);
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-large);
+}

@@ -21,6 +21,10 @@ export const routes: Routes = [
       { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard').then(m => m.DashboardComponent) },
       { path: 'students', loadComponent: () => import('./students/students').then(m => m.StudentsComponent) },
       {
+        path: 'students/:id',
+        loadComponent: () => import('./students/detail/student-detail').then(m => m.StudentDetailComponent),
+      },
+      {
         path: 'my-school/edit',
         loadComponent: () => import('./my-school/edit/my-school-edit').then(m => m.MySchoolEditComponent),
         canDeactivate: [unsavedChangesGuard],
