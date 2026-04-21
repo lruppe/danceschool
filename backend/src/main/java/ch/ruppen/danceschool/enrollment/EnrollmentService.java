@@ -14,7 +14,7 @@ import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
 import ch.ruppen.danceschool.shared.logging.BusinessOperation;
 import ch.ruppen.danceschool.student.Student;
 import ch.ruppen.danceschool.student.StudentDanceLevel;
-import ch.ruppen.danceschool.student.StudentService;
+import ch.ruppen.danceschool.student.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -42,7 +42,7 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final SchoolService schoolService;
     private final CourseRepository courseRepository;
-    private final StudentService studentService;
+    private final StudentRepository studentRepository;
     private final SchoolMemberService schoolMemberService;
     private final Clock clock;
 
@@ -51,7 +51,8 @@ public class EnrollmentService {
     public EnrollmentResponseDto enrollStudent(Long userId, Long courseId, EnrollStudentDto dto) {
         School school = schoolService.findSchoolByMember(userId);
         Course course = loadCourseInSchool(courseId, school);
-        Student student = studentService.findStudentByIdAndSchool(dto.studentId(), school);
+        Student student = studentRepository.findByIdAndSchoolId(dto.studentId(), school.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Student", dto.studentId()));
 
         validateDanceRole(course, dto.danceRole());
         validateNoDuplicate(student.getId(), course.getId());

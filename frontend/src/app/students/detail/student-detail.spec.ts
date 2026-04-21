@@ -5,7 +5,7 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { vi } from 'vitest';
 import { StudentDetailComponent } from './student-detail';
-import { StudentDetail } from '../student.service';
+import { StudentDetail, UpdateDanceLevelsResult } from '../student.service';
 
 function makeStudent(overrides: Partial<StudentDetail> = {}): StudentDetail {
   return {
@@ -19,6 +19,10 @@ function makeStudent(overrides: Partial<StudentDetail> = {}): StudentDetail {
     ],
     ...overrides,
   };
+}
+
+function makeUpdateResult(student: StudentDetail, autoConfirmedCount = 0): UpdateDanceLevelsResult {
+  return { student, autoConfirmedCount };
 }
 
 describe('StudentDetailComponent', () => {
@@ -184,12 +188,12 @@ describe('StudentDetailComponent', () => {
         { danceStyle: 'BACHATA', level: 'BEGINNER' },
       ],
     });
-    req.flush(makeStudent({
+    req.flush(makeUpdateResult(makeStudent({
       danceLevels: [
         { danceStyle: 'SALSA', level: 'ADVANCED' },
         { danceStyle: 'BACHATA', level: 'BEGINNER' },
       ],
-    }));
+    })));
   });
 
   it('Save sends appended rows (add-only)', () => {
@@ -212,12 +216,12 @@ describe('StudentDetailComponent', () => {
         { danceStyle: 'KIZOMBA', level: 'STARTER' },
       ],
     });
-    req.flush(makeStudent({
+    req.flush(makeUpdateResult(makeStudent({
       danceLevels: [
         { danceStyle: 'SALSA', level: 'INTERMEDIATE' },
         { danceStyle: 'KIZOMBA', level: 'STARTER' },
       ],
-    }));
+    })));
   });
 
   it('Save sends the merged set (mixed edit + add)', () => {
@@ -245,13 +249,13 @@ describe('StudentDetailComponent', () => {
         { danceStyle: 'ZOUK', level: 'BEGINNER' },
       ],
     });
-    req.flush(makeStudent({
+    req.flush(makeUpdateResult(makeStudent({
       danceLevels: [
         { danceStyle: 'SALSA', level: 'INTERMEDIATE' },
         { danceStyle: 'BACHATA', level: 'INTERMEDIATE' },
         { danceStyle: 'ZOUK', level: 'BEGINNER' },
       ],
-    }));
+    })));
   });
 
   it('Add-level is disabled once all 7 styles are assigned', () => {
@@ -317,13 +321,54 @@ describe('StudentDetailComponent', () => {
 
     const req = httpTesting.expectOne(r => r.url.endsWith('/api/students/1/dance-levels'));
     // Server trims/normalizes to a different set — UI must reflect the response, not the staged edits.
-    req.flush(makeStudent({
+    req.flush(makeUpdateResult(makeStudent({
       danceLevels: [{ danceStyle: 'SALSA', level: 'MASTERCLASS' }],
-    }));
+    })));
     fixture.detectChanges();
 
     expect(drive(component).edits()).toEqual([{ danceStyle: 'SALSA', level: 'MASTERCLASS' }]);
     expect(drive(component).hasValidChanges()).toBe(false);
+  });
+
+  it('Save success with autoConfirmedCount=0 shows the plain "Saved." snackbar', () => {
+    setup();
+    flushStudent(makeStudent({
+      danceLevels: [{ danceStyle: 'SALSA', level: 'INTERMEDIATE' }],
+    }));
+    const snackOpen = vi.spyOn(TestBed.inject(MatSnackBar), 'open');
+
+    drive(component).onLevelChange(0, 'ADVANCED');
+    drive(component).onSave();
+
+    httpTesting.expectOne(r => r.url.endsWith('/api/students/1/dance-levels'))
+      .flush(makeUpdateResult(makeStudent({
+        danceLevels: [{ danceStyle: 'SALSA', level: 'ADVANCED' }],
+      }), 0));
+    fixture.detectChanges();
+
+    expect(snackOpen).toHaveBeenCalledWith('Saved.', 'Close', expect.objectContaining({ duration: 3000 }));
+  });
+
+  it('Save success with autoConfirmedCount>0 surfaces the count in the snackbar', () => {
+    setup();
+    flushStudent(makeStudent({
+      danceLevels: [{ danceStyle: 'SALSA', level: 'BEGINNER' }],
+    }));
+    const snackOpen = vi.spyOn(TestBed.inject(MatSnackBar), 'open');
+
+    drive(component).onLevelChange(0, 'ADVANCED');
+    drive(component).onSave();
+
+    httpTesting.expectOne(r => r.url.endsWith('/api/students/1/dance-levels'))
+      .flush(makeUpdateResult(makeStudent({
+        danceLevels: [{ danceStyle: 'SALSA', level: 'ADVANCED' }],
+      }), 2));
+    fixture.detectChanges();
+
+    expect(snackOpen).toHaveBeenCalledTimes(1);
+    const message = snackOpen.mock.calls[0][0] as string;
+    expect(message).toContain('2');
+    expect(message.toLowerCase()).toContain('auto-confirmed');
   });
 
   it('shows an error snackbar on save failure and keeps staged edits', () => {

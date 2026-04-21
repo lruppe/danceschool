@@ -29,6 +29,11 @@ export interface UpdateDanceLevelsDto {
   danceLevels: StudentDanceLevel[];
 }
 
+export interface UpdateDanceLevelsResult {
+  student: StudentDetail;
+  autoConfirmedCount: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class StudentService {
   private http = inject(HttpClient);
@@ -41,7 +46,7 @@ export class StudentService {
     return this.http.get<StudentDetail>(`${environment.apiUrl}/api/students/${id}`);
   }
 
-  updateDanceLevels(id: number, dto: UpdateDanceLevelsDto): Observable<StudentDetail> {
-    return this.http.put<StudentDetail>(`${environment.apiUrl}/api/students/${id}/dance-levels`, dto);
+  updateDanceLevels(id: number, dto: UpdateDanceLevelsDto): Observable<UpdateDanceLevelsResult> {
+    return this.http.put<UpdateDanceLevelsResult>(`${environment.apiUrl}/api/students/${id}/dance-levels`, dto);
   }
 }
