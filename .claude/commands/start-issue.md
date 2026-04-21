@@ -24,7 +24,9 @@ Implement the changes according to the plan (or directly for trivial issues). Fo
 
 ## Phase 4 — Visual Verification End to End
 
-**Always run this for frontend changes.** Skip only if the issue is purely backend with no UI impact.
+**Run this for non-trivial frontend changes.** Skip if the issue is purely backend with no UI impact, or if the frontend change is trivial (copy tweak, single-line style fix, etc.).
+
+Scope: visual correctness only — do not log in as a second owner to check tenant isolation (that belongs in backend tests).
 
 Multiple worktrees may run visual tests in parallel — using a random port avoids backend port conflicts.
 
