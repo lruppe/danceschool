@@ -22,7 +22,6 @@ public record CourseListDto(
         int followCount,
         int maxParticipants,
         BigDecimal price,
-        CourseLifecycleStatus status,
-        int completedSessions
+        CourseLifecycleStatus status
 ) {
 }

@@ -147,7 +147,7 @@ class StudentTenantIsolationTest {
     }
 
     private UsernamePasswordAuthenticationToken authToken(AppUser user) {
-        AuthenticatedUser principal = new AuthenticatedUser(user.getId(), user.getEmail());
+        AuthenticatedUser principal = new AuthenticatedUser(user.getId(), user.getEmail(), null);
         return new UsernamePasswordAuthenticationToken(
                 principal, null, AuthorityUtils.createAuthorityList("ROLE_USER"));
     }

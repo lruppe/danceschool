@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -29,6 +30,11 @@ public class StudentController {
                                     @AuthenticationPrincipal AuthenticatedUser principal) {
         Long id = studentService.createStudent(principal.userId(), dto);
         return Map.of("id", id);
+    }
+
+    @GetMapping
+    public List<StudentListDto> list(@AuthenticationPrincipal AuthenticatedUser principal) {
+        return studentService.listStudents(principal.userId());
     }
 
     @GetMapping("/{id}")

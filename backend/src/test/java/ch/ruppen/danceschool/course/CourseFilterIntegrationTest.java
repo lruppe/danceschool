@@ -136,12 +136,11 @@ class CourseFilterIntegrationTest {
     }
 
     @Test
-    void dtoIncludesStartDateAndCompletedSessions() throws Exception {
+    void dtoIncludesStartDate() throws Exception {
         mockMvc.perform(get("/api/courses/me?status=RUNNING")
                         .with(authentication(authToken(ownerA))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].startDate").exists())
-                .andExpect(jsonPath("$[0].completedSessions").isNumber());
+                .andExpect(jsonPath("$[0].startDate").exists());
     }
 
     private AppUser createUser(String email, String name, String firebaseUid) {
@@ -191,7 +190,7 @@ class CourseFilterIntegrationTest {
     }
 
     private UsernamePasswordAuthenticationToken authToken(AppUser user) {
-        AuthenticatedUser principal = new AuthenticatedUser(user.getId(), user.getEmail());
+        AuthenticatedUser principal = new AuthenticatedUser(user.getId(), user.getEmail(), null);
         return new UsernamePasswordAuthenticationToken(
                 principal, null, AuthorityUtils.createAuthorityList("ROLE_USER"));
     }

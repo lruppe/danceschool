@@ -1,5 +1,7 @@
 package ch.ruppen.danceschool.shared.security;
 
+import ch.ruppen.danceschool.schoolmember.SchoolMemberService;
+import ch.ruppen.danceschool.shared.logging.TenantContextFilter;
 import ch.ruppen.danceschool.user.AppUser;
 import ch.ruppen.danceschool.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
@@ -42,6 +45,8 @@ public class DevSecurityConfig {
 
     private final AppSecurityProperties securityProperties;
     private final UserService userService;
+    private final SchoolMemberService schoolMemberService;
+    private final TenantContextFilter tenantContextFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -52,8 +57,8 @@ public class DevSecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/api/**").authenticated()
-                        .anyRequest().permitAll())
+                        .requestMatchers("/error").permitAll()
+                        .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(devAuthSuccessHandler())
@@ -61,7 +66,8 @@ public class DevSecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler((req, res, auth) -> res.setStatus(HttpServletResponse.SC_OK))
-                        .invalidateHttpSession(true));
+                        .invalidateHttpSession(true))
+                .addFilterAfter(tenantContextFilter, AuthorizationFilter.class);
 
         return http.build();
     }
@@ -92,7 +98,8 @@ public class DevSecurityConfig {
             AppUser appUser = userService.findByEmail(email)
                     .orElseThrow(() -> new IllegalStateException("Dev user not found: " + email));
 
-            var principal = new AuthenticatedUser(appUser.getId(), appUser.getEmail());
+            Long schoolId = schoolMemberService.findSchoolIdByUserId(appUser.getId()).orElse(null);
+            var principal = new AuthenticatedUser(appUser.getId(), appUser.getEmail(), schoolId);
             var devToken = new DevAuthenticationToken(
                     principal, AuthorityUtils.createAuthorityList("ROLE_USER"));
 

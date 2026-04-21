@@ -20,8 +20,7 @@ class ControllerLoggingAspect {
         String className = joinPoint.getTarget().getClass().getSimpleName();
         String methodName = joinPoint.getSignature().getName();
 
-        log.info("Entering {}.{}", className, methodName);
-        log.debug("Arguments: {}", Arrays.toString(joinPoint.getArgs()));
+        log.debug("Arguments to {}.{}: {}", className, methodName, Arrays.toString(joinPoint.getArgs()));
 
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();

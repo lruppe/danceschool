@@ -40,6 +40,16 @@
   margin: 0;
 }
 
+.draft-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-spacing-2);
+}
+
+.delete-button {
+  color: var(--mat-sys-error);
+}
+
 .content-card {
   background: var(--mat-sys-surface);
   border: 1px solid var(--mat-sys-outline-variant);

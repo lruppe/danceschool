@@ -1,5 +1,6 @@
 package ch.ruppen.danceschool.shared.security;
 
+import ch.ruppen.danceschool.shared.logging.TenantContextFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -31,6 +33,7 @@ public class SecurityConfig {
 
     private final AppSecurityProperties securityProperties;
     private final FirebaseJwtAuthenticationConverter firebaseJwtAuthenticationConverter;
+    private final TenantContextFilter tenantContextFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -42,12 +45,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/api/**").authenticated()
-                        .anyRequest().permitAll())
+                        .requestMatchers("/error").permitAll()
+                        .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(firebaseJwtAuthenticationConverter)))
-                .formLogin(AbstractHttpConfigurer::disable);
+                .formLogin(AbstractHttpConfigurer::disable)
+                .addFilterAfter(tenantContextFilter, AuthorizationFilter.class);
 
         return http.build();
     }

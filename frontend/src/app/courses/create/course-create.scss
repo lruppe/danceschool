@@ -6,6 +6,14 @@
   gap: var(--ds-spacing-6);
 }
 
+.lock-banner {
+  background: var(--ds-color-info-container);
+  color: var(--ds-color-info);
+  padding: var(--ds-spacing-3) var(--ds-spacing-4);
+  border-radius: var(--ds-radius-md);
+  font: var(--mat-sys-body-medium);
+}
+
 // Header
 .wizard-header {
   display: flex;

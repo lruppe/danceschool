@@ -1,10 +1,34 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import type { CourseEditTier } from '../course.service';
 
 export const DEFAULT_ROLE_BALANCE_THRESHOLD = 3;
 
+/**
+ * Fields locked in the RESTRICTED tier. Mirrors {@code CourseEditPolicy.LOCKED_IN_RESTRICTED}
+ * on the backend. Kept as a client-side list so the template can disable controls without a
+ * round-trip per field; the backend remains the canonical enforcement point.
+ */
+const LOCKED_IN_RESTRICTED: ReadonlySet<string> = new Set([
+  'courseType',
+  'price',
+  'priceModel',
+  'danceStyle',
+  'level',
+  'startDate',
+  'endDate',
+  'dayOfWeek',
+  'startTime',
+  'endTime',
+  'numberOfSessions',
+  'recurrenceType',
+]);
+
 @Injectable()
 export class CourseFormService {
+  private readonly _editTier = signal<CourseEditTier>('FULLY_EDITABLE');
+  readonly editTier = this._editTier.asReadonly();
+
   readonly form = new FormGroup({
     details: new FormGroup({
       title: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -80,8 +104,48 @@ export class CourseFormService {
         price: data['price'] as number,
       },
     });
+    const tier = (data['editTier'] as CourseEditTier | undefined) ?? 'FULLY_EDITABLE';
+    this._editTier.set(tier);
+    this.applyTierToControls(tier);
     // Mark as pristine after loading — form is not "dirty" until user edits
     this.form.markAsPristine();
+  }
+
+  isFieldLocked(field: string): boolean {
+    const tier = this._editTier();
+    if (tier === 'FULLY_EDITABLE') return false;
+    if (tier === 'READ_ONLY') return true;
+    return LOCKED_IN_RESTRICTED.has(field);
+  }
+
+  private applyTierToControls(_tier: CourseEditTier): void {
+    // Disable every named form control whose field is locked under the current tier.
+    // Reactive-forms `.disable()` is how Material input/select read disabled state.
+    const named: Array<[string, AbstractControl]> = [
+      ['title', this.form.controls.details.controls.title],
+      ['danceStyle', this.form.controls.details.controls.danceStyle],
+      ['level', this.form.controls.details.controls.level],
+      ['courseType', this.form.controls.details.controls.courseType],
+      ['description', this.form.controls.details.controls.description],
+      ['startDate', this.form.controls.schedule.controls.startDate],
+      ['recurrenceType', this.form.controls.schedule.controls.recurrenceType],
+      ['numberOfSessions', this.form.controls.schedule.controls.numberOfSessions],
+      ['startTime', this.form.controls.schedule.controls.startTime],
+      ['endTime', this.form.controls.schedule.controls.endTime],
+      ['location', this.form.controls.schedule.controls.location],
+      ['teachers', this.form.controls.schedule.controls.teachers],
+      ['maxParticipants', this.form.controls.registration.controls.maxParticipants],
+      ['roleBalanceThreshold', this.form.controls.registration.controls.roleBalanceThreshold],
+      ['priceModel', this.form.controls.pricing.controls.priceModel],
+      ['price', this.form.controls.pricing.controls.price],
+    ];
+    for (const [name, control] of named) {
+      if (this.isFieldLocked(name)) {
+        control.disable({ emitEvent: false });
+      } else {
+        control.enable({ emitEvent: false });
+      }
+    }
   }
 
   get roleBalancingEnabled(): boolean {
@@ -116,6 +180,8 @@ export class CourseFormService {
 
   reset(): void {
     this.form.reset();
+    this._editTier.set('FULLY_EDITABLE');
+    this.applyTierToControls('FULLY_EDITABLE');
   }
 }
 

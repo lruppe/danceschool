@@ -1,5 +1,6 @@
 package ch.ruppen.danceschool.student;
 
+import ch.ruppen.danceschool.enrollment.EnrollmentStatus;
 import ch.ruppen.danceschool.school.School;
 import ch.ruppen.danceschool.school.SchoolService;
 import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
@@ -9,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -18,6 +21,7 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final SchoolService schoolService;
+    private final Clock clock;
 
     @Transactional
     @BusinessOperation(event = "StudentCreated")
@@ -42,6 +46,15 @@ public class StudentService {
 
         studentRepository.save(student);
         return student.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public List<StudentListDto> listStudents(Long userId) {
+        School school = schoolService.findSchoolByMember(userId);
+        return studentRepository.findListBySchoolId(
+                school.getId(),
+                EnrollmentStatus.SEAT_HOLDING_STATI,
+                LocalDate.now(clock));
     }
 
     @Transactional(readOnly = true)
@@ -75,11 +88,6 @@ public class StudentService {
     public Student findStudentByIdAndSchool(Long studentId, School school) {
         return studentRepository.findByIdAndSchoolId(studentId, school.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student", studentId));
-    }
-
-    @Transactional(readOnly = true)
-    public List<Student> findAllBySchool(School school) {
-        return studentRepository.findAllBySchoolId(school.getId());
     }
 
     @Transactional(readOnly = true)

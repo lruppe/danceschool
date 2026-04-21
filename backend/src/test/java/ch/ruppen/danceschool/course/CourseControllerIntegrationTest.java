@@ -89,8 +89,7 @@ class CourseControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].maxParticipants").value(15))
                 .andExpect(jsonPath("$[0].price").value(180.00))
                 .andExpect(jsonPath("$[0].status").value("OPEN"))
-                .andExpect(jsonPath("$[0].startDate").exists())
-                .andExpect(jsonPath("$[0].completedSessions").isNumber());
+                .andExpect(jsonPath("$[0].startDate").exists());
     }
 
     @Test
@@ -250,7 +249,7 @@ class CourseControllerIntegrationTest {
     }
 
     private UsernamePasswordAuthenticationToken authToken(AppUser user) {
-        AuthenticatedUser principal = new AuthenticatedUser(user.getId(), user.getEmail());
+        AuthenticatedUser principal = new AuthenticatedUser(user.getId(), user.getEmail(), null);
         return new UsernamePasswordAuthenticationToken(
                 principal, null, AuthorityUtils.createAuthorityList("ROLE_USER"));
     }

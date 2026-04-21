@@ -4,6 +4,7 @@ import ch.ruppen.danceschool.enrollment.EnrollmentService;
 import ch.ruppen.danceschool.enrollment.RoleCounts;
 import ch.ruppen.danceschool.school.School;
 import ch.ruppen.danceschool.school.SchoolService;
+import ch.ruppen.danceschool.shared.error.CourseEditPolicyViolationException;
 import ch.ruppen.danceschool.shared.error.DomainRuleViolationException;
 import ch.ruppen.danceschool.shared.error.PublishValidationException;
 import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -63,8 +65,29 @@ public class CourseService {
         School school = schoolService.findSchoolByMember(userId);
         Course course = courseRepository.findByIdAndSchoolId(courseId, school.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
+
+        LocalDate today = LocalDate.now(clock);
+        CourseLifecycleStatus status = CourseStatusDerivation.deriveStatus(
+                course.getPublishedAt(), course.getStartDate(), course.getEndDate(), today);
+        int nonTerminal = enrollmentService.countNonTerminalByCourse(course.getId());
+        CourseEditPolicy.Tier tier = CourseEditPolicy.tierOf(status, nonTerminal);
+
+        List<String> rejected = CourseEditPolicy.findLockedFieldChanges(course, dto, tier);
+        if (!rejected.isEmpty()) {
+            throw new CourseEditPolicyViolationException(tier.name(), rejected);
+        }
+
+        int prevMax = course.getMaxParticipants();
+        Integer prevThreshold = course.getRoleBalanceThreshold();
+
         applyDto(course, dto);
-        return toDetailDto(course, LocalDate.now(clock));
+
+        if (prevMax != dto.maxParticipants()
+                || !Objects.equals(prevThreshold, dto.roleBalanceThreshold())) {
+            enrollmentService.autoPromoteWaitlist(course);
+        }
+
+        return toDetailDto(course, today);
     }
 
     @Transactional(readOnly = true)
@@ -73,6 +96,21 @@ public class CourseService {
         Course course = courseRepository.findByIdAndSchoolId(courseId, school.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
         return toDetailDto(course, LocalDate.now(clock));
+    }
+
+    @Transactional
+    @BusinessOperation(event = "CourseDeleted")
+    public void deleteCourse(Long userId, Long courseId) {
+        School school = schoolService.findSchoolByMember(userId);
+        Course course = courseRepository.findByIdAndSchoolId(courseId, school.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Course", courseId));
+
+        if (course.getPublishedAt() != null) {
+            throw new DomainRuleViolationException(
+                    "Course " + courseId + " cannot be deleted: only unpublished (DRAFT) courses can be deleted.");
+        }
+
+        courseRepository.delete(course);
     }
 
     @Transactional
@@ -223,14 +261,16 @@ public class CourseService {
                 course.getMaxParticipants(),
                 course.getPrice(),
                 CourseStatusDerivation.deriveStatus(
-                        course.getPublishedAt(), course.getStartDate(), course.getEndDate(), today),
-                CourseStatusDerivation.deriveCompletedSessions(
-                        course.getStartDate(), course.getDayOfWeek(), course.getNumberOfSessions(), today)
+                        course.getPublishedAt(), course.getStartDate(), course.getEndDate(), today)
         );
     }
 
     private CourseDetailDto toDetailDto(Course course, LocalDate today) {
         int enrolledStudents = enrollmentService.countSeatHoldersByCourse(course.getId());
+        int nonTerminal = enrollmentService.countNonTerminalByCourse(course.getId());
+        CourseLifecycleStatus status = CourseStatusDerivation.deriveStatus(
+                course.getPublishedAt(), course.getStartDate(), course.getEndDate(), today);
+        CourseEditPolicy.Tier editTier = CourseEditPolicy.tierOf(status, nonTerminal);
         return new CourseDetailDto(
                 course.getId(),
                 course.getTitle(),
@@ -251,12 +291,10 @@ public class CourseService {
                 course.getRoleBalanceThreshold(),
                 course.getPriceModel(),
                 course.getPrice(),
-                CourseStatusDerivation.deriveStatus(
-                        course.getPublishedAt(), course.getStartDate(), course.getEndDate(), today),
+                status,
                 course.getPublishedAt(),
                 enrolledStudents,
-                CourseStatusDerivation.deriveCompletedSessions(
-                        course.getStartDate(), course.getDayOfWeek(), course.getNumberOfSessions(), today)
+                editTier
         );
     }
 }

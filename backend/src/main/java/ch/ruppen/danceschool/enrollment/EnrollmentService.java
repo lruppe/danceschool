@@ -17,11 +17,14 @@ import ch.ruppen.danceschool.student.StudentDanceLevel;
 import ch.ruppen.danceschool.student.StudentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +33,11 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class EnrollmentService {
+
+    // Dedicated logger shared with BusinessLoggingAspect — auto-promote emits directly
+    // (self-invocation bypasses the aspect) but must land on the same logger so downstream
+    // filters treat both paths identically.
+    private static final Logger businessLog = LoggerFactory.getLogger("business");
 
     private final EnrollmentRepository enrollmentRepository;
     private final SchoolService schoolService;
@@ -61,6 +69,10 @@ public class EnrollmentService {
         applyBookingDecision(enrollment);
 
         enrollmentRepository.save(enrollment);
+
+        if (enrollment.getStatus() == EnrollmentStatus.PENDING_PAYMENT) {
+            autoPromoteWaitlist(course);
+        }
         return new EnrollmentResponseDto(enrollment.getId(), enrollment.getStatus());
     }
 
@@ -100,6 +112,9 @@ public class EnrollmentService {
         // capacity + role-balance checks the direct-pay path runs.
         applyBookingDecision(enrollment);
 
+        if (enrollment.getStatus() == EnrollmentStatus.PENDING_PAYMENT) {
+            autoPromoteWaitlist(course);
+        }
         return new EnrollmentResponseDto(enrollment.getId(), enrollment.getStatus());
     }
 
@@ -150,6 +165,12 @@ public class EnrollmentService {
     public int countSeatHoldersByCourse(Long courseId) {
         return (int) enrollmentRepository.countByCourseIdAndStatusIn(
                 courseId, EnrollmentStatus.SEAT_HOLDING_STATI);
+    }
+
+    @Transactional(readOnly = true)
+    public int countNonTerminalByCourse(Long courseId) {
+        return (int) enrollmentRepository.countByCourseIdAndStatusIn(
+                courseId, EnrollmentStatus.NON_TERMINAL_STATI);
     }
 
     private Course loadCourseInSchool(Long courseId, School school) {
@@ -233,6 +254,69 @@ public class EnrollmentService {
         }
 
         return null;
+    }
+
+    /**
+     * Re-evaluates the waitlist against current capacity and role-balance rules and promotes
+     * any entries that no longer violate them. Called after:
+     * <ul>
+     *   <li>a seat-holding enrollment lands (may free up role-imbalance waitlisted entries of
+     *       the opposite role)</li>
+     *   <li>a course's {@code maxParticipants} is raised (promotes capacity-waitlisted entries
+     *       in waitlist order until capacity is reached)</li>
+     *   <li>a course's {@code roleBalanceThreshold} changes (promotes role-imbalance
+     *       waitlisted entries that now fit the looser rule)</li>
+     * </ul>
+     * Short-circuits when the course is already at or over capacity.
+     */
+    public void autoPromoteWaitlist(Course course) {
+        long committed = enrollmentRepository.countByCourseIdAndStatusIn(
+                course.getId(), EnrollmentStatus.SEAT_HOLDING_STATI);
+        if (committed >= course.getMaxParticipants()) {
+            return;
+        }
+
+        List<Enrollment> candidates = enrollmentRepository
+                .findByCourseIdAndStatusOrderByWaitlistPositionAsc(
+                        course.getId(), EnrollmentStatus.WAITLISTED);
+
+        boolean anyPromoted = false;
+        for (Enrollment candidate : candidates) {
+            if (resolveWaitlist(course, candidate.getDanceRole()) == null) {
+                candidate.setStatus(EnrollmentStatus.PENDING_PAYMENT);
+                candidate.setWaitlistReason(null);
+                candidate.setWaitlistPosition(null);
+                // Matches the BusinessLoggingAspect output format; emitted directly because
+                // self-invocation bypasses the aspect.
+                businessLog.info("event=EnrollmentAutoPromoted enrollmentId={} status={}",
+                        candidate.getId(), EnrollmentStatus.PENDING_PAYMENT);
+                committed++;
+                anyPromoted = true;
+                if (committed >= course.getMaxParticipants()) {
+                    break;
+                }
+            }
+        }
+        if (anyPromoted) {
+            renumberWaitlistPositions(course);
+        }
+    }
+
+    private void renumberWaitlistPositions(Course course) {
+        List<Enrollment> remaining = enrollmentRepository
+                .findByCourseIdAndStatusOrderByWaitlistPositionAsc(
+                        course.getId(), EnrollmentStatus.WAITLISTED);
+
+        Map<DanceRole, List<Enrollment>> byRole = new HashMap<>();
+        for (Enrollment e : remaining) {
+            byRole.computeIfAbsent(e.getDanceRole(), k -> new ArrayList<>()).add(e);
+        }
+        for (List<Enrollment> entries : byRole.values()) {
+            int pos = 1;
+            for (Enrollment e : entries) {
+                e.setWaitlistPosition(pos++);
+            }
+        }
     }
 
     private int nextPosition(Long courseId, DanceRole role) {

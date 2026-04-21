@@ -22,8 +22,9 @@ export interface CourseListItem {
   maxParticipants: number;
   price: number;
   status: string;
-  completedSessions: number;
 }
+
+export type CourseEditTier = 'FULLY_EDITABLE' | 'RESTRICTED' | 'READ_ONLY';
 
 export interface CourseDetail {
   id: number;
@@ -48,7 +49,7 @@ export interface CourseDetail {
   status: string;
   publishedAt: string | null;
   enrolledStudents: number;
-  completedSessions: number;
+  editTier: CourseEditTier;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -79,5 +80,9 @@ export class CourseService {
 
   publishCourse(id: number): Observable<CourseDetail> {
     return this.http.post<CourseDetail>(`${environment.apiUrl}/api/courses/${id}/publish`, null);
+  }
+
+  deleteCourse(id: number): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/api/courses/${id}`);
   }
 }

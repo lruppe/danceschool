@@ -60,7 +60,8 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 
 ### 8. Logging
 - AOP aspects in `shared/logging/` handle general logging (controllers, services), expand if necessary
-- Annotate service methods that represent domain events (create, update, delete) with `@BusinessOperation(event = "EventName")` — the `BusinessLoggingAspect` logs these automatically
+- Annotate service methods that represent domain events (create, update, delete) with `@BusinessOperation(event = "EventName")` — the `BusinessLoggingAspect` logs these on a dedicated `business` logger in `event=Name k=v` format
+- Every log line carries `[schoolId=… userId=…]` via MDC (populated per-request by `TenantContextFilter`) — do **not** also pass `schoolId`/`userId` as kv args; it's redundant
 
 ## Security
 

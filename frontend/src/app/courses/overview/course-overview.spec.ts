@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { vi } from 'vitest';
 import { CourseOverviewComponent } from './course-overview';
 import { ActivatedRoute } from '@angular/router';
 import { CourseDetail } from '../course.service';
@@ -31,7 +33,7 @@ function makeCourseDetail(overrides: Partial<CourseDetail> = {}): CourseDetail {
     status: 'OPEN',
     publishedAt: null,
     enrolledStudents: 12,
-    completedSessions: 0,
+    editTier: 'FULLY_EDITABLE',
     ...overrides,
   };
 }
@@ -62,6 +64,7 @@ describe('CourseOverviewComponent', () => {
 
   afterEach(() => {
     httpTesting.verify();
+    vi.restoreAllMocks();
   });
 
   /** Flush the course detail request and the enrollment request that follows for non-DRAFT courses. */
@@ -274,6 +277,102 @@ describe('CourseOverviewComponent', () => {
       markPaidReq.flush({ enrollmentId: 99, status: 'CONFIRMED' });
 
       httpTesting.expectOne(req => req.url.includes('/api/courses/1/enrollments')).flush([]);
+    });
+  });
+
+  describe('Delete button', () => {
+    function deleteButton(): HTMLButtonElement | null {
+      return el.querySelector('.delete-button') as HTMLButtonElement | null;
+    }
+
+    it('is rendered for DRAFT courses', () => {
+      fixture.detectChanges();
+      flushCourse({ status: 'DRAFT' });
+      fixture.detectChanges();
+
+      expect(deleteButton()).toBeTruthy();
+    });
+
+    it('is not rendered for OPEN / RUNNING / FINISHED courses', () => {
+      for (const status of ['OPEN', 'RUNNING', 'FINISHED']) {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+          imports: [CourseOverviewComponent],
+          providers: [
+            provideRouter([]),
+            provideHttpClient(),
+            provideHttpClientTesting(),
+            {
+              provide: ActivatedRoute,
+              useValue: { snapshot: { paramMap: { get: () => '1' }, queryParamMap: { get: () => null } } },
+            },
+          ],
+        });
+        const f = TestBed.createComponent(CourseOverviewComponent);
+        const http = TestBed.inject(HttpTestingController);
+        const node = f.nativeElement as HTMLElement;
+
+        f.detectChanges();
+        http.expectOne(req => req.url.includes('/api/courses/1') && !req.url.includes('enrollments'))
+          .flush(makeCourseDetail({ status }));
+        http.expectOne(req => req.url.includes('/api/courses/1/enrollments')).flush([]);
+        f.detectChanges();
+
+        expect(node.querySelector('.delete-button'), `status=${status}`).toBeFalsy();
+        http.verify();
+      }
+    });
+
+    it('does nothing when the confirm dialog is cancelled', () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      fixture.detectChanges();
+      flushCourse({ status: 'DRAFT' });
+      fixture.detectChanges();
+
+      deleteButton()!.click();
+      fixture.detectChanges();
+
+      // No DELETE request issued — afterEach httpTesting.verify() asserts this
+      expect(confirmSpy).toHaveBeenCalled();
+    });
+
+    it('sends DELETE and navigates to /app/courses when confirmed', () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
+      const router = TestBed.inject(Router);
+      const navigateSpy = vi.spyOn(router, 'navigate');
+
+      fixture.detectChanges();
+      flushCourse({ status: 'DRAFT' });
+      fixture.detectChanges();
+
+      deleteButton()!.click();
+      fixture.detectChanges();
+
+      const req = httpTesting.expectOne(req => req.url.includes('/api/courses/1') && req.method === 'DELETE');
+      req.flush(null, { status: 204, statusText: 'No Content' });
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/app/courses']);
+    });
+
+    it('stays on the page and surfaces the server message on error', () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true);
+      const router = TestBed.inject(Router);
+      const navigateSpy = vi.spyOn(router, 'navigate');
+      const snackBar = TestBed.inject(MatSnackBar);
+      const snackSpy = vi.spyOn(snackBar, 'open');
+
+      fixture.detectChanges();
+      flushCourse({ status: 'DRAFT' });
+      fixture.detectChanges();
+
+      deleteButton()!.click();
+      fixture.detectChanges();
+
+      const req = httpTesting.expectOne(req => req.url.includes('/api/courses/1') && req.method === 'DELETE');
+      req.flush({ detail: 'Course is published' }, { status: 409, statusText: 'Conflict' });
+
+      expect(navigateSpy).not.toHaveBeenCalled();
+      expect(snackSpy).toHaveBeenCalledWith('Course is published', 'Close', expect.objectContaining({ panelClass: 'snackbar-error' }));
     });
   });
 

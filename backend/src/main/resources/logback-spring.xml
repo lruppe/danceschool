@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Inherits Spring Boot's default logback config (pattern, colors, PID, thread, logger) and
+  only extends LOG_LEVEL_PATTERN to append [schoolId=… userId=…] from the MDC. Keys are
+  populated per-request by TenantContextFilter and render empty on non-request threads.
+-->
+<configuration>
+    <property name="LOG_LEVEL_PATTERN" value="%5p [schoolId=%X{schoolId:-} userId=%X{userId:-}]"/>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+</configuration>

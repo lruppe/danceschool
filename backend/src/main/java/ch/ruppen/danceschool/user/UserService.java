@@ -4,17 +4,21 @@ import ch.ruppen.danceschool.schoolmember.MembershipDto;
 import ch.ruppen.danceschool.schoolmember.SchoolMemberService;
 import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    // Dedicated business logger — findOrCreateByFirebaseUid fires on every request, so
+    // @BusinessOperation can't be used (it would log on every call, not only on create).
+    private static final Logger businessLog = LoggerFactory.getLogger("business");
 
     private final UserRepository userRepository;
     private final SchoolMemberService schoolMemberService;
@@ -32,7 +36,7 @@ public class UserService {
                     user.setEmail(email);
                     user.setName(name);
                     AppUser saved = userRepository.save(user);
-                    log.info("BUSINESS | UserOnboarded | userId={} email=\"{}\"", saved.getId(), email);
+                    businessLog.info("event=UserOnboarded userId={} email=\"{}\"", saved.getId(), email);
                     return saved;
                 });
     }

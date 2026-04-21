@@ -28,6 +28,6 @@ public record CourseDetailDto(
         CourseLifecycleStatus status,
         LocalDate publishedAt,
         int enrolledStudents,
-        int completedSessions
+        CourseEditPolicy.Tier editTier
 ) {
 }
