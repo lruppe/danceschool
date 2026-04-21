@@ -1,6 +1,12 @@
 package ch.ruppen.danceschool.student;
 
+import ch.ruppen.danceschool.course.Course;
+import ch.ruppen.danceschool.course.CourseLevel;
 import ch.ruppen.danceschool.course.DanceStyle;
+import ch.ruppen.danceschool.enrollment.Enrollment;
+import ch.ruppen.danceschool.enrollment.EnrollmentRepository;
+import ch.ruppen.danceschool.enrollment.EnrollmentResponseDto;
+import ch.ruppen.danceschool.enrollment.EnrollmentService;
 import ch.ruppen.danceschool.enrollment.EnrollmentStatus;
 import ch.ruppen.danceschool.school.School;
 import ch.ruppen.danceschool.school.SchoolService;
@@ -13,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +33,8 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
     private final SchoolService schoolService;
+    private final EnrollmentRepository enrollmentRepository;
+    private final EnrollmentService enrollmentService;
     private final Clock clock;
 
     @Transactional
@@ -72,7 +81,7 @@ public class StudentService {
 
     @Transactional
     @BusinessOperation(event = "StudentDanceLevelsUpdated")
-    public StudentDetailDto updateDanceLevels(Long userId, Long studentId, UpdateDanceLevelsDto dto) {
+    public UpdateDanceLevelsResultDto updateDanceLevels(Long userId, Long studentId, UpdateDanceLevelsDto dto) {
         School school = schoolService.findSchoolByMember(userId);
         Student student = studentRepository.findByIdAndSchoolId(studentId, school.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student", studentId));
@@ -85,6 +94,16 @@ public class StudentService {
         Set<DanceStyle> incoming = dto.danceLevels().stream()
                 .map(UpdateDanceLevelsDto.DanceLevelEntry::danceStyle)
                 .collect(Collectors.toSet());
+
+        // Only a level that's added or raised can unblock a pending approval; tracking these up
+        // front lets us restrict the re-evaluation query to the enrollments actually affected.
+        Set<DanceStyle> raisedStyles = EnumSet.noneOf(DanceStyle.class);
+        for (UpdateDanceLevelsDto.DanceLevelEntry entry : dto.danceLevels()) {
+            StudentDanceLevel current = existing.get(entry.danceStyle());
+            if (current == null || entry.level().ordinal() > current.getLevel().ordinal()) {
+                raisedStyles.add(entry.danceStyle());
+            }
+        }
 
         student.getDanceLevels().removeIf(dl -> !incoming.contains(dl.getDanceStyle()));
 
@@ -101,13 +120,44 @@ public class StudentService {
             }
         }
 
-        return toDetailDto(student);
+        int autoConfirmedCount = autoConfirmPendingForRaisedStyles(userId, student, raisedStyles);
+
+        return new UpdateDanceLevelsResultDto(toDetailDto(student), autoConfirmedCount);
     }
 
-    @Transactional(readOnly = true)
-    public Student findStudentByIdAndSchool(Long studentId, School school) {
-        return studentRepository.findByIdAndSchoolId(studentId, school.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Student", studentId));
+    private int autoConfirmPendingForRaisedStyles(Long userId, Student student, Set<DanceStyle> raisedStyles) {
+        if (raisedStyles.isEmpty()) {
+            return 0;
+        }
+        List<Enrollment> candidates = enrollmentRepository.findByStudentIdAndStatusAndCourseDanceStyleIn(
+                student.getId(), EnrollmentStatus.PENDING_APPROVAL, raisedStyles);
+
+        int count = 0;
+        for (Enrollment enrollment : candidates) {
+            Course course = enrollment.getCourse();
+            CourseLevel newLevel = findLevel(student, course.getDanceStyle());
+            // Skip enrollments whose course still outranks the new level — those stay pending.
+            // Also guards approveEnrollment's upsertStudentDanceLevel from silently promoting
+            // the student past what the owner explicitly set.
+            if (newLevel == null || newLevel.ordinal() < course.getLevel().ordinal()) {
+                continue;
+            }
+            EnrollmentResponseDto result = enrollmentService.approveEnrollment(userId, enrollment.getId());
+            // WAITLISTED means the re-evaluation promoted the enrollment past approval but
+            // couldn't seat it (capacity/role-balance); not a user-visible "auto-confirmed".
+            if (EnrollmentStatus.SEAT_HOLDING_STATI.contains(result.status())) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private CourseLevel findLevel(Student student, DanceStyle style) {
+        return student.getDanceLevels().stream()
+                .filter(dl -> dl.getDanceStyle() == style)
+                .map(StudentDanceLevel::getLevel)
+                .findFirst()
+                .orElse(null);
     }
 
     @Transactional(readOnly = true)

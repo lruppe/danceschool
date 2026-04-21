@@ -44,9 +44,9 @@ public class StudentController {
     }
 
     @PutMapping("/{id}/dance-levels")
-    public StudentDetailDto updateDanceLevels(@PathVariable Long id,
-                                              @Valid @RequestBody UpdateDanceLevelsDto dto,
-                                              @AuthenticationPrincipal AuthenticatedUser principal) {
+    public UpdateDanceLevelsResultDto updateDanceLevels(@PathVariable Long id,
+                                                        @Valid @RequestBody UpdateDanceLevelsDto dto,
+                                                        @AuthenticationPrincipal AuthenticatedUser principal) {
         return studentService.updateDanceLevels(principal.userId(), id, dto);
     }
 }

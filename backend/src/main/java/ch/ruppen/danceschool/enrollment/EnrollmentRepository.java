@@ -1,11 +1,13 @@
 package ch.ruppen.danceschool.enrollment;
 
+import ch.ruppen.danceschool.course.DanceStyle;
 import ch.ruppen.danceschool.payment.PaymentDto;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +26,9 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     long countByCourseIdAndDanceRoleAndStatusIn(Long courseId, DanceRole danceRole, List<EnrollmentStatus> statuses);
 
     List<Enrollment> findByCourseIdAndStatusOrderByWaitlistPositionAsc(Long courseId, EnrollmentStatus status);
+
+    List<Enrollment> findByStudentIdAndStatusAndCourseDanceStyleIn(
+            Long studentId, EnrollmentStatus status, Collection<DanceStyle> styles);
 
     @Query("SELECT COUNT(e) FROM Enrollment e WHERE e.course.id = :courseId AND e.status = ch.ruppen.danceschool.enrollment.EnrollmentStatus.WAITLISTED")
     long countWaitlistedByCourse(@Param("courseId") Long courseId);

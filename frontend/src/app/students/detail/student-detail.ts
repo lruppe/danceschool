@@ -117,10 +117,17 @@ export class StudentDetailComponent implements OnInit {
     this.studentService.updateDanceLevels(this.studentId, { danceLevels: payload })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (data) => {
-          this.applyStudent(data);
+        next: (result) => {
+          this.applyStudent(result.student);
           this.saving.set(false);
-          this.snackBar.open('Saved.', 'Close', { duration: 3000 });
+          // Drop focus so the last-edited mat-select doesn't linger in its focused/primary-colored
+          // state — combined with track $index on the list, the color can even bleed onto an
+          // unrelated row after the server reorders.
+          (document.activeElement as HTMLElement | null)?.blur();
+          const message = result.autoConfirmedCount > 0
+            ? `Saved. ${result.autoConfirmedCount} pending approval(s) auto-confirmed.`
+            : 'Saved.';
+          this.snackBar.open(message, 'Close', { duration: 3000 });
         },
         error: (err: HttpErrorResponse) => {
           this.saving.set(false);
