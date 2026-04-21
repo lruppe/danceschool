@@ -1,5 +1,6 @@
 package ch.ruppen.danceschool.student;
 
+import ch.ruppen.danceschool.course.DanceStyle;
 import ch.ruppen.danceschool.enrollment.EnrollmentStatus;
 import ch.ruppen.danceschool.school.School;
 import ch.ruppen.danceschool.school.SchoolService;
@@ -13,6 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -72,13 +77,28 @@ public class StudentService {
         Student student = studentRepository.findByIdAndSchoolId(studentId, school.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Student", studentId));
 
-        student.getDanceLevels().clear();
+        // Diff-in-place so we don't delete-then-insert unchanged styles — with IDENTITY ids and
+        // the (student_id, dance_style) unique constraint, clear()+add() inserts before orphan
+        // removal flushes and trips the constraint.
+        Map<DanceStyle, StudentDanceLevel> existing = student.getDanceLevels().stream()
+                .collect(Collectors.toMap(StudentDanceLevel::getDanceStyle, Function.identity()));
+        Set<DanceStyle> incoming = dto.danceLevels().stream()
+                .map(UpdateDanceLevelsDto.DanceLevelEntry::danceStyle)
+                .collect(Collectors.toSet());
+
+        student.getDanceLevels().removeIf(dl -> !incoming.contains(dl.getDanceStyle()));
+
         for (UpdateDanceLevelsDto.DanceLevelEntry entry : dto.danceLevels()) {
-            StudentDanceLevel level = new StudentDanceLevel();
-            level.setStudent(student);
-            level.setDanceStyle(entry.danceStyle());
-            level.setLevel(entry.level());
-            student.getDanceLevels().add(level);
+            StudentDanceLevel current = existing.get(entry.danceStyle());
+            if (current != null) {
+                current.setLevel(entry.level());
+            } else {
+                StudentDanceLevel level = new StudentDanceLevel();
+                level.setStudent(student);
+                level.setDanceStyle(entry.danceStyle());
+                level.setLevel(entry.level());
+                student.getDanceLevels().add(level);
+            }
         }
 
         return toDetailDto(student);

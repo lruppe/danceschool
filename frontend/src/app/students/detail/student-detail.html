@@ -22,20 +22,54 @@
 
     <div class="detail-card">
       <h2 class="detail-card-title">Dance Levels</h2>
-      @if (s.danceLevels.length > 0) {
+
+      @if (edits().length > 0) {
         <ul class="dance-level-list">
-          @for (row of s.danceLevels; track row.danceStyle) {
+          @for (row of edits(); track $index; let i = $index) {
             <li class="dance-level-row">
-              <span class="dance-level-style">{{ row.danceStyle | titlecase }}</span>
-              <span class="ds-chip" [ngClass]="levelChipClass(row.level)">
-                {{ formatLevel(row.level) }}
-              </span>
+              @if (row.danceStyle !== null) {
+                <span class="dance-level-style">{{ row.danceStyle | titlecase }}</span>
+              } @else {
+                <mat-form-field class="dance-level-style-select" appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Dance Style</mat-label>
+                  <mat-select [value]="row.danceStyle" [disabled]="saving()"
+                              (selectionChange)="onStyleChange(i, $event.value)">
+                    @for (style of availableStylesFor(i); track style.value) {
+                      <mat-option [value]="style.value">{{ style.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              }
+
+              <mat-form-field class="dance-level-select" appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Level</mat-label>
+                <mat-select [value]="row.level" [disabled]="saving()"
+                            (selectionChange)="onLevelChange(i, $event.value)">
+                  @for (level of levels; track level.value) {
+                    <mat-option [value]="level.value">
+                      <span class="ds-chip" [ngClass]="levelChipClass(level.value)">{{ level.label }}</span>
+                    </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
             </li>
           }
         </ul>
       } @else {
         <p class="dance-level-empty">No dance levels recorded for this student yet.</p>
       }
+
+      <div class="dance-level-add">
+        <button mat-stroked-button type="button" (click)="addRow()" [disabled]="!canAddRow() || saving()">
+          <mat-icon>add</mat-icon>
+          Add level
+        </button>
+      </div>
+
+      <div class="dance-level-actions">
+        <button mat-button type="button" (click)="onCancel()" [disabled]="saving()">Cancel</button>
+        <button mat-flat-button type="button" (click)="onSave()" [disabled]="!hasValidChanges() || saving()">Save</button>
+      </div>
     </div>
   }
 } @else {

@@ -23,6 +23,7 @@ function makeStudent(overrides: Partial<StudentDetail> = {}): StudentDetail {
 
 describe('StudentDetailComponent', () => {
   let fixture: ComponentFixture<StudentDetailComponent>;
+  let component: StudentDetailComponent;
   let httpTesting: HttpTestingController;
   let el: HTMLElement;
 
@@ -41,6 +42,7 @@ describe('StudentDetailComponent', () => {
     });
 
     fixture = TestBed.createComponent(StudentDetailComponent);
+    component = fixture.componentInstance;
     httpTesting = TestBed.inject(HttpTestingController);
     el = fixture.nativeElement;
   }
@@ -54,6 +56,20 @@ describe('StudentDetailComponent', () => {
     httpTesting.expectOne(req => req.url.endsWith(`/api/students/${student.id}`)).flush(student);
     fixture.detectChanges();
   }
+
+  // Non-private component accessors for driving edits from tests.
+  type PrivateComponent = {
+    onStyleChange(i: number, v: string): void;
+    onLevelChange(i: number, v: string): void;
+    addRow(): void;
+    onCancel(): void;
+    onSave(): void;
+    availableStylesFor(i: number): { value: string; label: string }[];
+    edits(): { danceStyle: string | null; level: string | null }[];
+    hasValidChanges(): boolean;
+    canAddRow(): boolean;
+  };
+  const drive = (c: unknown): PrivateComponent => c as PrivateComponent;
 
   it('shows loading state before the student request resolves', () => {
     setup();
@@ -83,7 +99,7 @@ describe('StudentDetailComponent', () => {
     expect(dds[1]).toBe('—');
   });
 
-  it('renders a row per dance-level assignment with style + level chip', () => {
+  it('renders a row per dance-level assignment with the style label visible', () => {
     setup();
     flushStudent(makeStudent({
       danceLevels: [
@@ -98,8 +114,8 @@ describe('StudentDetailComponent', () => {
     const styles = rows.map(r => r.querySelector('.dance-level-style')?.textContent?.trim());
     expect(styles).toEqual(['Salsa', 'Bachata']);
 
-    const chips = rows.map(r => r.querySelector('.ds-chip')?.textContent?.trim());
-    expect(chips).toEqual(['Intermediate', 'Beginner']);
+    // Each existing row shows one (level) select; no style select.
+    expect(rows[0].querySelectorAll('mat-form-field').length).toBe(1);
   });
 
   it('renders the empty state when the student has no dance levels', () => {
@@ -134,5 +150,197 @@ describe('StudentDetailComponent', () => {
 
     expect(snackOpen).toHaveBeenCalledTimes(1);
     expect(routerNavigate).toHaveBeenCalledWith(['/app/students']);
+  });
+
+  // ── Inline editing ──
+
+  it('Save is disabled on initial load (no-op)', () => {
+    setup();
+    flushStudent();
+
+    expect(drive(component).hasValidChanges()).toBe(false);
+    const saveBtn = el.querySelector<HTMLButtonElement>('.dance-level-actions button[mat-flat-button]');
+    expect(saveBtn?.disabled).toBe(true);
+  });
+
+  it('Save sends the edited set unchanged-for-unedited rows (edit-only)', () => {
+    setup();
+    flushStudent(makeStudent({
+      danceLevels: [
+        { danceStyle: 'SALSA', level: 'INTERMEDIATE' },
+        { danceStyle: 'BACHATA', level: 'BEGINNER' },
+      ],
+    }));
+
+    drive(component).onLevelChange(0, 'ADVANCED');
+    fixture.detectChanges();
+    expect(drive(component).hasValidChanges()).toBe(true);
+
+    drive(component).onSave();
+    const req = httpTesting.expectOne(r => r.url.endsWith('/api/students/1/dance-levels') && r.method === 'PUT');
+    expect(req.request.body).toEqual({
+      danceLevels: [
+        { danceStyle: 'SALSA', level: 'ADVANCED' },
+        { danceStyle: 'BACHATA', level: 'BEGINNER' },
+      ],
+    });
+    req.flush(makeStudent({
+      danceLevels: [
+        { danceStyle: 'SALSA', level: 'ADVANCED' },
+        { danceStyle: 'BACHATA', level: 'BEGINNER' },
+      ],
+    }));
+  });
+
+  it('Save sends appended rows (add-only)', () => {
+    setup();
+    flushStudent(makeStudent({
+      danceLevels: [{ danceStyle: 'SALSA', level: 'INTERMEDIATE' }],
+    }));
+
+    drive(component).addRow();
+    drive(component).onStyleChange(1, 'KIZOMBA');
+    drive(component).onLevelChange(1, 'STARTER');
+    fixture.detectChanges();
+    expect(drive(component).hasValidChanges()).toBe(true);
+
+    drive(component).onSave();
+    const req = httpTesting.expectOne(r => r.url.endsWith('/api/students/1/dance-levels') && r.method === 'PUT');
+    expect(req.request.body).toEqual({
+      danceLevels: [
+        { danceStyle: 'SALSA', level: 'INTERMEDIATE' },
+        { danceStyle: 'KIZOMBA', level: 'STARTER' },
+      ],
+    });
+    req.flush(makeStudent({
+      danceLevels: [
+        { danceStyle: 'SALSA', level: 'INTERMEDIATE' },
+        { danceStyle: 'KIZOMBA', level: 'STARTER' },
+      ],
+    }));
+  });
+
+  it('Save sends the merged set (mixed edit + add)', () => {
+    setup();
+    flushStudent(makeStudent({
+      danceLevels: [
+        { danceStyle: 'SALSA', level: 'INTERMEDIATE' },
+        { danceStyle: 'BACHATA', level: 'BEGINNER' },
+      ],
+    }));
+
+    drive(component).onLevelChange(1, 'INTERMEDIATE');
+    drive(component).addRow();
+    drive(component).onStyleChange(2, 'ZOUK');
+    drive(component).onLevelChange(2, 'BEGINNER');
+    fixture.detectChanges();
+    expect(drive(component).hasValidChanges()).toBe(true);
+
+    drive(component).onSave();
+    const req = httpTesting.expectOne(r => r.url.endsWith('/api/students/1/dance-levels') && r.method === 'PUT');
+    expect(req.request.body).toEqual({
+      danceLevels: [
+        { danceStyle: 'SALSA', level: 'INTERMEDIATE' },
+        { danceStyle: 'BACHATA', level: 'INTERMEDIATE' },
+        { danceStyle: 'ZOUK', level: 'BEGINNER' },
+      ],
+    });
+    req.flush(makeStudent({
+      danceLevels: [
+        { danceStyle: 'SALSA', level: 'INTERMEDIATE' },
+        { danceStyle: 'BACHATA', level: 'INTERMEDIATE' },
+        { danceStyle: 'ZOUK', level: 'BEGINNER' },
+      ],
+    }));
+  });
+
+  it('Add-level is disabled once all 7 styles are assigned', () => {
+    setup();
+    flushStudent(makeStudent({
+      danceLevels: [
+        { danceStyle: 'SALSA', level: 'INTERMEDIATE' },
+        { danceStyle: 'BACHATA', level: 'BEGINNER' },
+        { danceStyle: 'MERENGUE', level: 'BEGINNER' },
+        { danceStyle: 'KIZOMBA', level: 'BEGINNER' },
+        { danceStyle: 'ZOUK', level: 'BEGINNER' },
+        { danceStyle: 'AFRO', level: 'BEGINNER' },
+        { danceStyle: 'OTHER', level: 'BEGINNER' },
+      ],
+    }));
+
+    expect(drive(component).canAddRow()).toBe(false);
+    const addBtn = el.querySelector<HTMLButtonElement>('.dance-level-add button');
+    expect(addBtn?.disabled).toBe(true);
+  });
+
+  it('Add-level style dropdown excludes styles the student already has', () => {
+    setup();
+    flushStudent(makeStudent({
+      danceLevels: [
+        { danceStyle: 'SALSA', level: 'INTERMEDIATE' },
+        { danceStyle: 'BACHATA', level: 'BEGINNER' },
+      ],
+    }));
+
+    drive(component).addRow();
+    const options = drive(component).availableStylesFor(2).map(o => o.value);
+    expect(options).not.toContain('SALSA');
+    expect(options).not.toContain('BACHATA');
+    expect(options).toContain('KIZOMBA');
+    expect(options.length).toBe(5);
+  });
+
+  it('Cancel discards staged changes', () => {
+    setup();
+    flushStudent(makeStudent({
+      danceLevels: [{ danceStyle: 'SALSA', level: 'INTERMEDIATE' }],
+    }));
+
+    drive(component).onLevelChange(0, 'ADVANCED');
+    drive(component).addRow();
+    expect(drive(component).hasValidChanges()).toBe(false); // added row not yet filled
+    expect(drive(component).edits().length).toBe(2);
+
+    drive(component).onCancel();
+    expect(drive(component).edits()).toEqual([{ danceStyle: 'SALSA', level: 'INTERMEDIATE' }]);
+    expect(drive(component).hasValidChanges()).toBe(false);
+  });
+
+  it('Save success refreshes the view from the response', () => {
+    setup();
+    flushStudent(makeStudent({
+      danceLevels: [{ danceStyle: 'SALSA', level: 'INTERMEDIATE' }],
+    }));
+
+    drive(component).onLevelChange(0, 'ADVANCED');
+    drive(component).onSave();
+
+    const req = httpTesting.expectOne(r => r.url.endsWith('/api/students/1/dance-levels'));
+    // Server trims/normalizes to a different set — UI must reflect the response, not the staged edits.
+    req.flush(makeStudent({
+      danceLevels: [{ danceStyle: 'SALSA', level: 'MASTERCLASS' }],
+    }));
+    fixture.detectChanges();
+
+    expect(drive(component).edits()).toEqual([{ danceStyle: 'SALSA', level: 'MASTERCLASS' }]);
+    expect(drive(component).hasValidChanges()).toBe(false);
+  });
+
+  it('shows an error snackbar on save failure and keeps staged edits', () => {
+    setup();
+    flushStudent(makeStudent({
+      danceLevels: [{ danceStyle: 'SALSA', level: 'INTERMEDIATE' }],
+    }));
+    const snackOpen = vi.spyOn(TestBed.inject(MatSnackBar), 'open');
+
+    drive(component).onLevelChange(0, 'ADVANCED');
+    drive(component).onSave();
+
+    httpTesting.expectOne(r => r.url.endsWith('/api/students/1/dance-levels'))
+      .flush({ detail: 'boom' }, { status: 500, statusText: 'Server Error' });
+    fixture.detectChanges();
+
+    expect(snackOpen).toHaveBeenCalled();
+    expect(drive(component).edits()).toEqual([{ danceStyle: 'SALSA', level: 'ADVANCED' }]);
   });
 });
