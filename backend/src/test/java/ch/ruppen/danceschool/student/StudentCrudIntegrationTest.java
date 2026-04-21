@@ -175,6 +175,32 @@ class StudentCrudIntegrationTest {
     }
 
     @Test
+    void updateDanceLevels_keepsUnchangedStylesAndAppendsNew() throws Exception {
+        Student student = createStudent("Anna Müller", "anna@example.com", null);
+        addDanceLevel(student, "SALSA", "INTERMEDIATE");
+        addDanceLevel(student, "BACHATA", "BEGINNER");
+        entityManager.flush();
+
+        mockMvc.perform(put("/api/students/{id}/dance-levels", student.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "danceLevels": [
+                                        {"danceStyle": "SALSA", "level": "INTERMEDIATE"},
+                                        {"danceStyle": "BACHATA", "level": "BEGINNER"},
+                                        {"danceStyle": "KIZOMBA", "level": "STARTER"}
+                                    ]
+                                }
+                                """)
+                        .with(authentication(authToken(owner))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.danceLevels.length()").value(3))
+                .andExpect(jsonPath("$.danceLevels[?(@.danceStyle=='SALSA')].level").value("INTERMEDIATE"))
+                .andExpect(jsonPath("$.danceLevels[?(@.danceStyle=='BACHATA')].level").value("BEGINNER"))
+                .andExpect(jsonPath("$.danceLevels[?(@.danceStyle=='KIZOMBA')].level").value("STARTER"));
+    }
+
+    @Test
     void updateDanceLevels_notFound_returns404() throws Exception {
         mockMvc.perform(put("/api/students/{id}/dance-levels", 9999)
                         .contentType(MediaType.APPLICATION_JSON)
