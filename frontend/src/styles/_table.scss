@@ -189,6 +189,11 @@
   color: var(--ds-chip-info);
 }
 
+.ds-chip-warning {
+  background: var(--ds-chip-warning-container);
+  color: var(--ds-chip-warning);
+}
+
 .ds-chip-default {
   background: var(--mat-sys-surface-variant);
   color: var(--mat-sys-on-surface-variant);

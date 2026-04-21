@@ -25,7 +25,6 @@ const ENROLLMENT_TABS: EnrollmentTab[] = [
   { label: 'Enrolled', key: 'CONFIRMED' },
   { label: 'Waitlist', key: 'WAITLISTED' },
   { label: 'Approve', key: 'PENDING_APPROVAL' },
-  { label: 'Open Payment', key: 'PENDING_PAYMENT' },
 ];
 
 @Component({
@@ -58,19 +57,16 @@ export class CourseOverviewComponent implements OnInit {
   protected readonly enrollmentColumns = ['name', 'phone', 'role', 'status', 'enrolledAt', 'lastColumn'];
 
   protected enrolledList = computed(() =>
-    this.enrollments().filter(e => e.status === 'CONFIRMED'));
+    this.enrollments().filter(e => e.status === 'CONFIRMED' || e.status === 'PENDING_PAYMENT'));
   protected waitlistList = computed(() =>
     this.enrollments().filter(e => e.status === 'WAITLISTED'));
   protected approveList = computed(() =>
     this.enrollments().filter(e => e.status === 'PENDING_APPROVAL'));
-  protected openPaymentList = computed(() =>
-    this.enrollments().filter(e => e.status === 'PENDING_PAYMENT'));
 
   protected tabCounts = computed(() => [
     this.enrolledList().length,
     this.waitlistList().length,
     this.approveList().length,
-    this.openPaymentList().length,
   ]);
 
   protected activeTabData = computed(() => {
@@ -78,7 +74,6 @@ export class CourseOverviewComponent implements OnInit {
       case 0: return this.enrolledList();
       case 1: return this.waitlistList();
       case 2: return this.approveList();
-      case 3: return this.openPaymentList();
       default: return [];
     }
   });
