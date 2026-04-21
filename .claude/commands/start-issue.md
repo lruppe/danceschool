@@ -55,9 +55,8 @@ Skip for trivial issues (same heuristic as Phase 2). For everything else:
 
 1. **Invoke the reviewer:** Use the `Agent` tool with `subagent_type: code-reviewer`. Pass:
    - The issue number
+   - The absolute worktree path (e.g. `/home/leon_/projects/danceschool/.claude/worktrees/<name>`) — the reviewer uses `git -C <path>` instead of `cd`, so this is required
    - A one-line summary of the chosen approach (from the Phase 2 plan)
-
-   The subagent inherits this worktree, so it diffs `origin/main...HEAD` itself — don't pass the branch name.
 
 2. **Triage the findings:**
    - **Blockers** — fix, then re-invoke the reviewer on the updated diff
