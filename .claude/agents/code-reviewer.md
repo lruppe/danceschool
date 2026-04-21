@@ -53,6 +53,7 @@ Use `git -C <worktree-path>` for every git command. Do NOT `cd` — it's not nee
 - Don't flag Phase 2 deferred work (multi-school, OWNER/TEACHER split, student login) as missing
 - Don't flag known tech-debt shortcuts as bugs
 - Don't be exhaustive on nits — top 3 max
+- Ignore stray untracked `.png` files in `git status` — these are leftover Playwright screenshots, not part of the diff
 
 ## Output format
 
