@@ -67,7 +67,9 @@ export class CourseFormService {
   isStepValid(index: number): boolean {
     const group = this.stepGroups[index];
     if (!group) return true; // Review step is always "valid"
-    return group.valid;
+    // A group with all children disabled has status DISABLED (and `valid === false`),
+    // but the user has nothing to fix — treat it as valid so the stepper can advance.
+    return group.valid || group.disabled;
   }
 
   markStepTouched(index: number): void {
