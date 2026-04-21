@@ -172,6 +172,86 @@ describe('CourseFormService.isFieldLocked (edit-tier signal)', () => {
   });
 });
 
+describe('CourseFormService.isStepValid', () => {
+  let service: CourseFormService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [CourseFormService] });
+    service = TestBed.inject(CourseFormService);
+  });
+
+  function populateWithTier(editTier: string): void {
+    service.populate({
+      title: 'T',
+      danceStyle: 'BACHATA',
+      level: 'BEGINNER',
+      courseType: 'PARTNER',
+      description: '',
+      startDate: '2030-01-01',
+      recurrenceType: 'WEEKLY',
+      numberOfSessions: 8,
+      startTime: '19:30',
+      endTime: '20:45',
+      location: 'Studio A',
+      teachers: '',
+      maxParticipants: 20,
+      roleBalanceThreshold: null,
+      priceModel: 'FIXED_COURSE',
+      price: 100,
+      editTier,
+    });
+  }
+
+  it('RESTRICTED tier: pricing step is valid even though all its controls are locked', () => {
+    // Regression: both priceModel and price are in LOCKED_IN_RESTRICTED, so the
+    // pricing FormGroup becomes DISABLED and `.valid` returns false. Without the
+    // disabled-aware check, Next on the Pricing step would be blocked for OPEN courses.
+    populateWithTier('RESTRICTED');
+    expect(service.form.controls.pricing.disabled).toBe(true);
+    expect(service.isStepValid(3)).toBe(true);
+  });
+
+  it('READ_ONLY tier: all steps are valid (every control disabled)', () => {
+    populateWithTier('READ_ONLY');
+    expect(service.isStepValid(0)).toBe(true);
+    expect(service.isStepValid(1)).toBe(true);
+    expect(service.isStepValid(2)).toBe(true);
+    expect(service.isStepValid(3)).toBe(true);
+  });
+
+  it('FULLY_EDITABLE tier: invalid group fails validity check', () => {
+    // Fresh form — all required fields empty.
+    expect(service.isStepValid(0)).toBe(false);
+    expect(service.isStepValid(3)).toBe(false);
+  });
+
+  it('RESTRICTED tier: all steps valid when editable fields are filled', () => {
+    populateWithTier('RESTRICTED');
+    expect(service.isStepValid(0)).toBe(true);
+    expect(service.isStepValid(1)).toBe(true);
+    expect(service.isStepValid(2)).toBe(true);
+    expect(service.isStepValid(3)).toBe(true);
+  });
+
+  it('RESTRICTED tier: Details step is invalid when editable title is cleared', () => {
+    populateWithTier('RESTRICTED');
+    service.form.controls.details.controls.title.setValue('');
+    expect(service.isStepValid(0)).toBe(false);
+  });
+
+  it('RESTRICTED tier: Schedule step is invalid when editable location is cleared', () => {
+    populateWithTier('RESTRICTED');
+    service.form.controls.schedule.controls.location.setValue('');
+    expect(service.isStepValid(1)).toBe(false);
+  });
+
+  it('RESTRICTED tier: Registration step is invalid when maxParticipants is cleared', () => {
+    populateWithTier('RESTRICTED');
+    service.form.controls.registration.controls.maxParticipants.setValue(null);
+    expect(service.isStepValid(2)).toBe(false);
+  });
+});
+
 describe('CourseFormService role-balancing toggle', () => {
   let service: CourseFormService;
 
