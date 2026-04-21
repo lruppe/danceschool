@@ -1,0 +1,45 @@
+@if (!loading()) {
+  @let s = student();
+  @if (s) {
+    <div class="detail-header">
+      <a class="back-link" routerLink="/app/students">← Back to Students</a>
+      <h1 class="detail-title">{{ s.name }}</h1>
+    </div>
+
+    <div class="detail-card">
+      <h2 class="detail-card-title">Contact</h2>
+      <dl class="contact-grid">
+        <div class="contact-item">
+          <dt>Email</dt>
+          <dd>{{ s.email }}</dd>
+        </div>
+        <div class="contact-item">
+          <dt>Phone</dt>
+          <dd>{{ s.phoneNumber || '—' }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="detail-card">
+      <h2 class="detail-card-title">Dance Levels</h2>
+      @if (s.danceLevels.length > 0) {
+        <ul class="dance-level-list">
+          @for (row of s.danceLevels; track row.danceStyle) {
+            <li class="dance-level-row">
+              <span class="dance-level-style">{{ row.danceStyle | titlecase }}</span>
+              <span class="ds-chip" [ngClass]="levelChipClass(row.level)">
+                {{ formatLevel(row.level) }}
+              </span>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="dance-level-empty">No dance levels recorded for this student yet.</p>
+      }
+    </div>
+  }
+} @else {
+  <div class="loading">
+    <p>Loading student...</p>
+  </div>
+}
