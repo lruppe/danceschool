@@ -878,6 +878,46 @@ class EnrollmentIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void approve_otherOwnersEnrollment_returns404() throws Exception {
+        // Create a PENDING_APPROVAL enrollment as owner1.
+        Long enrollmentId = createPendingApprovalForInsufficientLevel();
+
+        // Owner2 (different school) tries to approve it.
+        AppUser owner2 = createUser("owner2@example.com", "Owner 2", "firebase-owner-2");
+        createSchoolWithOwner("Other School", owner2);
+        entityManager.flush();
+
+        mockMvc.perform(put("/api/enrollments/{id}/approve", enrollmentId)
+                        .with(authentication(authToken(owner2))))
+                .andExpect(status().isNotFound());
+
+        // Contract: no mutation under cross-tenant access — status must still be PENDING_APPROVAL.
+        entityManager.flush();
+        entityManager.clear();
+        Enrollment untouched = entityManager.find(Enrollment.class, enrollmentId);
+        org.junit.jupiter.api.Assertions.assertEquals(EnrollmentStatus.PENDING_APPROVAL, untouched.getStatus());
+        org.junit.jupiter.api.Assertions.assertNull(untouched.getApprovedAt());
+    }
+
+    @Test
+    void reject_otherOwnersEnrollment_returns404() throws Exception {
+        Long enrollmentId = createPendingApprovalForInsufficientLevel();
+
+        AppUser owner2 = createUser("owner2@example.com", "Owner 2", "firebase-owner-2");
+        createSchoolWithOwner("Other School", owner2);
+        entityManager.flush();
+
+        mockMvc.perform(put("/api/enrollments/{id}/reject", enrollmentId)
+                        .with(authentication(authToken(owner2))))
+                .andExpect(status().isNotFound());
+
+        entityManager.flush();
+        entityManager.clear();
+        Enrollment untouched = entityManager.find(Enrollment.class, enrollmentId);
+        org.junit.jupiter.api.Assertions.assertEquals(EnrollmentStatus.PENDING_APPROVAL, untouched.getStatus());
+    }
+
     // --- Helpers ---
 
     private AppUser createUser(String email, String name, String firebaseUid) {
