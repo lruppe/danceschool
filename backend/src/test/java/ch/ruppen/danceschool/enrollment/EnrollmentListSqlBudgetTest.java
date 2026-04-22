@@ -94,9 +94,12 @@ class EnrollmentListSqlBudgetTest {
                         .with(authentication(authToken(owner))))
                 .andExpect(status().isOk());
 
+        // Budget: 1 SchoolAuthz membership check + 1 load the caller's school +
+        // 1 load the course (tenant-scoped) + 1 load the enrollments list.
+        // The point is O(1) in N, not a specific number.
         assertThat(stats.getPrepareStatementCount())
                 .as("SQL budget for /enrollments with N=%d", n)
-                .isLessThanOrEqualTo(3);
+                .isLessThanOrEqualTo(4);
     }
 
     private AppUser createUser(String email, String name, String firebaseUid) {

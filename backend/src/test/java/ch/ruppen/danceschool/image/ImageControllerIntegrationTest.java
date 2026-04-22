@@ -1,6 +1,9 @@
 package ch.ruppen.danceschool.image;
 
 import ch.ruppen.danceschool.TestSecurityConfig;
+import ch.ruppen.danceschool.school.School;
+import ch.ruppen.danceschool.schoolmember.MemberRole;
+import ch.ruppen.danceschool.schoolmember.SchoolMember;
 import ch.ruppen.danceschool.shared.security.AuthenticatedUser;
 import ch.ruppen.danceschool.user.AppUser;
 import jakarta.persistence.EntityManager;
@@ -43,6 +46,19 @@ class ImageControllerIntegrationTest {
         testUser.setName("Test User");
         testUser.setFirebaseUid("test-firebase-uid");
         entityManager.persist(testUser);
+
+        // Image upload is gated by @schoolAuthz.hasMembership() — give the caller a
+        // membership so these tests exercise the upload path, not the authz gate.
+        School school = new School();
+        school.setName("Test School");
+        entityManager.persist(school);
+
+        SchoolMember member = new SchoolMember();
+        member.setUser(testUser);
+        member.setSchool(school);
+        member.setRole(MemberRole.OWNER);
+        entityManager.persist(member);
+
         entityManager.flush();
     }
 

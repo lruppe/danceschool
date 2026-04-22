@@ -85,13 +85,13 @@ class SchoolTenantIsolationTest {
     }
 
     @Test
-    void getMe_returns404_forUserWithNoSchool() throws Exception {
+    void getMe_returns403_forUserWithNoSchool() throws Exception {
         AppUser orphan = createUser("orphan@example.com", "Orphan", "firebase-orphan");
         entityManager.flush();
 
         mockMvc.perform(get("/api/schools/me")
                         .with(authentication(authToken(orphan))))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isForbidden());
     }
 
     @Test

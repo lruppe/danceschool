@@ -5,6 +5,7 @@ import ch.ruppen.danceschool.shared.storage.ImageStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +18,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/images")
+@PreAuthorize("@schoolAuthz.hasMembership()")
 @RequiredArgsConstructor
 class ImageController {
 
