@@ -16,6 +16,7 @@ import { environment } from '../../environments/environment';
 import { CourseDetail, CourseListItem, CourseService } from '../courses/course.service';
 import { EnrollmentListItem, EnrollmentService, EnrollStudentRequest } from '../courses/enrollment.service';
 import { enrollmentStatusChipClass, formatEnrollmentStatus } from '../courses/shared/format-utils';
+import { COURSE_LEVELS, CourseLevel, labelOf } from '../shared/course-constants';
 
 const FIRST_NAMES = ['Anna', 'Marco', 'Laura', 'David', 'Sofia', 'Jan', 'Yuki', 'Elena', 'Thomas', 'Mia',
   'Lukas', 'Sarah', 'Alex', 'Nina', 'Felix', 'Julia', 'Max', 'Lena', 'Tobias', 'Clara'];
@@ -244,6 +245,10 @@ export class DevToolsComponent implements OnInit {
 
   protected formatStatus = formatEnrollmentStatus;
   protected enrollmentStatusChipClass = enrollmentStatusChipClass;
+
+  protected formatLevel(level: CourseLevel): string {
+    return labelOf(COURSE_LEVELS, level);
+  }
 
   protected formatWaitlistInfo(row: EnrollmentListItem): string {
     if (row.status !== 'WAITLISTED' || row.waitlistPosition == null) return '—';

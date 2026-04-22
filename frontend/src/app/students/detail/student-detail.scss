@@ -79,7 +79,7 @@
 .dance-level-row {
   display: flex;
   align-items: center;
-  gap: var(--ds-spacing-4);
+  gap: var(--ds-spacing-2);
   padding: var(--ds-spacing-2) 0;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
 
@@ -89,18 +89,23 @@
 }
 
 .dance-level-style {
-  flex: 1;
+  min-width: var(--ds-size-filter-select);
   font: var(--mat-sys-body-large);
   color: var(--mat-sys-on-surface);
 }
 
 .dance-level-style-select {
-  width: var(--ds-size-form-select-wide);
+  width: var(--ds-size-filter-select);
+
+  --mat-form-field-container-height: var(--ds-form-field-dense-height);
+  --mat-form-field-container-vertical-padding: var(--ds-spacing-1-5);
 }
 
 .dance-level-select {
-  width: var(--ds-size-form-select);
-  margin-left: auto;
+  width: var(--ds-size-filter-select);
+
+  --mat-form-field-container-height: var(--ds-form-field-dense-height);
+  --mat-form-field-container-vertical-padding: var(--ds-spacing-1-5);
 }
 
 .dance-level-empty {

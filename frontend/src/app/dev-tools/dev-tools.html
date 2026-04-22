@@ -11,7 +11,7 @@
     <mat-select (selectionChange)="onCourseSelected($event.value)">
       @for (course of courses(); track course.id) {
         <mat-option [value]="course.id">
-          {{ course.title }} ({{ course.status | lowercase }}) — {{ course.enrolledStudents }}/{{ course.maxParticipants }}
+          {{ course.title }} ({{ course.status | lowercase }}) — {{ course.enrolledStudents }}/{{ course.maxParticipants }} · {{ formatLevel(course.level) }}
         </mat-option>
       }
     </mat-select>
