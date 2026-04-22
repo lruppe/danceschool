@@ -1,5 +1,6 @@
 package ch.ruppen.danceschool.schoolmember;
 
+import ch.ruppen.danceschool.shared.error.DomainRuleViolationException;
 import ch.ruppen.danceschool.shared.logging.BusinessOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,10 @@ public class SchoolMemberService {
         return schoolMemberRepository.findByUserIdAndSchoolId(userId, schoolId);
     }
 
+    public boolean existsByUserId(Long userId) {
+        return schoolMemberRepository.existsByUserId(userId);
+    }
+
     /**
      * Phase 1 assumes a single school per user (enforced by a unique constraint on
      * {@code school_member.user_id}). Phase 2 will revisit when users can belong to multiple
@@ -39,6 +44,9 @@ public class SchoolMemberService {
 
     @BusinessOperation(event = "MembershipCreated")
     public SchoolMember createMembership(SchoolMember member) {
+        if (existsByUserId(member.getUser().getId())) {
+            throw new DomainRuleViolationException("User already belongs to a school");
+        }
         return schoolMemberRepository.save(member);
     }
 }

@@ -41,3 +41,5 @@ databaseChangeLog:
       file: db/changelog/020-drop-enrolled-students-from-course.yaml
   - include:
       file: db/changelog/021-drop-role-balancing-enabled.yaml
+  - include:
+      file: db/changelog/022-school-member-unique-user-id.yaml
