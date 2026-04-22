@@ -3,6 +3,7 @@ package ch.ruppen.danceschool.school;
 import ch.ruppen.danceschool.schoolmember.MemberRole;
 import ch.ruppen.danceschool.schoolmember.SchoolMember;
 import ch.ruppen.danceschool.schoolmember.SchoolMemberService;
+import ch.ruppen.danceschool.shared.error.DomainRuleViolationException;
 import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
 import ch.ruppen.danceschool.shared.logging.BusinessOperation;
 import ch.ruppen.danceschool.shared.storage.ImageStorageService;
@@ -34,6 +35,10 @@ public class SchoolService {
     public SchoolDetailDto createSchool(SchoolUpdateDto dto, Long userId) {
         AppUser user = userService.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", userId));
+
+        if (schoolMemberService.existsByUserId(userId)) {
+            throw new DomainRuleViolationException("User already belongs to a school");
+        }
 
         School school = new School();
         applyDto(school, dto);

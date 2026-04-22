@@ -1,0 +1,22 @@
+databaseChangeLog:
+  - changeSet:
+      id: 022-school-member-unique-user-id
+      author: claude
+      comment: >
+        Enforce Phase 1 single-school-per-user invariant at the DB level.
+        Replaces the composite unique on (user_id, school_id) with a stricter
+        unique on (user_id) alone. Phase 2 will drop this when multi-school
+        admin is introduced.
+      preConditions:
+        - onFail: HALT
+        - sqlCheck:
+            expectedResult: 0
+            sql: SELECT COUNT(*) FROM (SELECT user_id FROM school_member GROUP BY user_id HAVING COUNT(*) > 1)
+      changes:
+        - dropUniqueConstraint:
+            tableName: school_member
+            constraintName: uk_school_member_user_school
+        - addUniqueConstraint:
+            tableName: school_member
+            columnNames: user_id
+            constraintName: uk_school_member_user

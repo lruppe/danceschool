@@ -10,4 +10,6 @@ interface SchoolMemberRepository extends JpaRepository<SchoolMember, Long> {
     List<SchoolMember> findByUserId(Long userId);
 
     Optional<SchoolMember> findByUserIdAndSchoolId(Long userId, Long schoolId);
+
+    boolean existsByUserId(Long userId);
 }
