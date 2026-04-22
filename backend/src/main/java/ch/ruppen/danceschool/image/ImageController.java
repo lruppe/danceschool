@@ -1,6 +1,7 @@
 package ch.ruppen.danceschool.image;
 
 import ch.ruppen.danceschool.shared.error.ImageUploadException;
+import ch.ruppen.danceschool.shared.security.TenantScoped;
 import ch.ruppen.danceschool.shared.storage.ImageStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/images")
 @PreAuthorize("@schoolAuthz.hasMembership()")
+@TenantScoped
 @RequiredArgsConstructor
 class ImageController {
 

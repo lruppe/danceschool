@@ -1,6 +1,7 @@
 package ch.ruppen.danceschool.payment;
 
 import ch.ruppen.danceschool.shared.security.AuthenticatedUser;
+import ch.ruppen.danceschool.shared.security.TenantScoped;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/payments")
 @PreAuthorize("@schoolAuthz.hasMembership()")
+@TenantScoped
 @RequiredArgsConstructor
 public class PaymentController {
 

@@ -1,6 +1,7 @@
 package ch.ruppen.danceschool.course;
 
 import ch.ruppen.danceschool.shared.security.AuthenticatedUser;
+import ch.ruppen.danceschool.shared.security.TenantScoped;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/courses")
 @PreAuthorize("@schoolAuthz.hasMembership()")
+@TenantScoped
 @RequiredArgsConstructor
 public class CourseController {
 

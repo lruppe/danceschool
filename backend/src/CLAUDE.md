@@ -78,6 +78,22 @@ Each domain feature gets its own package under `ch.ruppen.danceschool.<feature>`
 - `DEV_AUTH` — `true` for form login, `false` for Firebase JWT
 - `FIREBASE_PROJECT_ID` — default: `dance-school-ch`
 
+### Authz guardrails (ArchUnit)
+
+Admin-side authz rules are enforced mechanically by `src/test/java/ch/ruppen/danceschool/archunit/AdminAuthzArchTest.java`. Read it before adding or touching a controller — the test fails the build with loud, multi-line banners that tell you exactly what to change.
+
+Rules enforced:
+1. **`@TenantScoped` controllers don't reach unscoped finders** — no transitive call from a `@TenantScoped` class into `findById`/`existsById`/`deleteById`/`getReferenceById` on `CourseRepository`/`StudentRepository`/`EnrollmentRepository`. Use the `*AndSchoolId` variant.
+2. **Every `@TenantScoped` method has `@PreAuthorize`** — directly or via class-level annotation.
+3. **Id-taking repo methods returning a tenant entity take `schoolId` too** — prevents adding new id-scoped finders that bypass tenant isolation.
+4. **`@TenantScoped` controllers don't depend on `*Repository` directly** — data access goes through a service.
+5. **Every `@RestController` is either `@TenantScoped` or on the open-controller allowlist** — forces an explicit authz classification when a new controller appears.
+6. **`@PreAuthorize("@schoolAuthz.hasMembership()")` implies `@TenantScoped`** — catches the membership-gate SpEL copy-pasted onto an open controller.
+
+**Adding a new admin controller:** annotate the class `@TenantScoped` and apply `@PreAuthorize("@schoolAuthz.hasMembership()")` at the class level.
+
+**Adding a new open controller** (e.g., webhooks, Phase 1.5 `/api/public/**`): add the class simple name to `AdminAuthzArchTest.OPEN_CONTROLLER_ALLOWLIST` with a Javadoc note on the controller explaining why it's open.
+
 ## Testing
 
 **When to write tests:**
