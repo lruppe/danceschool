@@ -139,10 +139,10 @@ class SchoolControllerIntegrationTest {
     }
 
     @Test
-    void getMe_returns404_whenUserHasNoSchool() throws Exception {
+    void getMe_returns403_whenUserHasNoSchool() throws Exception {
         mockMvc.perform(get("/api/schools/me")
                         .with(authentication(authToken(testUser))))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -255,14 +255,14 @@ class SchoolControllerIntegrationTest {
     }
 
     @Test
-    void updateMe_returns404_whenUserHasNoSchool() throws Exception {
+    void updateMe_returns403_whenUserHasNoSchool() throws Exception {
         mockMvc.perform(put("/api/schools/me")
                         .with(authentication(authToken(testUser)))
                         .contentType("application/json")
                         .content("""
                                 { "name": "Some School" }
                                 """))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isForbidden());
     }
 
     @Test

@@ -93,11 +93,11 @@ class PaymentListSqlBudgetTest {
                         .with(authentication(authToken(owner))))
                 .andExpect(status().isOk());
 
-        // 1 query for school resolution + 1 for the payment list = 2.
+        // 1 SchoolAuthz membership check + 1 school resolution + 1 payment list = 3.
         // Allow a small headroom for security/auth bookkeeping.
         assertThat(stats.getPrepareStatementCount())
                 .as("SQL budget for /api/payments/me with N=%d", n)
-                .isLessThanOrEqualTo(3);
+                .isLessThanOrEqualTo(4);
     }
 
     private AppUser createUser(String email, String name, String firebaseUid) {
