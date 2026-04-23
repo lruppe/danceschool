@@ -4,6 +4,7 @@ import ch.ruppen.danceschool.shared.error.DomainRuleViolationException;
 import ch.ruppen.danceschool.shared.logging.BusinessOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,7 @@ public class SchoolMemberService {
 
     private final SchoolMemberRepository schoolMemberRepository;
 
+    @Transactional(readOnly = true)
     public List<MembershipDto> findMembershipsByUserId(Long userId) {
         return schoolMemberRepository.findByUserId(userId).stream()
                 .map(member -> new MembershipDto(
@@ -36,6 +38,7 @@ public class SchoolMemberService {
      * {@code school_member.user_id}). Phase 2 will revisit when users can belong to multiple
      * schools — this method will need to change shape accordingly.
      */
+    @Transactional(readOnly = true)
     public Optional<Long> findSchoolIdByUserId(Long userId) {
         return schoolMemberRepository.findByUserId(userId).stream()
                 .findFirst()
