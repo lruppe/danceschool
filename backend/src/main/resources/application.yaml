@@ -4,6 +4,10 @@ spring:
   # JWT issuer-uri is configured in application-prod.yaml only.
   # In the default (dev) profile, DevSecurityConfig provides form login with
   # in-memory users — no Firebase emulator needed.
+  jpa:
+    # Disable OSIV so lazy loads fail fast in the service layer instead of firing
+    # during response serialization.
+    open-in-view: false
 
 app:
   security:

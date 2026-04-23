@@ -57,10 +57,12 @@ public class SchoolService {
         return schoolRepository.findByMemberUserId(userId).isPresent();
     }
 
+    @Transactional(readOnly = true)
     public SchoolDetailDto getByMemberUserId(Long userId) {
         return toDetailDto(findSchoolByMember(userId));
     }
 
+    @Transactional
     @BusinessOperation(event = "SchoolUpdated")
     public SchoolDetailDto updateSchool(Long userId, SchoolUpdateDto dto) {
         School school = findSchoolByMember(userId);

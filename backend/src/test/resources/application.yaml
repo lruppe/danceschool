@@ -3,6 +3,8 @@ app:
     dev-auth: false
 
 spring:
+  jpa:
+    open-in-view: false
   security:
     oauth2:
       resourceserver:
