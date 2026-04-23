@@ -32,8 +32,8 @@ Multi-tenant B2B SaaS for dance school management. Each **School** is a tenant. 
 
 - **Branch protection** is enabled on `main` — all changes go through PRs
 - CI workflows in `.github/workflows/`: `ci.yml` (tests), `codeql.yml` (code scanning)
-- **Frontend** deployed on Render (static site): https://danceschool-2g1m.onrender.com/
-- **Backend** deployed on Render (Docker): https://danceschool-api.onrender.com/ (API base: `/api`)
+- **Frontend** deployed on Render (static site): https://app.aquisebaila.ch/ (Render URL: `danceschool-2g1m.onrender.com`)
+- **Backend** deployed on Render (Docker): https://api.aquisebaila.ch/ (API base: `/api`; Render URL: `danceschool-api.onrender.com`)
 
 ## Issue Workflow
 
