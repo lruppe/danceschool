@@ -1,17 +1,57 @@
-<div class="dashboard-content">
-  @if (hasSchool()) {
-    @if (user(); as u) {
-      <h2>Your Schools</h2>
-      @for (m of u.memberships; track m.schoolId) {
-        <p>{{ m.schoolName }} ({{ m.role }})</p>
-      }
+@if (hasSchool()) {
+  <div class="dashboard">
+    <header class="dashboard-header">
+      <h1 class="dashboard-title">Dashboard</h1>
+      <p class="dashboard-subtitle">Demo overview — proper design pending</p>
+    </header>
+
+    @if (error()) {
+      <p class="error-text">Could not load dashboard data. Please try again later.</p>
+    } @else if (!loaded()) {
+      <p class="loading-text">Loading...</p>
+    } @else {
+      <section class="stats-grid" aria-label="Quick stats">
+        <div class="stat-card">
+          <div class="stat-card__label">Active students</div>
+          <div class="stat-card__value">{{ activeStudentsCount() }}</div>
+          <mat-icon class="stat-card__icon" aria-hidden="true">groups</mat-icon>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Active courses</div>
+          <div class="stat-card__value">{{ activeCoursesCount() }}</div>
+          <mat-icon class="stat-card__icon" aria-hidden="true">event_note</mat-icon>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Total revenue</div>
+          <div class="stat-card__value">{{ formatAmount(totalRevenue()) }}</div>
+          <mat-icon class="stat-card__icon" aria-hidden="true">payments</mat-icon>
+        </div>
+      </section>
+
+      <section class="actions-section" aria-label="Actions needed">
+        <h2 class="section-title">Actions needed</h2>
+        <a routerLink="/app/payments" class="action-card">
+          <mat-icon class="action-card__icon" aria-hidden="true">receipt_long</mat-icon>
+          <div class="action-card__body">
+            <div class="action-card__title">Open payments</div>
+            <div class="action-card__meta">
+              @if (openPaymentsCount() > 0) {
+                {{ openPaymentsCount() }} payment{{ openPaymentsCount() === 1 ? '' : 's' }} · {{ formatAmount(openPaymentsTotal()) }} to collect
+              } @else {
+                All payments are settled
+              }
+            </div>
+          </div>
+          <mat-icon class="action-card__chevron" aria-hidden="true">chevron_right</mat-icon>
+        </a>
+      </section>
     }
-  } @else {
-    <div class="empty-state">
-      <mat-icon class="empty-state-icon">business</mat-icon>
-      <h2 class="empty-state-title">Set up your school to get started</h2>
-      <p class="empty-state-text">Create your dance school profile to begin managing students, classes, and more.</p>
-      <a mat-flat-button routerLink="/app/my-school/edit">Create School</a>
-    </div>
-  }
-</div>
+  </div>
+} @else {
+  <div class="empty-state">
+    <mat-icon class="empty-state-icon">business</mat-icon>
+    <h2 class="empty-state-title">Set up your school to get started</h2>
+    <p class="empty-state-text">Create your dance school profile to begin managing students, classes, and more.</p>
+    <a mat-flat-button routerLink="/app/my-school/edit">Create School</a>
+  </div>
+}
