@@ -31,17 +31,20 @@ public class UserService {
 
     @Transactional
     public AppUser findOrCreateByFirebaseUid(String firebaseUid, String email, String name) {
-        return userRepository.findByFirebaseUid(firebaseUid)
+        AppUser user = userRepository.findByFirebaseUid(firebaseUid)
                 .orElseGet(() -> {
-                    AppUser user = new AppUser();
-                    user.setFirebaseUid(firebaseUid);
-                    user.setEmail(email);
-                    user.setName(name);
-                    AppUser saved = userRepository.save(user);
+                    AppUser fresh = new AppUser();
+                    fresh.setFirebaseUid(firebaseUid);
+                    fresh.setEmail(email);
+                    fresh.setName(name);
+                    AppUser saved = userRepository.save(fresh);
                     businessLog.info("event=UserOnboarded userId={} email=\"{}\"", saved.getId(), email);
-                    events.publishEvent(new UserCreatedEvent(saved.getId()));
                     return saved;
                 });
+        // Fired for every authenticated resolution (new or existing) so demo seeding can
+        // retroactively populate users created before demo mode was enabled.
+        events.publishEvent(new UserAuthenticatedEvent(user.getId()));
+        return user;
     }
 
     public Optional<AppUser> findByEmail(String email) {
