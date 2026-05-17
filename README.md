@@ -132,3 +132,9 @@ Runs on `http://localhost:4200`. The Angular dev server proxies `/api` to the ba
 - `backend/src/CLAUDE.md` — Spring Boot architecture and authz guardrails
 - `docs/GLOSSARY.md` — domain language
 - `docs/TESTING_WORKFLOWS.md` — manual end-to-end scenarios
+
+## License
+
+MIT with [Commons Clause](https://commonsclause.com/) — see [`LICENSE`](./LICENSE).
+
+You can read, fork, modify, and contribute to the code freely. **You may not sell the software** or offer a paid product or service whose value derives substantially from it (including paid hosting or consulting around it). For commercial use, contact the author.
