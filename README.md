@@ -2,7 +2,7 @@
 
 Multi-tenant B2B SaaS for dance school management. Each school is a tenant; owners and teachers manage classes, students, enrollments, payments, and partner matching from a single admin portal.
 
-- **Live app (wip):** https://app.aquisebaila.ch (no test data available)
+- **Live app (WIP):** https://app.aquisebaila.ch (**free hosting with warm-up time on render**, no test data available)
 - **API:** https://api.aquisebaila.ch
 
 ## What it does
