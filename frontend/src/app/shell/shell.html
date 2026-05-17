@@ -70,7 +70,16 @@
           <mat-icon>menu</mat-icon>
         </button>
       }
-      <span class="toolbar-title">Bachata &amp; Salsa Management</span>
+      <span class="toolbar-title">
+        @if (isDemo) {
+          <span class="toolbar-brand">Demo Dance School</span>
+          <span class="toolbar-separator">·</span>
+        }
+        Bachata &amp; Salsa Management
+      </span>
+      @if (isDemo) {
+        <span class="demo-badge" aria-label="Demo environment">DEMO</span>
+      }
       <span class="toolbar-spacer"></span>
       @if (user(); as u) {
         <span class="toolbar-user-name">{{ u.name || u.email }}</span>

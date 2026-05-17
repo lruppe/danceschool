@@ -1,6 +1,11 @@
 app:
   security:
     dev-auth: false
+  demo:
+    # Brands the live deployment as "Demo Dance School" and auto-provisions a populated
+    # demo school for every newly created user. See DemoSchoolSeeder. Temporary
+    # onboarding/marketing surface — remove when real signup → real-school flow ships.
+    enabled: true
 
 spring:
   datasource:

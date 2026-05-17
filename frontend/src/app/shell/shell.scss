@@ -146,7 +146,28 @@
   padding-inline: var(--ds-spacing-6);
 }
 
-.toolbar-title { font: var(--mat-sys-title-medium); color: var(--mat-sys-on-surface); }
+.toolbar-title {
+  font: var(--mat-sys-title-medium);
+  color: var(--mat-sys-on-surface);
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--ds-spacing-2);
+}
+.toolbar-brand { font-weight: 600; }
+.toolbar-separator { color: var(--mat-sys-on-surface-variant); opacity: 0.5; }
+
+.demo-badge {
+  margin-left: var(--ds-spacing-3);
+  padding: var(--ds-spacing-half) var(--ds-spacing-2);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-color-info-container);
+  color: var(--ds-color-info);
+  font: var(--mat-sys-label-small);
+  font-weight: 700;
+  letter-spacing: var(--ds-letter-spacing-wider);
+  line-height: 1;
+}
+
 .toolbar-spacer { flex: 1 1 auto; }
 .toolbar-user-name { font: var(--mat-sys-body-medium); color: var(--mat-sys-on-surface-variant); margin-right: var(--ds-spacing-2); }
 

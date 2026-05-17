@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../shared/auth/auth.service';
+import { environment } from '../../environments/environment';
 
 interface NavChild {
   label: string;
@@ -52,6 +53,7 @@ export class ShellComponent {
 
   protected isDesktop = signal(true);
   protected mySchoolExpanded = signal(true);
+  protected readonly isDemo = environment.isDemo;
 
   protected navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: '/app/dashboard' },
