@@ -8,4 +8,5 @@ export const environment = {
   },
   useEmulators: false,
   useDevLogin: true,
+  isDemo: false,
 };

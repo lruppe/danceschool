@@ -6,6 +6,7 @@ import ch.ruppen.danceschool.shared.error.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final SchoolMemberService schoolMemberService;
+    private final ApplicationEventPublisher events;
 
     public Optional<AppUser> findByFirebaseUid(String firebaseUid) {
         return userRepository.findByFirebaseUid(firebaseUid);
@@ -37,6 +39,7 @@ public class UserService {
                     user.setName(name);
                     AppUser saved = userRepository.save(user);
                     businessLog.info("event=UserOnboarded userId={} email=\"{}\"", saved.getId(), email);
+                    events.publishEvent(new UserCreatedEvent(saved.getId()));
                     return saved;
                 });
     }
