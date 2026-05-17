@@ -18,7 +18,7 @@ import ch.ruppen.danceschool.student.CreateStudentDto;
 import ch.ruppen.danceschool.student.Student;
 import ch.ruppen.danceschool.student.StudentService;
 import ch.ruppen.danceschool.user.AppUser;
-import ch.ruppen.danceschool.user.UserCreatedEvent;
+import ch.ruppen.danceschool.user.UserAuthenticatedEvent;
 import ch.ruppen.danceschool.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,8 +42,9 @@ import java.util.List;
  * pending approvals, open and completed payments) for a given user. Used by:
  * <ul>
  *   <li>{@link DevDataSeeder} — to provision both dev owners on local startup.</li>
- *   <li>{@code UserService} — when {@code app.demo.enabled=true}, every newly created user gets
- *       their own demo school so the live deployment can act as a clickable demo.</li>
+ *   <li>{@code UserService} — when {@code app.demo.enabled=true}, every authenticated user
+ *       without a school gets one (including users created before demo mode was enabled), so
+ *       the live deployment can act as a clickable demo.</li>
  * </ul>
  * Idempotent: if the user already owns a school, this does nothing.
  */
@@ -62,17 +63,22 @@ public class DemoSchoolSeeder {
     private boolean demoEnabled;
 
     /**
-     * Seeds a demo school for every brand-new user when {@code app.demo.enabled=true}.
-     * The dev profile keeps this flag off and provisions its two fixed owners directly via
-     * {@link DevDataSeeder}, so this listener is effectively a no-op there.
+     * Seeds a demo school for every authenticated user that doesn't already own one, when
+     * {@code app.demo.enabled=true}. Fires per authenticated request — {@code seedDemoSchoolFor}
+     * is idempotent (early-returns when the user owns a school), so the steady state is a single
+     * cheap {@code hasSchoolByMember} check per request. Catches users created before demo mode
+     * was enabled, which the original new-user-only hook missed.
      * <p>
-     * Runs after the user-creation transaction commits and in its own transaction so seeding
-     * failures don't roll back the user — otherwise the next login would re-create the user,
-     * re-trigger the same seed failure, and loop forever.
+     * Runs after the publishing transaction commits and in its own transaction so seeding
+     * failures don't roll the caller back — otherwise a broken seed would loop forever as the
+     * user retries login.
+     * <p>
+     * The dev profile keeps the flag off and provisions its two fixed owners directly via
+     * {@link DevDataSeeder}, so this listener is effectively a no-op there.
      */
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void onUserCreated(UserCreatedEvent event) {
+    public void onUserAuthenticated(UserAuthenticatedEvent event) {
         if (!demoEnabled) {
             return;
         }

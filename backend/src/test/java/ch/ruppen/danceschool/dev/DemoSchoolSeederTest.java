@@ -113,6 +113,31 @@ class DemoSchoolSeederTest {
     }
 
     @Test
+    void existingUserWithoutSchool_isSeededOnNextLogin() {
+        // Simulate a user created before demo mode was enabled (their original auth resolution
+        // never fired the seeding listener, so they have no school).
+        Long preDemoUserId = tx.execute(s -> {
+            AppUser pre = new AppUser();
+            pre.setFirebaseUid("uid-pre-demo");
+            pre.setEmail("pre@example.com");
+            pre.setName("Pre-Demo User");
+            entityManager.persist(pre);
+            return pre.getId();
+        });
+
+        // Next login: findOrCreateByFirebaseUid returns the existing user and publishes
+        // UserAuthenticatedEvent — the listener retroactively seeds their demo school.
+        tx.executeWithoutResult(s -> userService.findOrCreateByFirebaseUid(
+                "uid-pre-demo", "pre@example.com", "Pre-Demo User"));
+
+        Long schoolCount = tx.execute(s -> entityManager.createQuery(
+                        "SELECT COUNT(sm) FROM SchoolMember sm WHERE sm.user.id = :uid", Long.class)
+                .setParameter("uid", preDemoUserId)
+                .getSingleResult());
+        assertThat(schoolCount).isEqualTo(1L);
+    }
+
+    @Test
     void seedDemoSchoolFor_isIdempotent_whenUserAlreadyOwnsASchool() {
         AppUser owner = tx.execute(s -> userService.findOrCreateByFirebaseUid(
                 "uid-idempotent", "idem@example.com", "Idem Caller"));
