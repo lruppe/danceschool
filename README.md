@@ -2,8 +2,8 @@
 
 Multi-tenant B2B SaaS for dance school management. Each school is a tenant; owners and teachers manage classes, students, enrollments, payments, and partner matching from a single admin portal.
 
-- **Live app:** https://app.aquisebaila.ch
-- **API:** https://api.aquisebaila.ch (`/swagger-ui.html` for the OpenAPI explorer)
+- **Live app (wip):** https://app.aquisebaila.ch (no test data available)
+- **API:** https://api.aquisebaila.ch
 
 ## What it does
 
@@ -79,15 +79,7 @@ The project is built extensively with Claude Code. The workflow is codified in `
 8. **Deploy** — automatic on Render via webhooks on `main`
 
 The full step-by-step lives in `.claude/commands/start-issue.md`.
-
-## Deployment
-
-| Service | Host | Public URL | Render URL |
-|---|---|---|---|
-| Frontend | Render (static site) | https://app.aquisebaila.ch | `danceschool-2g1m.onrender.com` |
-| Backend | Render (Docker) | https://api.aquisebaila.ch | `danceschool-api.onrender.com` |
-
-Both services auto-deploy from `main` via Render webhooks — no manual release step.
+ 
 
 ## Security
 
