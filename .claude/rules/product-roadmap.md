@@ -5,6 +5,11 @@
 - Office-oriented: manage sign-ups, payments, organize helpers when students cancel (partner matching for couple dance)
 - Multi-tenant B2B — each school is a tenant
 
+**Phase 1.5 — Student Booking Website (pilot)**
+- Public, platform-branded website (second Angular app in the workspace) where students browse pilot schools and courses and enroll with just name/email/phone — no sign-up, no accounts.
+- Confirmation and status emails act as the identity anchor; abuse protection via honeypot + per-IP rate limit.
+- Goal: validate real student demand with 1–2 pilot schools before investing in accounts, payments, or the mobile app.
+
 **Phase 2 — Student App (future, Android/iOS)**
 - Students browse dance schools, view classes, enroll
 - Social login (Apple, Google, possibly Instagram) — frictionless onboarding is a priority
