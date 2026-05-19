@@ -28,7 +28,7 @@
     "@angular/cli": "^21.2.8",
     "@angular/compiler-cli": "^21.2.10",
     "@vitest/browser-playwright": "^4.1.6",
-    "firebase-tools": "^15.16.0",
+    "firebase-tools": "^15.18.0",
     "jsdom": "^29.1.1",
     "playwright": "^1.59.1",
     "prettier": "^3.8.3",
